@@ -16,9 +16,12 @@ const HEX_HEIGHT: f32 = HEX_RADIUS * 2.0;
 const MAP_RADIUS: i32 = 5;
 
 
-pub type PolygonAsset = Mesh;
+pub struct Assets {
+    outline: Mesh,
+    filled: Mesh,
+}
 
-pub fn load_polygon_asset(ctx: &mut Context, mode: DrawMode) -> GameResult<PolygonAsset> {
+fn load_polygon_asset(ctx: &mut Context, mode: DrawMode) -> GameResult<Mesh> {
     Mesh::new_polygon(
         ctx,
         mode,
@@ -33,11 +36,18 @@ pub fn load_polygon_asset(ctx: &mut Context, mode: DrawMode) -> GameResult<Polyg
     )
 }
 
-pub fn draw_hex_grid(ctx: &mut Context, polygon_asset: &PolygonAsset) -> GameResult<()> {
+pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
+    Ok(Assets {
+        outline: load_polygon_asset(ctx, DrawMode::Line(1.0))?,
+        filled:  load_polygon_asset(ctx, DrawMode::Fill)?,
+    })
+}
+
+pub fn draw_hex_grid(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
     for q in -MAP_RADIUS..MAP_RADIUS+1 {
         for r in -MAP_RADIUS..MAP_RADIUS+1 {
             if (q + r).abs() <= MAP_RADIUS {
-                polygon_asset.draw(
+                assets.outline.draw(
                     ctx,
                     HexPoint::new(q, r).to_point(),
                     0.0,

@@ -3,7 +3,7 @@ extern crate ggez;
 
 use ggez::{GameResult, Context};
 use ggez::event;
-use ggez::graphics::{self, DrawMode, Point2, Text};
+use ggez::graphics::{self, Point2, Text};
 
 mod globals;
 mod hex;
@@ -14,7 +14,7 @@ use globals::*;
 
 struct Assets {
     hello_world: Text,
-    polygon_outline: hex::PolygonAsset,
+    hex: hex::Assets,
 }
 
 fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
@@ -22,7 +22,7 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 
     Ok(Assets {
         hello_world: Text::new(ctx, "Hello, world!", &font)?,
-        polygon_outline: hex::load_polygon_asset(ctx, DrawMode::Line(1.0))?,
+        hex: hex::load_assets(ctx)?,
     })
 }
 
@@ -48,7 +48,7 @@ impl event::EventHandler for Globals {
 
         hex::draw_hex_grid(
             ctx,
-            &self.assets.polygon_outline,
+            &self.assets.hex,
         )?;
         text::draw_centered_text(
             ctx,
