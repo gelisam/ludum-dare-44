@@ -4,6 +4,7 @@ extern crate ggez;
 use ggez::{GameResult, Context};
 use ggez::event;
 use ggez::graphics::{self, Font};
+//use ggez::graphics::{Image, Point2};
 
 mod globals;
 mod hex;
@@ -32,13 +33,23 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 
 #[derive(Debug)]
 struct Globals {
+    background: graphics::Image,
     assets: Assets,
     map: Map,
 }
 
 impl Globals {
     fn new(ctx: &mut Context) -> GameResult<Globals> {
+        //FIXME: Err "Resource Not Found" in runtime. Now, we temperiarly work
+        //          around it by manually putting the `resources/` dir into
+        //          `target/debug/`. Fix it when u got the free time and there
+        //          are some documents and issues tracker here.
+        //
+        //          FAQ: https://github.com/ggez/ggez/blob/master/docs/FAQ.md#i-get-resourcenotfoundmyfile--even-though-its-in-the-resource-dir
+        let background_img = graphics::Image::new(ctx, "/dragon1.png")?;
+        
         Ok(Globals {
+            background: background_img,
             assets: load_assets(ctx)?,
             map: Map::load(),
         })
@@ -52,6 +63,19 @@ impl event::EventHandler for Globals {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx);
+
+        // Configuration of images
+        let background_param = graphics::DrawParam {
+            //src:
+            dest: graphics::Point2::new(0.0, 0.0),
+            //rotation:
+            //offset:
+            scale: graphics::Point2::new(0.2, 0.2),
+            ..Default:: default()
+        };
+
+        // Draw it!
+        graphics::draw_ex(ctx, &self.background, background_param);
 
         hex::draw_hex_grid(
             ctx,
