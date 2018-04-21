@@ -1,8 +1,8 @@
 extern crate nalgebra;
 
-use core::ops::Add;
+use core::ops::{Add,Mul};
 use ggez::{GameResult, Context};
-use ggez::graphics::{Drawable, DrawMode, Point2, Mesh};
+use ggez::graphics::{Drawable, DrawMode, Point2, Mesh, Vector2};
 
 use globals::*;
 
@@ -10,8 +10,6 @@ use globals::*;
 const HEX_RADIUS: f32 = 32.0;
 const HEX_WIDTH:  f32 = HEX_RADIUS * SQRT_3;
 const HEX_HEIGHT: f32 = HEX_RADIUS * 2.0;
-
-const MAP_RADIUS: i32 = 5;
 
 
 #[derive(Debug)]
@@ -61,16 +59,16 @@ pub fn draw_hex_grid(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
 
 // using "pointy-topped axial coordinates":
 // https://www.redblobgames.com/grids/hexagons/#coordinates-axial
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct HexPoint {
-    q: i32,
-    r: i32,
+    pub q: i32,
+    pub r: i32,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct HexVector {
-    q: i32,
-    r: i32,
+    pub q: i32,
+    pub r: i32,
 }
 
 
@@ -96,12 +94,24 @@ impl Add for HexVector {
     }
 }
 
+impl Mul<i32> for HexVector {
+    type Output = HexVector;
+
+    fn mul(self, factor: i32) -> HexVector {
+        HexVector::new(
+            self.q * factor,
+            self.r * factor,
+        )
+    }
+}
+
 
 impl HexPoint {
     pub fn new(q: i32, r: i32) -> HexPoint {
         HexPoint {q, r}
     }
 
+    #[allow(dead_code)]
     pub fn neighbours(self) -> [HexPoint; 6] {
         let dirs = HexVector::all_directions();
         [
@@ -139,10 +149,11 @@ impl HexVector {
         ]
     }
 
-    //pub fn to_vector(self) -> Vector2 {
-    //    Vector2::new(
-    //        (self.q as f32 + self.r as f32 / 2.0) * HEX_WIDTH,
-    //        self.r as f32 * HEX_HEIGHT * 3.0 / 4.0,
-    //    )
-    //}
+    #[allow(dead_code)]
+    pub fn to_vector(self) -> Vector2 {
+        Vector2::new(
+            (self.q as f32 + self.r as f32 / 2.0) * HEX_WIDTH,
+            self.r as f32 * HEX_HEIGHT * 3.0 / 4.0,
+        )
+    }
 }

@@ -12,8 +12,7 @@ mod text;
 mod vector;
 
 use globals::*;
-use hex::HexPoint;
-use map::CellContents;
+use map::Map;
 
 
 #[derive(Debug)]
@@ -34,12 +33,14 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 #[derive(Debug)]
 struct Globals {
     assets: Assets,
+    map: Map,
 }
 
 impl Globals {
     fn new(ctx: &mut Context) -> GameResult<Globals> {
         Ok(Globals {
             assets: load_assets(ctx)?,
+            map: Map::load(),
         })
     }
 }
@@ -56,19 +57,7 @@ impl event::EventHandler for Globals {
             ctx,
             &self.assets.hex,
         )?;
-
-        let cells: Vec<CellContents> = vec!(
-            CellContents::BonusBox,
-            CellContents::Car,
-            CellContents::CheckpointLine,
-            CellContents::FinishLine,
-            CellContents::Obstacle,
-            CellContents::Wall,
-        );
-        let points: Vec<HexPoint> = HexPoint::new(0, 0).neighbours().to_vec();
-        for i in 0..6 {
-            cells[i].draw(ctx, &self.assets.map, points[i])?;
-        }
+        self.map.draw(ctx, &self.assets.map)?;
 
         graphics::present(ctx);
         Ok(())

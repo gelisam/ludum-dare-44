@@ -1,8 +1,9 @@
 use ggez::{GameResult, Context};
 use ggez::graphics::{Font, Text};
+use std::collections::HashMap;
 
 use globals::*;
-use hex::HexPoint;
+use hex::{HexPoint, HexVector};
 use text;
 
 
@@ -30,6 +31,7 @@ pub fn load_assets(ctx: &mut Context, font: &Font) -> GameResult<Assets> {
 }
 
 
+#[allow(dead_code)]
 #[derive(Clone, Copy, Debug)]
 pub enum CellContents {
     BonusBox,
@@ -55,5 +57,61 @@ impl CellContents {
             _   => 0.0,
         };
         text::draw_centered_text(ctx, text, dest.to_point(), rotation)
+    }
+}
+
+
+#[derive(Clone, Debug)]
+pub struct Map {
+    cells: HashMap<HexPoint, CellContents>,
+}
+
+impl Map {
+    pub fn load() -> Map {
+        let mut cells: HashMap<HexPoint, CellContents> = HashMap::with_capacity(100);
+
+        const CENTRAL_OBSTACLE_RADIUS: i32 = 2;
+        for q in -CENTRAL_OBSTACLE_RADIUS..CENTRAL_OBSTACLE_RADIUS+1 {
+            for r in -CENTRAL_OBSTACLE_RADIUS..CENTRAL_OBSTACLE_RADIUS+1 {
+                if i32::abs(q + r) <= CENTRAL_OBSTACLE_RADIUS {
+                    cells.insert(HexPoint::new(q, r), CellContents::Wall);
+                }
+            }
+        }
+
+        let directions = HexVector::all_directions();
+        for q in CENTRAL_OBSTACLE_RADIUS+1..MAP_RADIUS+1 {
+            for i in 0..6 {
+                cells.insert(
+                    HexPoint::new(0, 0) + directions[i] * q,
+                    if i == 0 {
+                        CellContents::FinishLine
+                    } else {
+                        CellContents::CheckpointLine
+                    },
+                );
+            }
+        }
+
+        Map {cells}
+    }
+
+    #[allow(dead_code)]
+    pub fn get(&self, index: HexPoint) -> Option<CellContents> {
+        if index.q.abs() <= MAP_RADIUS
+        && index.r.abs() <= MAP_RADIUS
+        && (index.q + index.r).abs() <= MAP_RADIUS
+        {
+            self.cells.get(&index).map (|x| *x)
+        } else {
+            Some(CellContents::Wall)
+        }
+    }
+
+    pub fn draw(&self, ctx: &mut Context, assets: &Assets) -> GameResult<()> {
+        for (dest, cell_contents) in &self.cells {
+            cell_contents.draw(ctx, assets, *dest)?;
+        }
+        Ok(())
     }
 }
