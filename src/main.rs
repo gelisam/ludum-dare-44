@@ -12,6 +12,7 @@ mod text;
 use globals::*;
 
 
+#[derive(Debug)]
 struct Assets {
     hex: hex::Assets,
 }
@@ -24,6 +25,7 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     })
 }
 
+#[derive(Debug)]
 struct Globals {
     assets: Assets,
 }

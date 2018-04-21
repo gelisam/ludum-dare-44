@@ -16,6 +16,7 @@ const HEX_HEIGHT: f32 = HEX_RADIUS * 2.0;
 const MAP_RADIUS: i32 = 5;
 
 
+#[derive(Debug)]
 pub struct Assets {
     outline: Mesh,
     filled: Mesh,
