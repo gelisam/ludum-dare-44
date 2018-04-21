@@ -33,11 +33,27 @@ pub fn load_assets(ctx: &mut Context, font: &Font) -> GameResult<Assets> {
 
 #[allow(dead_code)]
 #[derive(Clone, Copy, Debug)]
+pub enum FloorContents {
+    CheckpointLine,
+    FinishLine,
+}
+
+impl FloorContents {
+    pub fn draw(self, ctx: &mut Context, assets: &Assets, dest: HexPoint) -> GameResult<()> {
+        let text: &Text = match self {
+            FloorContents::CheckpointLine => &assets.checkpoint_line,
+            FloorContents::FinishLine     => &assets.finish_line,
+        };
+        text::draw_centered_text(ctx, text, dest.to_point(), 0.0)
+    }
+}
+
+
+#[allow(dead_code)]
+#[derive(Clone, Copy, Debug)]
 pub enum CellContents {
     BonusBox,
     Car,
-    CheckpointLine,
-    FinishLine,
     Obstacle,
     Wall,
 }
@@ -47,8 +63,6 @@ impl CellContents {
         let text: &Text = match self {
             CellContents::BonusBox       => &assets.bonus_box,
             CellContents::Car            => &assets.car,
-            CellContents::CheckpointLine => &assets.checkpoint_line,
-            CellContents::FinishLine     => &assets.finish_line,
             CellContents::Obstacle       => &assets.obstacle,
             CellContents::Wall           => &assets.wall,
         };
@@ -64,13 +78,14 @@ impl CellContents {
 #[derive(Clone, Debug)]
 pub struct Map {
     cells: HashMap<HexPoint, CellContents>,
+    floor: HashMap<HexPoint, FloorContents>,
 }
 
 impl Map {
     pub fn load() -> Map {
-        let mut cells: HashMap<HexPoint, CellContents> = HashMap::with_capacity(100);
-
         const CENTRAL_OBSTACLE_RADIUS: i32 = 2;
+
+        let mut cells: HashMap<HexPoint, CellContents> = HashMap::with_capacity(100);
         for q in -CENTRAL_OBSTACLE_RADIUS..CENTRAL_OBSTACLE_RADIUS+1 {
             for r in -CENTRAL_OBSTACLE_RADIUS..CENTRAL_OBSTACLE_RADIUS+1 {
                 if i32::abs(q + r) <= CENTRAL_OBSTACLE_RADIUS {
@@ -79,21 +94,22 @@ impl Map {
             }
         }
 
+        let mut floor: HashMap<HexPoint, FloorContents> = HashMap::with_capacity(100);
         let directions = HexVector::all_directions();
         for q in CENTRAL_OBSTACLE_RADIUS+1..MAP_RADIUS+1 {
             for i in 0..6 {
-                cells.insert(
+                floor.insert(
                     HexPoint::new(0, 0) + directions[i] * q,
                     if i == 0 {
-                        CellContents::FinishLine
+                        FloorContents::FinishLine
                     } else {
-                        CellContents::CheckpointLine
+                        FloorContents::CheckpointLine
                     },
                 );
             }
         }
 
-        Map {cells}
+        Map {cells, floor}
     }
 
     #[allow(dead_code)]
@@ -109,9 +125,14 @@ impl Map {
     }
 
     pub fn draw(&self, ctx: &mut Context, assets: &Assets) -> GameResult<()> {
+        for (dest, floor_contents) in &self.floor {
+            floor_contents.draw(ctx, assets, *dest)?;
+        }
+
         for (dest, cell_contents) in &self.cells {
             cell_contents.draw(ctx, assets, *dest)?;
         }
+
         Ok(())
     }
 }
