@@ -93,7 +93,7 @@ impl event::EventHandler for Globals {
         };
 
         // Draw it!
-        graphics::draw_ex(ctx, &self.background, background_param);
+        graphics::draw_ex(ctx, &self.background, background_param)?;
 
         hex::draw_hex_grid(
             ctx,
