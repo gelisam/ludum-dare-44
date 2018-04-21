@@ -3,13 +3,12 @@ extern crate ggez;
 
 use ggez::{GameResult, Context};
 use ggez::event;
-use ggez::graphics::{self, Drawable, Point2, Text, Vector2};
+use ggez::graphics::{self, Drawable, DrawMode, Point2, Text, Vector2};
 
+mod globals;
+mod hex;
 
-const GAME_NAME: &str = "ludum-dare-41";
-
-const WINDOW_WIDTH:  u32 = 800;
-const WINDOW_HEIGHT: u32 = 600;
+use globals::*;
 
 
 fn text_size(text: &Text) -> Vector2 {
@@ -24,6 +23,7 @@ fn draw_centered_text(ctx: &mut Context, text: &Text, o: Point2) -> GameResult<(
 
 struct Assets {
     hello_world: Text,
+    polygon_outline: hex::PolygonAsset,
 }
 
 fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
@@ -31,6 +31,7 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 
     Ok(Assets {
         hello_world: Text::new(ctx, "Hello, world!", &font)?,
+        polygon_outline: hex::load_polygon_asset(ctx, DrawMode::Line(1.0))?,
     })
 }
 
@@ -54,6 +55,10 @@ impl event::EventHandler for Globals {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx);
 
+        hex::draw_hex_grid(
+            ctx,
+            &self.assets.polygon_outline,
+        )?;
         draw_centered_text(
             ctx,
             &self.assets.hello_world,
