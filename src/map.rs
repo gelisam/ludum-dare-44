@@ -23,7 +23,7 @@ pub fn load_assets(ctx: &mut Context, font: &Font) -> GameResult<Assets> {
     Ok(
         Assets {
             bonus_box:       Text::new(ctx, "?", &font)?,
-            car:             Image::new(ctx, "/car.png")?,
+            car:             Image::new(ctx, "/car1.png")?,
             checkpoint_line: Text::new(ctx, ".", &font)?,
             finish_line:     Text::new(ctx, ":", &font)?,
             obstacle:        Text::new(ctx, "@", &font)?,
