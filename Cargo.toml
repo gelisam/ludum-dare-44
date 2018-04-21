@@ -1,8 +1,9 @@
 [package]
 
-name = "piano"
+name = "ludum-dare-41"
 version = "0.0.1"
 authors = [ "Samuel Gelineau <gelisam@gmail.com>" ]
 
 [dependencies]
 ggez = "0.4.2"
+nalgebra = "0.14.1"
