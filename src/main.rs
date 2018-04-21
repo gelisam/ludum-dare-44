@@ -3,22 +3,13 @@ extern crate ggez;
 
 use ggez::{GameResult, Context};
 use ggez::event;
-use ggez::graphics::{self, Drawable, DrawMode, Point2, Text, Vector2};
+use ggez::graphics::{self, DrawMode, Point2, Text};
 
 mod globals;
 mod hex;
+mod text;
 
 use globals::*;
-
-
-fn text_size(text: &Text) -> Vector2 {
-    Vector2::new(text.width() as f32, text.height() as f32)
-}
-
-fn draw_centered_text(ctx: &mut Context, text: &Text, o: Point2) -> GameResult<()> {
-    text.draw(ctx, o - text_size(text) / 2.0, 0.0)?;
-    Ok(())
-}
 
 
 struct Assets {
@@ -59,7 +50,7 @@ impl event::EventHandler for Globals {
             ctx,
             &self.assets.polygon_outline,
         )?;
-        draw_centered_text(
+        text::draw_centered_text(
             ctx,
             &self.assets.hello_world,
             Point2::new(
