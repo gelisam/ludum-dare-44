@@ -1,6 +1,6 @@
 extern crate nalgebra;
 
-use core::ops::{Add,Mul};
+use core::ops::{Add,AddAssign,Mul,MulAssign};
 use ggez::{GameResult, Context};
 use ggez::graphics::{Drawable, DrawMode, Point2, Mesh, Vector2};
 
@@ -83,6 +83,13 @@ impl Add<HexVector> for HexPoint {
     }
 }
 
+impl AddAssign<HexVector> for HexPoint {
+    fn add_assign(&mut self, other: HexVector) {
+        self.q += other.q;
+        self.r += other.r;
+    }
+}
+
 impl Add for HexVector {
     type Output = HexVector;
 
@@ -94,6 +101,13 @@ impl Add for HexVector {
     }
 }
 
+impl AddAssign for HexVector {
+    fn add_assign(&mut self, other: HexVector) {
+        self.q += other.q;
+        self.r += other.r;
+    }
+}
+
 impl Mul<i32> for HexVector {
     type Output = HexVector;
 
@@ -102,6 +116,13 @@ impl Mul<i32> for HexVector {
             self.q * factor,
             self.r * factor,
         )
+    }
+}
+
+impl MulAssign<i32> for HexVector {
+    fn mul_assign(&mut self, factor: i32) {
+        self.q *= factor;
+        self.r *= factor;
     }
 }
 
