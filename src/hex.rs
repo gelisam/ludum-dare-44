@@ -145,6 +145,32 @@ impl HexPoint {
         ]
     }
 
+    pub fn forward(self) -> HexVector {
+        if self.q == 0 {
+            if self.r < 0 {
+                HexVector::new(-1, 1)
+            } else {
+                HexVector::new(1, -1)
+            }
+        } else if self.q > 0 {
+            if self.r > 0 {
+                HexVector::new(1, -1)
+            } else if -self.r < self.q {
+                HexVector::new(0, -1)
+            } else {
+                HexVector::new(-1, 0)
+            }
+        } else {
+            if self.r < 0 {
+                HexVector::new(-1, 1)
+            } else if -self.q > self.r {
+                HexVector::new(0, 1)
+            } else {
+                HexVector::new(1, 0)
+            }
+        }
+    }
+
     pub fn to_point(self) -> Point2 {
         Point2::new(
             WINDOW_WIDTH  as f32 / 2.0 + (self.q as f32 + self.r as f32 / 2.0) * HEX_WIDTH,

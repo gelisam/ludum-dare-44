@@ -2,7 +2,7 @@ extern crate core;
 extern crate ggez;
 
 use ggez::{GameResult, Context};
-use ggez::event;
+use ggez::event::{self, Keycode, Mod};
 use ggez::graphics::{self, Font};
 //use ggez::graphics::{Image, Point2};
 
@@ -59,6 +59,10 @@ impl Globals {
 impl event::EventHandler for Globals {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         Ok(())
+    }
+
+    fn key_up_event(&mut self, _ctx: &mut Context, _keycode: Keycode, _keymod: Mod, _repeat: bool) {
+        self.map.go_forward();
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {

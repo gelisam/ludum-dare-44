@@ -79,6 +79,7 @@ impl CellContents {
 pub struct Map {
     cells: HashMap<HexPoint, CellContents>,
     floor: HashMap<HexPoint, FloorContents>,
+    car: HexPoint,
 }
 
 impl Map {
@@ -109,7 +110,17 @@ impl Map {
             }
         }
 
-        Map {cells, floor}
+        let car = HexPoint::new(CENTRAL_OBSTACLE_RADIUS+2, 0);
+        cells.insert(car, CellContents::Car);
+
+        Map {cells, floor, car}
+    }
+
+    pub fn go_forward(&mut self) {
+        self.cells.remove(&self.car);
+        self.car += self.car.forward();
+        self.cells.insert(self.car, CellContents::Car);
+        println!("{:?}", self.car);
     }
 
     #[allow(dead_code)]
