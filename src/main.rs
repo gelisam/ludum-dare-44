@@ -13,7 +13,6 @@ use globals::*;
 
 
 struct Assets {
-    hello_world: Text,
     hex: hex::Assets,
 }
 
@@ -21,7 +20,6 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     let font = graphics::Font::default_font()?;
 
     Ok(Assets {
-        hello_world: Text::new(ctx, "Hello, world!", &font)?,
         hex: hex::load_assets(ctx)?,
     })
 }
@@ -49,14 +47,6 @@ impl event::EventHandler for Globals {
         hex::draw_hex_grid(
             ctx,
             &self.assets.hex,
-        )?;
-        text::draw_centered_text(
-            ctx,
-            &self.assets.hello_world,
-            Point2::new(
-                WINDOW_WIDTH  as f32 / 2.0,
-                WINDOW_HEIGHT as f32 / 2.0,
-            ),
         )?;
 
         graphics::present(ctx);
