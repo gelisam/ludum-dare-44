@@ -1,7 +1,7 @@
 use ggez::{GameResult, Context};
-use ggez::graphics::{Drawable, Point2, Text, Vector2};
+use ggez::graphics::{Point2, Text, Vector2};
 
-use vector;
+use center::draw_centered;
 
 
 fn text_size(text: &Text) -> Vector2 {
@@ -9,5 +9,5 @@ fn text_size(text: &Text) -> Vector2 {
 }
 
 pub fn draw_centered_text(ctx: &mut Context, text: &Text, dest: Point2, rotation: f32) -> GameResult<()> {
-    text.draw(ctx, dest - vector::rotate(text_size(text), rotation) / 2.0, rotation)
+    draw_centered(ctx, text, text_size(text), dest, rotation)
 }

@@ -196,7 +196,6 @@ impl HexVector {
         ]
     }
 
-    #[allow(dead_code)]
     pub fn to_vector(self) -> Vector2 {
         Vector2::new(
             (self.q as f32 + self.r as f32 / 2.0) * HEX_WIDTH,

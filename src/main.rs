@@ -5,6 +5,8 @@ use ggez::{GameResult, Context};
 use ggez::event::{self, Keycode, Mod};
 use ggez::graphics::{self, Font};
 
+mod car;
+mod center;
 mod globals;
 mod hex;
 mod map;

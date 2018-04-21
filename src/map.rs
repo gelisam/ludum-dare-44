@@ -1,7 +1,9 @@
 use ggez::{GameResult, Context};
-use ggez::graphics::{Drawable, Font, Image, Text, Vector2};
+use ggez::graphics::{Font, Image, Text, Vector2};
 use std::collections::HashMap;
 
+use car::Car;
+use center::draw_centered;
 use globals::*;
 use hex::{HEX_WIDTH, HEX_HEIGHT, HexPoint, HexVector};
 use text;
@@ -53,28 +55,28 @@ impl FloorContents {
 #[derive(Clone, Copy, Debug)]
 pub enum CellContents {
     BonusBox,
-    Car,
+    Car(Car),
     Obstacle,
     Wall,
 }
 
 impl CellContents {
+    fn image_size() -> Vector2 {
+        Vector2::new(HEX_WIDTH, HEX_HEIGHT)
+    }
+
     pub fn draw(self, ctx: &mut Context, assets: &Assets, dest: HexPoint) -> GameResult<()> {
         match self {
-            CellContents::Car =>
-                assets.car.draw(ctx, dest.to_point() - Vector2::new(HEX_WIDTH / 2.0, HEX_HEIGHT / 2.0), 0.0),
+            CellContents::Car(car) =>
+                draw_centered(ctx, &assets.car, CellContents::image_size(), dest.to_point(), car.rotation()),
             _ => {
                 let text: &Text = match self {
                     CellContents::BonusBox       => &assets.bonus_box,
-                    CellContents::Car            => unreachable!(),
+                    CellContents::Car(_)         => unreachable!(),
                     CellContents::Obstacle       => &assets.obstacle,
                     CellContents::Wall           => &assets.wall,
                 };
-                let rotation: f32 = match self {
-                    CellContents::Car => PI, // I want the pointy bit of the "V" to point upwards
-                    _   => 0.0,
-                };
-                text::draw_centered_text(ctx, text, dest.to_point(), rotation)
+                text::draw_centered_text(ctx, text, dest.to_point(), 0.0)
             }
         }
     }
@@ -85,7 +87,7 @@ impl CellContents {
 pub struct Map {
     cells: HashMap<HexPoint, CellContents>,
     floor: HashMap<HexPoint, FloorContents>,
-    car: HexPoint,
+    car_position: HexPoint,
 }
 
 impl Map {
@@ -116,16 +118,16 @@ impl Map {
             }
         }
 
-        let car = HexPoint::new(CENTRAL_OBSTACLE_RADIUS+2, 0);
-        cells.insert(car, CellContents::Car);
+        let car_position = HexPoint::new(CENTRAL_OBSTACLE_RADIUS+2, 0);
+        cells.insert(car_position, CellContents::Car(Car::new(car_position.forward())));
 
-        Map {cells, floor, car}
+        Map {cells, floor, car_position}
     }
 
     pub fn go_forward(&mut self) {
-        self.cells.remove(&self.car);
-        self.car += self.car.forward();
-        self.cells.insert(self.car, CellContents::Car);
+        self.cells.remove(&self.car_position);
+        self.car_position += self.car_position.forward();
+        self.cells.insert(self.car_position, CellContents::Car(Car::new(self.car_position.forward())));
     }
 
     #[allow(dead_code)]
