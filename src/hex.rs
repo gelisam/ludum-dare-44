@@ -2,7 +2,7 @@ extern crate nalgebra;
 
 use core::ops::Add;
 use ggez::{GameResult, Context};
-use ggez::graphics::{Drawable, DrawMode, Point2, Mesh, Vector2};
+use ggez::graphics::{Drawable, DrawMode, Point2, Mesh};
 
 use globals::*;
 
