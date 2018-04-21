@@ -34,8 +34,8 @@ enum Powerup {
     SpikeShield,
 }
 
+#[allow(dead_code)]
 impl Powerup {
-    #[allow(dead_code)]
     pub fn draw(self, ctx: &mut Context, assets: &Assets, dest: HexPoint) -> GameResult<()> {
         let text: &Text = match self {
             Powerup::Bomb        => &assets.bomb,
@@ -44,5 +44,18 @@ impl Powerup {
             Powerup::SpikeShield => &assets.spike_shield,
         };
         draw_centered_text(ctx, text, dest.to_point(), 0.0)
+    }
+
+    pub fn first() -> Powerup {
+        Powerup::Bomb
+    }
+
+    pub fn next(self) -> Option<Powerup> {
+        match self {
+            Powerup::Bomb        => Some(Powerup::Kick),
+            Powerup::Kick        => Some(Powerup::Zip),
+            Powerup::Zip         => Some(Powerup::SpikeShield),
+            Powerup::SpikeShield => None,
+        }
     }
 }
