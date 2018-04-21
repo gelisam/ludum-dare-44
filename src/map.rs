@@ -120,7 +120,6 @@ impl Map {
         self.cells.remove(&self.car);
         self.car += self.car.forward();
         self.cells.insert(self.car, CellContents::Car);
-        println!("{:?}", self.car);
     }
 
     #[allow(dead_code)]
