@@ -10,6 +10,7 @@ mod center;
 mod globals;
 mod hex;
 mod map;
+mod powerup;
 mod text;
 mod vector;
 
@@ -21,6 +22,7 @@ use map::Map;
 struct Assets {
     hex: hex::Assets,
     map: map::Assets,
+    powerup: powerup::Assets,
 }
 
 fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
@@ -29,6 +31,7 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     Ok(Assets {
         hex: hex::load_assets(ctx)?,
         map: map::load_assets(ctx, &font)?,
+        powerup: powerup::load_assets(ctx, &font)?,
     })
 }
 
