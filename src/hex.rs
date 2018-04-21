@@ -7,9 +7,9 @@ use ggez::graphics::{Drawable, DrawMode, Point2, Mesh, Vector2};
 use globals::*;
 
 
-const HEX_RADIUS: f32 = 32.0;
-const HEX_WIDTH:  f32 = HEX_RADIUS * SQRT_3;
-const HEX_HEIGHT: f32 = HEX_RADIUS * 2.0;
+pub const HEX_RADIUS: f32 = 32.0;
+pub const HEX_WIDTH:  f32 = HEX_RADIUS * SQRT_3;
+pub const HEX_HEIGHT: f32 = HEX_RADIUS * 2.0;
 
 
 #[derive(Debug)]

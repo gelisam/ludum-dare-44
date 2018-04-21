@@ -1,16 +1,16 @@
 use ggez::{GameResult, Context};
-use ggez::graphics::{Font, Text};
+use ggez::graphics::{Drawable, Font, Image, Text, Vector2};
 use std::collections::HashMap;
 
 use globals::*;
-use hex::{HexPoint, HexVector};
+use hex::{HEX_WIDTH, HEX_HEIGHT, HexPoint, HexVector};
 use text;
 
 
 #[derive(Debug)]
 pub struct Assets {
     bonus_box:       Text,
-    car:             Text,
+    car:             Image,
     checkpoint_line: Text,
     finish_line:     Text,
     obstacle:        Text,
@@ -21,7 +21,7 @@ pub fn load_assets(ctx: &mut Context, font: &Font) -> GameResult<Assets> {
     Ok(
         Assets {
             bonus_box:       Text::new(ctx, "?", &font)?,
-            car:             Text::new(ctx, "V", &font)?,
+            car:             Image::new(ctx, "/car.png")?,
             checkpoint_line: Text::new(ctx, ".", &font)?,
             finish_line:     Text::new(ctx, ":", &font)?,
             obstacle:        Text::new(ctx, "@", &font)?,
@@ -60,17 +60,23 @@ pub enum CellContents {
 
 impl CellContents {
     pub fn draw(self, ctx: &mut Context, assets: &Assets, dest: HexPoint) -> GameResult<()> {
-        let text: &Text = match self {
-            CellContents::BonusBox       => &assets.bonus_box,
-            CellContents::Car            => &assets.car,
-            CellContents::Obstacle       => &assets.obstacle,
-            CellContents::Wall           => &assets.wall,
-        };
-        let rotation: f32 = match self {
-            CellContents::Car => PI, // I want the pointy bit of the "V" to point upwards
-            _   => 0.0,
-        };
-        text::draw_centered_text(ctx, text, dest.to_point(), rotation)
+        match self {
+            CellContents::Car =>
+                assets.car.draw(ctx, dest.to_point() - Vector2::new(HEX_WIDTH / 2.0, HEX_HEIGHT / 2.0), 0.0),
+            _ => {
+                let text: &Text = match self {
+                    CellContents::BonusBox       => &assets.bonus_box,
+                    CellContents::Car            => unreachable!(),
+                    CellContents::Obstacle       => &assets.obstacle,
+                    CellContents::Wall           => &assets.wall,
+                };
+                let rotation: f32 = match self {
+                    CellContents::Car => PI, // I want the pointy bit of the "V" to point upwards
+                    _   => 0.0,
+                };
+                text::draw_centered_text(ctx, text, dest.to_point(), rotation)
+            }
+        }
     }
 }
 
