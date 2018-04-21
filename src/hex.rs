@@ -100,11 +100,11 @@ impl Add for HexVector {
 
 
 impl HexPoint {
-    fn new(q: i32, r: i32) -> HexPoint {
+    pub fn new(q: i32, r: i32) -> HexPoint {
         HexPoint {q, r}
     }
 
-    fn neighbours(self) -> [HexPoint; 6] {
+    pub fn neighbours(self) -> [HexPoint; 6] {
         let dirs = HexVector::all_directions();
         [
             self + dirs[0],
@@ -116,7 +116,7 @@ impl HexPoint {
         ]
     }
 
-    fn to_point(self) -> Point2 {
+    pub fn to_point(self) -> Point2 {
         Point2::new(
             WINDOW_WIDTH  as f32 / 2.0 + (self.q as f32 + self.r as f32 / 2.0) * HEX_WIDTH,
             WINDOW_HEIGHT as f32 / 2.0 + self.r as f32 * HEX_HEIGHT * 3.0 / 4.0,
@@ -125,12 +125,12 @@ impl HexPoint {
 }
 
 impl HexVector {
-    fn new(q: i32, r: i32) -> HexVector {
+    pub fn new(q: i32, r: i32) -> HexVector {
         HexVector {q, r}
     }
 
     // right, then counter-clockwise
-    fn all_directions() -> [HexVector; 6] {
+    pub fn all_directions() -> [HexVector; 6] {
         [
             HexVector::new( 1,  0),
             HexVector::new( 1, -1),
@@ -141,7 +141,7 @@ impl HexVector {
         ]
     }
 
-    fn to_vector(self) -> Vector2 {
+    pub fn to_vector(self) -> Vector2 {
         Vector2::new(
             (self.q as f32 + self.r as f32 / 2.0) * HEX_WIDTH,
             self.r as f32 * HEX_HEIGHT * 3.0 / 4.0,
