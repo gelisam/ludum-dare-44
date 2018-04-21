@@ -3,25 +3,31 @@ extern crate ggez;
 
 use ggez::{GameResult, Context};
 use ggez::event;
-use ggez::graphics::{self, Point2, Text};
+use ggez::graphics::{self, Font};
 
 mod globals;
 mod hex;
+mod map;
 mod text;
+mod vector;
 
 use globals::*;
+use hex::HexPoint;
+use map::CellContents;
 
 
 #[derive(Debug)]
 struct Assets {
     hex: hex::Assets,
+    map: map::Assets,
 }
 
 fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
-    let font = graphics::Font::default_font()?;
+    let font = Font::default_font()?;
 
     Ok(Assets {
         hex: hex::load_assets(ctx)?,
+        map: map::load_assets(ctx, &font)?,
     })
 }
 
@@ -50,6 +56,19 @@ impl event::EventHandler for Globals {
             ctx,
             &self.assets.hex,
         )?;
+
+        let cells: Vec<CellContents> = vec!(
+            CellContents::BonusBox,
+            CellContents::Car,
+            CellContents::CheckpointLine,
+            CellContents::FinishLine,
+            CellContents::Obstacle,
+            CellContents::Wall,
+        );
+        let points: Vec<HexPoint> = HexPoint::new(0, 0).neighbours().to_vec();
+        for i in 0..6 {
+            cells[i].draw(ctx, &self.assets.map, points[i])?;
+        }
 
         graphics::present(ctx);
         Ok(())
