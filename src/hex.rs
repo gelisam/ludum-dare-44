@@ -139,10 +139,10 @@ impl HexVector {
         ]
     }
 
-    pub fn to_vector(self) -> Vector2 {
-        Vector2::new(
-            (self.q as f32 + self.r as f32 / 2.0) * HEX_WIDTH,
-            self.r as f32 * HEX_HEIGHT * 3.0 / 4.0,
-        )
-    }
+    //pub fn to_vector(self) -> Vector2 {
+    //    Vector2::new(
+    //        (self.q as f32 + self.r as f32 / 2.0) * HEX_WIDTH,
+    //        self.r as f32 * HEX_HEIGHT * 3.0 / 4.0,
+    //    )
+    //}
 }
