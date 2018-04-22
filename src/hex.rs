@@ -202,4 +202,9 @@ impl HexVector {
             self.r as f32 * HEX_HEIGHT * 3.0 / 4.0,
         )
     }
+
+    pub fn to_rotation(self) -> f32 {
+        let v = self.to_vector();
+        f32::atan2(v.y, v.x)
+    }
 }

@@ -13,8 +13,8 @@ use text;
 pub struct Assets {
     bonus_box:       Text,
     car:             Image,
-    checkpoint_line: Text,
-    finish_line:     Text,
+    checkpoint_line: Image,
+    finish_line:     Image,
     obstacle:        Text,
     wall:            Text,
 }
@@ -24,29 +24,34 @@ pub fn load_assets(ctx: &mut Context, font: &Font) -> GameResult<Assets> {
         Assets {
             bonus_box:       Text::new(ctx, "?", &font)?,
             car:             Image::new(ctx, "/car1.png")?,
-            checkpoint_line: Text::new(ctx, ".", &font)?,
-            finish_line:     Text::new(ctx, ":", &font)?,
+            checkpoint_line: Image::new(ctx, "/checkpoint-line.png")?,
+            finish_line:     Image::new(ctx, "/finish-line.png")?,
             obstacle:        Text::new(ctx, "@", &font)?,
             wall:            Text::new(ctx, "#", &font)?,
         }
     )
 }
 
+fn image_size() -> Vector2 {
+    Vector2::new(HEX_WIDTH, HEX_HEIGHT)
+}
+
 
 #[allow(dead_code)]
 #[derive(Clone, Copy, Debug)]
 pub enum FloorContents {
-    CheckpointLine,
-    FinishLine,
+    CheckpointLine(f32),
+    FinishLine(f32),
 }
 
 impl FloorContents {
     pub fn draw(self, ctx: &mut Context, assets: &Assets, dest: HexPoint) -> GameResult<()> {
-        let text: &Text = match self {
-            FloorContents::CheckpointLine => &assets.checkpoint_line,
-            FloorContents::FinishLine     => &assets.finish_line,
-        };
-        text::draw_centered_text(ctx, text, dest.to_point(), 0.0)
+        match self {
+            FloorContents::CheckpointLine(rotation) =>
+                draw_centered(ctx,  &assets.checkpoint_line, image_size(), dest.to_point(), rotation),
+            FloorContents::FinishLine(rotation) =>
+                draw_centered(ctx,  &assets.finish_line, image_size(), dest.to_point(), rotation),
+        }
     }
 }
 
@@ -61,14 +66,10 @@ pub enum CellContents {
 }
 
 impl CellContents {
-    fn image_size() -> Vector2 {
-        Vector2::new(HEX_WIDTH, HEX_HEIGHT)
-    }
-
     pub fn draw(self, ctx: &mut Context, assets: &Assets, dest: HexPoint) -> GameResult<()> {
         match self {
             CellContents::Car(car) =>
-                draw_centered(ctx, &assets.car, CellContents::image_size(), dest.to_point(), car.rotation()),
+                draw_centered(ctx, &assets.car, image_size(), dest.to_point(), car.direction.to_rotation()),
             _ => {
                 let text: &Text = match self {
                     CellContents::BonusBox       => &assets.bonus_box,
@@ -110,9 +111,9 @@ impl Map {
                 floor.insert(
                     HexPoint::new(0, 0) + directions[i] * q,
                     if i == 0 {
-                        FloorContents::FinishLine
+                        FloorContents::FinishLine(directions[i].to_rotation())
                     } else {
-                        FloorContents::CheckpointLine
+                        FloorContents::CheckpointLine(directions[i].to_rotation())
                     },
                 );
             }
