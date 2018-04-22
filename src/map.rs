@@ -98,10 +98,10 @@ impl Map {
 
         let mut floor: HashMap<HexPoint, FloorContents> = HashMap::with_capacity(100);
         let directions = HexVector::all_directions();
-        for q in CENTRAL_OBSTACLE_RADIUS+1..MAP_RADIUS+1 {
+        for distance in CENTRAL_OBSTACLE_RADIUS+1..MAP_RADIUS+1 {
             for i in 0..6 {
                 floor.insert(
-                    HexPoint::new(0, 0) + directions[i] * q,
+                    HexPoint::new(0, 0) + directions[i] * distance,
                     if i == 0 {
                         FloorContents::FinishLine(directions[i].to_rotation())
                     } else {
