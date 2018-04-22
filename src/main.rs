@@ -6,7 +6,6 @@ use ggez::event::{self, Keycode, Mod};
 use ggez::graphics::{self, Font};
 use ggez::timer;
 
-mod action;
 mod bg;
 mod car;
 mod center;
@@ -14,7 +13,6 @@ mod checkpoint;
 mod globals;
 mod hex;
 mod map;
-mod powerup;
 mod text;
 mod vector;
 
@@ -30,7 +28,6 @@ struct Assets {
     bg: bg::Assets,
     hex: hex::Assets,
     map: map::Assets,
-    powerup: powerup::Assets,
 }
 
 fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
@@ -40,7 +37,6 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
         bg: bg::load_assets(ctx)?,
         hex: hex::load_assets(ctx)?,
         map: map::load_assets(ctx, &font)?,
-        powerup: powerup::load_assets(ctx, &font)?,
     })
 }
 
