@@ -77,7 +77,7 @@ impl Globals {
         self.car_checkpoint = update_checkpoint(self.car_checkpoint, self.car_position);
         println!(
             "section {:?}, checkpoint {:?}, lap {:?}",
-            point_to_section(self.car_position),
+            checkpoint_to_section(self.car_checkpoint),
             self.car_checkpoint,
             lap(self.car_checkpoint),
         );
@@ -91,7 +91,7 @@ impl Globals {
         self.car_checkpoint = update_checkpoint(self.car_checkpoint, self.car_position);
         println!(
             "section {:?}, checkpoint {:?}, lap {:?}",
-            point_to_section(self.car_position),
+            checkpoint_to_section(self.car_checkpoint),
             self.car_checkpoint,
             lap(self.car_checkpoint),
         );

@@ -68,8 +68,16 @@ pub fn backward(hex_point: HexPoint) -> HexVector {
 // same as Section, but increases beyond 5 when completing laps.
 pub type Checkpoint = i32;
 
+pub fn checkpoint_to_section(checkpoint: Checkpoint) -> Section {
+    if checkpoint >= 0 {
+        checkpoint % 6
+    } else {
+        5 + (checkpoint + 1) % 6
+    }
+}
+
 pub fn update_checkpoint(old_checkpoint: Checkpoint, new_hex_point: HexPoint) -> Checkpoint {
-  let old_section = old_checkpoint % 6;
+  let old_section = checkpoint_to_section(old_checkpoint);
   let new_section = point_to_section(new_hex_point);
   if new_section == (old_section + 1) % 6 {
       old_checkpoint + 1
