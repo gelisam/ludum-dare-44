@@ -36,16 +36,16 @@ pub struct Bomb {
 }
 
 impl Bomb {
-    pub fn new() -> Bomb {
-        Bomb {
-            fuse_length: 4
-        }
+    pub fn new(fuse_length: FuseLength) -> Bomb {
+        Bomb {fuse_length}
     }
 
+    #[allow(dead_code)]
     pub fn trigger_chain_reaction(&mut self) {
         self.fuse_length = 0;
     }
 
+    #[allow(dead_code)]
     pub fn update(&mut self) {
         if self.fuse_length > 0 {
             self.fuse_length -= 1;

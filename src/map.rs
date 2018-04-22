@@ -1,6 +1,7 @@
 use ggez::{GameResult, Context};
 use ggez::graphics::Image;
 use std::collections::HashMap;
+use rand::{self,Rng};
 
 use bomb::{self,Bomb};
 use car::{self,Car};
@@ -139,6 +140,31 @@ impl Map {
         }
 
         panic!("no spots left!"); // should not happen unless there are more than 3 cars in the game
+    }
+
+    // a location whose floor and cell are both empty.
+    pub fn is_available(&self, hex_point: HexPoint) -> bool {
+        self.floor.get(&hex_point).is_none() && self.get(hex_point).is_none()
+    }
+
+    pub fn random_available_spot(&self) -> Option<HexPoint> {
+        let mut spots: Vec<HexPoint> = Vec::with_capacity(100);
+        for r in -MAP_RADIUS..MAP_RADIUS+1 {
+            for q in -MAP_RADIUS..MAP_RADIUS+1 {
+                let hex_point = HexPoint::new(q, r);
+                if self.is_available(hex_point) {
+                     spots.push(hex_point);
+                }
+            }
+        }
+
+        if spots.is_empty() {
+            None
+        } else {
+            let mut rng = rand::thread_rng();
+            let i = rng.gen_range(0, spots.len());
+            Some(spots[i])
+        }
     }
 
     pub fn insert(&mut self, index: HexPoint, cell_contents: CellContents) {
