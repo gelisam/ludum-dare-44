@@ -1,21 +1,21 @@
-use car::Car;
+use car::{Car,CarNumber};
 use checkpoint::*;
 use hex::{DirectionIndex, HexPoint, HexVector};
 use map::{CellContents,Map};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Racer {
+    pub car_number: CarNumber,
     pub checkpoint: Checkpoint,
     pub direction_index: DirectionIndex,
-    pub number: usize,
     pub position: HexPoint,
 }
 
 impl Racer {
-    pub fn new(number: usize, position: HexPoint) -> Racer {
+    pub fn new(car_number: CarNumber, position: HexPoint) -> Racer {
         let checkpoint = point_to_section(position);
         let direction_index = forward(position);
-        Racer {checkpoint, direction_index, number, position}
+        Racer {car_number, checkpoint, direction_index, position}
     }
 
     pub fn turn_left(self) -> Racer {
@@ -59,7 +59,10 @@ impl Racer {
     }
 
     fn car(self) -> Car {
-        Car::new(HexVector::from_index(self.direction_index))
+        Car::new(
+            self.car_number,
+            HexVector::from_index(self.direction_index),
+        )
     }
 
     pub fn remove(self, map: &mut Map) {

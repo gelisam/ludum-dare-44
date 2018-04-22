@@ -13,7 +13,9 @@ use text;
 #[derive(Debug)]
 pub struct Assets {
     bonus_box:       Text,
-    car:             Image,
+    car3:            Image,
+    car2:            Image,
+    car1:            Image,
     checkpoint_line: Image,
     finish_line:     Image,
     obstacle:        Text,
@@ -24,7 +26,9 @@ pub fn load_assets(ctx: &mut Context, font: &Font) -> GameResult<Assets> {
     Ok(
         Assets {
             bonus_box:       Text::new(ctx, "?", &font)?,
-            car:             Image::new(ctx, "/car1.png")?,
+            car3:            Image::new(ctx, "/car3.png")?,
+            car2:            Image::new(ctx, "/car2.png")?,
+            car1:            Image::new(ctx, "/car1.png")?,
             checkpoint_line: Image::new(ctx, "/checkpoint-line.png")?,
             finish_line:     Image::new(ctx, "/finish-line.png")?,
             obstacle:        Text::new(ctx, "@", &font)?,
@@ -69,8 +73,10 @@ pub enum CellContents {
 impl CellContents {
     pub fn draw(self, ctx: &mut Context, assets: &Assets, dest: HexPoint) -> GameResult<()> {
         match self {
-            CellContents::Car(car) =>
-                draw_centered(ctx, &assets.car, image_size(), dest.to_point(), car.direction.to_rotation()),
+            CellContents::Car(car) => {
+                let car_assets = [&assets.car1, &assets.car2, &assets.car3];
+                draw_centered(ctx, car_assets[car.car_number - 1], image_size(), dest.to_point(), car.direction.to_rotation())
+            },
             CellContents::Wall =>
                 draw_centered(ctx, &assets.wall, image_size(), dest.to_point(), 0.0),
             _ => {
