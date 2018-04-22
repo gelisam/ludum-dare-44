@@ -7,6 +7,7 @@ use ggez::graphics::{self, Font};
 use ggez::timer;
 
 mod ai;
+mod animation;
 mod bg;
 mod car;
 mod center;
@@ -19,6 +20,7 @@ mod text;
 mod vector;
 
 use ai::Ai;
+use animation::*;
 use globals::*;
 use hex::HexPoint;
 use map::Map;
@@ -44,6 +46,14 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     })
 }
 
+
+#[derive(Clone, Copy, Debug)]
+enum State {
+    WaitingForInput,
+    WaitingForAnimation(TranslationAnimation, Racer),
+}
+
+
 #[derive(Debug)]
 struct Globals {
     assets: Assets,
@@ -52,6 +62,7 @@ struct Globals {
     car3: Ai,
     car2: Ai,
     car1: Racer,
+    state: State,
 }
 
 impl Globals {
@@ -74,6 +85,7 @@ impl Globals {
             car3: Ai::new(car3),
             car2: Ai::new(car2),
             car1,
+            state: State::WaitingForInput,
         })
     }
 
@@ -89,66 +101,83 @@ impl Globals {
         self.car2.racer.insert(&mut self.map);
     }
 
-    fn set_car1(&mut self, car1: Racer) {
+    fn set_car1(&mut self, ctx: &Context, car1: Racer) {
         self.car1.remove(&mut self.map);
-        self.car1 = car1;
-        self.car1.insert(&mut self.map);
+        let animation = TranslationAnimation::new(
+            get_current_time(ctx),
+            0.25,
+            self.car1.position.to_point(),
+            car1.position.to_point(),
+            DrawableObject::DrawableCar(car1.to_car()),
+        );
+        self.state = State::WaitingForAnimation(animation, car1);
     }
 
-    fn turn_left(&mut self) {
+    fn turn_left(&mut self, ctx: &Context) {
         let car1 = self.car1.turn_left();
-        self.set_car1(car1)
+        self.set_car1(ctx, car1)
     }
 
-    fn turn_right(&mut self) {
+    fn turn_right(&mut self, ctx: &Context) {
         let car1 = self.car1.turn_right();
-        self.set_car1(car1)
+        self.set_car1(ctx, car1)
     }
 
-    fn go_forward(&mut self) {
+    fn go_forward(&mut self, ctx: &Context) {
         if let Some(car1) = self.car1.go_forward(&self.map) {
-            self.set_car1(car1);
+            self.set_car1(ctx, car1);
         }
     }
 
-    fn go_backwards(&mut self) {
+    fn go_backwards(&mut self, ctx: &Context) {
         if let Some(car1) = self.car1.go_backwards(&self.map) {
-            self.set_car1(car1);
+            self.set_car1(ctx, car1);
         }
     }
 
-    fn go_back_to_checkpoint(&mut self) {
+    fn go_back_to_checkpoint(&mut self, ctx: &Context) {
         let car1 = self.car1.go_back_to_checkpoint(&self.map);
-        self.set_car1(car1);
+        self.set_car1(ctx, car1);
     }
 }
 
 impl event::EventHandler for Globals {
-    fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
-
-        // Game logic usually happen inside the while loop
-        while timer::check_update_time(_ctx, DESIRED_FPS) {
-            self.exec_time += 1.0 / DESIRED_FPS as f32;
+    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+        match self.state {
+            State::WaitingForAnimation(animation, car1) => {
+                let current_time = get_current_time(ctx);
+                if animation.is_finished(current_time) {
+                    self.car1 = car1;
+                    self.car1.insert(&mut self.map);
+                    self.state = State::WaitingForInput;
+                }
+            },
+            State::WaitingForInput => (),
         }
         Ok(())
     }
 
-    fn key_up_event(&mut self, _ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
-        let action3 = self.car3.next_action();
-        let car3 = self.car3.perform_action(action3, &mut self.map);
-        self.set_car3(car3);
+    fn key_up_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
+        match self.state {
+            State::WaitingForInput => {
+                let action3 = self.car3.next_action();
+                let car3 = self.car3.perform_action(action3, &mut self.map);
+                self.set_car3(car3);
 
-        let action2 = self.car2.next_action();
-        let car2 = self.car2.perform_action(action2, &mut self.map);
-        self.set_car2(car2);
+                let action2 = self.car2.next_action();
+                let car2 = self.car2.perform_action(action2, &mut self.map);
+                self.set_car2(car2);
 
-        match keycode {
-            Keycode::Left  => self.turn_left(),
-            Keycode::Right => self.turn_right(),
-            Keycode::Up    => self.go_forward(),
-            Keycode::Down  => self.go_backwards(),
-            Keycode::R     => self.go_back_to_checkpoint(),
-            _              => (),
+                match keycode {
+                    Keycode::Left  => self.turn_left(ctx),
+                    Keycode::Right => self.turn_right(ctx),
+                    Keycode::Up    => self.go_forward(ctx),
+                    Keycode::Down  => self.go_backwards(ctx),
+                    Keycode::R     => self.go_back_to_checkpoint(ctx),
+                    _              => (),
+                }
+            },
+            _ => (),
         }
     }
 
@@ -160,6 +189,14 @@ impl event::EventHandler for Globals {
             &self.assets.hex,
         )?;
         self.map.draw(ctx, &self.assets.map, &self.assets.car)?;
+
+        match self.state {
+            State::WaitingForAnimation(animation, _car1) => {
+                let current_time = get_current_time(ctx);
+                animation.draw(ctx, &self.assets.car, current_time)?;
+            },
+            State::WaitingForInput => (),
+        }
 
         graphics::present(ctx);
         timer::yield_now();

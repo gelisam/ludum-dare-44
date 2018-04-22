@@ -58,7 +58,7 @@ impl Racer {
         self.move_to(map.find_spot_at_checkpoint(self.checkpoint), map).unwrap()
     }
 
-    fn car(self) -> Car {
+    pub fn to_car(self) -> Car {
         Car::new(
             self.car_number,
             HexVector::from_index(self.direction_index),
@@ -70,6 +70,6 @@ impl Racer {
     }
 
     pub fn insert(self, map: &mut Map) {
-        map.insert(self.position, CellContents::Car(self.car()));
+        map.insert(self.position, CellContents::Car(self.to_car()));
     }
 }
