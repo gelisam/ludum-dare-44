@@ -28,6 +28,7 @@ use racer::Racer;
 #[derive(Debug)]
 struct Assets {
     bg: bg::Assets,
+    car: car::Assets,
     hex: hex::Assets,
     map: map::Assets,
 }
@@ -37,6 +38,7 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 
     Ok(Assets {
         bg: bg::load_assets(ctx)?,
+        car: car::load_assets(ctx)?,
         hex: hex::load_assets(ctx)?,
         map: map::load_assets(ctx, &font)?,
     })
@@ -157,7 +159,7 @@ impl event::EventHandler for Globals {
             ctx,
             &self.assets.hex,
         )?;
-        self.map.draw(ctx, &self.assets.map)?;
+        self.map.draw(ctx, &self.assets.map, &self.assets.car)?;
 
         graphics::present(ctx);
         timer::yield_now();
