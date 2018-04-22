@@ -18,7 +18,7 @@ mod vector;
 
 use globals::*;
 use car::Car;
-use hex::HexPoint;
+use hex::{HexPoint,HexVector};
 use checkpoint::*;
 use map::{CellContents,Map};
 
@@ -54,7 +54,7 @@ impl Globals {
         let mut map = Map::load();
 
         let car_position = HexPoint::new(CENTRAL_OBSTACLE_RADIUS+2, 0);
-        map.insert(car_position, CellContents::Car(Car::new(forward(car_position))));
+        map.insert(car_position, CellContents::Car(Car::new(HexVector::from_index(forward(car_position)))));
 
         Ok(Globals {
             assets: load_assets(ctx)?,
@@ -67,8 +67,8 @@ impl Globals {
 
     fn go_forward(&mut self) {
         self.map.remove(self.car_position);
-        self.car_position += forward(self.car_position);
-        self.map.insert(self.car_position, CellContents::Car(Car::new(forward(self.car_position))));
+        self.car_position += HexVector::from_index(forward(self.car_position));
+        self.map.insert(self.car_position, CellContents::Car(Car::new(HexVector::from_index(forward(self.car_position)))));
 
         self.car_checkpoint = update_checkpoint(self.car_checkpoint, self.car_position);
         println!(
@@ -81,8 +81,8 @@ impl Globals {
 
     fn go_backwards(&mut self) {
         self.map.remove(self.car_position);
-        self.car_position += backward(self.car_position);
-        self.map.insert(self.car_position, CellContents::Car(Car::new(forward(self.car_position))));
+        self.car_position += HexVector::from_index(backward(self.car_position));
+        self.map.insert(self.car_position, CellContents::Car(Car::new(HexVector::from_index(forward(self.car_position)))));
 
         self.car_checkpoint = update_checkpoint(self.car_checkpoint, self.car_position);
         println!(
@@ -96,7 +96,7 @@ impl Globals {
     fn go_back_to_checkpoint(&mut self) {
         self.map.remove(self.car_position);
         self.car_position = self.map.find_spot_at_checkpoint(self.car_checkpoint);
-        self.map.insert(self.car_position, CellContents::Car(Car::new(forward(self.car_position))));
+        self.map.insert(self.car_position, CellContents::Car(Car::new(HexVector::from_index(forward(self.car_position)))));
 
         self.car_checkpoint = update_checkpoint(self.car_checkpoint, self.car_position);
         println!(

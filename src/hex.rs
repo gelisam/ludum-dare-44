@@ -152,7 +152,7 @@ impl HexPoint {
 }
 
 // 0..6
-type DirectionIndex = i32;
+pub type DirectionIndex = i32;
 
 impl HexVector {
     pub fn new(q: i32, r: i32) -> HexVector {

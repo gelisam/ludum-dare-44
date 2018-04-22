@@ -1,4 +1,4 @@
-use hex::{HexPoint, HexVector};
+use hex::{DirectionIndex, HexPoint};
 
 
 // 0 is from right up to but not including the first checkpoint,
@@ -36,32 +36,17 @@ pub fn at_checkpoint(hex_point: HexPoint) -> bool {
     hex_point.q == 0 || hex_point.r == 0 || hex_point.q == -hex_point.r
 }
 
-pub fn forward(hex_point: HexPoint) -> HexVector {
-    match point_to_section(hex_point) {
-        0 => HexVector::new(0, -1),
-        1 => HexVector::new(-1, 0),
-        2 => HexVector::new(-1, 1),
-        3 => HexVector::new(0, 1),
-        4 => HexVector::new(1, 0),
-        5 => HexVector::new(1, -1),
-        _ => unreachable!(),
-    }
+pub fn forward(hex_point: HexPoint) -> DirectionIndex {
+    let section = point_to_section(hex_point);
+    (section + 2) % 6
 }
 
-pub fn backward(hex_point: HexPoint) -> HexVector {
+pub fn backward(hex_point: HexPoint) -> DirectionIndex {
     let mut section = point_to_section(hex_point);
     if at_checkpoint(hex_point) {
         section = (section + 5) % 6;
     }
-    match section {
-        0 => HexVector::new(0, 1),
-        1 => HexVector::new(1, 0),
-        2 => HexVector::new(1, -1),
-        3 => HexVector::new(0, -1),
-        4 => HexVector::new(-1, 0),
-        5 => HexVector::new(-1, 1),
-        _ => unreachable!(),
-    }
+    (section + 5) % 6
 }
 
 
