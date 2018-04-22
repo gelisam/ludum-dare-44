@@ -6,6 +6,7 @@ use ggez::event::{self, Keycode, Mod};
 use ggez::graphics::{self, Font};
 
 mod action;
+mod bg;
 mod car;
 mod center;
 mod globals;
@@ -21,6 +22,7 @@ use map::Map;
 
 #[derive(Debug)]
 struct Assets {
+    bg: bg::Assets,
     hex: hex::Assets,
     map: map::Assets,
     powerup: powerup::Assets,
@@ -30,6 +32,7 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     let font = Font::default_font()?;
 
     Ok(Assets {
+        bg: bg::load_assets(ctx)?,
         hex: hex::load_assets(ctx)?,
         map: map::load_assets(ctx, &font)?,
         powerup: powerup::load_assets(ctx, &font)?,
@@ -76,7 +79,7 @@ impl event::EventHandler for Globals {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::clear(ctx);
+        bg::draw_bg(ctx, &self.assets.bg)?;
 
         hex::draw_hex_grid(
             ctx,
