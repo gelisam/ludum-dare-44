@@ -19,7 +19,10 @@ mod text;
 mod vector;
 
 use globals::*;
-use map::Map;
+use car::Car;
+use hex::HexPoint;
+use checkpoint::*;
+use map::{CellContents,Map};
 
 
 #[derive(Debug)]
@@ -46,15 +49,52 @@ struct Globals {
     assets: Assets,
     frame_count: i32,
     map: Map,
+    car_position: HexPoint,
+    car_checkpoint: Checkpoint,
 }
 
 impl Globals {
     fn new(ctx: &mut Context) -> GameResult<Globals> {
+        let mut map = Map::load();
+
+        let car_position = HexPoint::new(CENTRAL_OBSTACLE_RADIUS+2, 0);
+        map.insert(car_position, CellContents::Car(Car::new(forward(car_position))));
+
         Ok(Globals {
             assets: load_assets(ctx)?,
             frame_count: 0,
-            map: Map::load(),
+            map,
+            car_position,
+            car_checkpoint: 0,
         })
+    }
+
+    fn go_forward(&mut self) {
+        self.map.remove(self.car_position);
+        self.car_position += forward(self.car_position);
+        self.map.insert(self.car_position, CellContents::Car(Car::new(forward(self.car_position))));
+
+        self.car_checkpoint = update_checkpoint(self.car_checkpoint, self.car_position);
+        println!(
+            "section {:?}, checkpoint {:?}, lap {:?}",
+            point_to_section(self.car_position),
+            self.car_checkpoint,
+            lap(self.car_checkpoint),
+        );
+    }
+
+    fn go_backwards(&mut self) {
+        self.map.remove(self.car_position);
+        self.car_position += backward(self.car_position);
+        self.map.insert(self.car_position, CellContents::Car(Car::new(forward(self.car_position))));
+
+        self.car_checkpoint = update_checkpoint(self.car_checkpoint, self.car_position);
+        println!(
+            "section {:?}, checkpoint {:?}, lap {:?}",
+            point_to_section(self.car_position),
+            self.car_checkpoint,
+            lap(self.car_checkpoint),
+        );
     }
 }
 
@@ -70,8 +110,8 @@ impl event::EventHandler for Globals {
 
     fn key_up_event(&mut self, _ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
-            Keycode::Up   => self.map.go_forward(),
-            Keycode::Down => self.map.go_backwards(),
+            Keycode::Up   => self.go_forward(),
+            Keycode::Down => self.go_backwards(),
             _             => (),
         }
     }
