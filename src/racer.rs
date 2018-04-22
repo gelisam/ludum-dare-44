@@ -32,25 +32,30 @@ impl Racer {
         }
     }
 
-    fn move_to(self, position: HexPoint) -> Racer {
-        let checkpoint = update_checkpoint(self.checkpoint, position);
-        Racer {
-            position,
-            checkpoint,
-            ..self
+    fn move_to(self, position: HexPoint, map: &Map) -> Option<Racer> {
+        match map.get(position) {
+            None => {
+                let checkpoint = update_checkpoint(self.checkpoint, position);
+                Some(Racer {
+                    position,
+                    checkpoint,
+                    ..self
+                })
+            },
+            Some(_) => None,
         }
     }
 
-    pub fn go_forward(self) -> Racer {
-        self.move_to(self.position + HexVector::from_index(self.direction_index))
+    pub fn go_forward(self, map: &Map) -> Option<Racer> {
+        self.move_to(self.position + HexVector::from_index(self.direction_index), map)
     }
 
-    pub fn go_backwards(self) -> Racer {
-        self.move_to(self.position + HexVector::from_index(self.direction_index) * -1)
+    pub fn go_backwards(self, map: &Map) -> Option<Racer> {
+        self.move_to(self.position + HexVector::from_index(self.direction_index) * -1, map)
     }
 
     pub fn go_back_to_checkpoint(self, map: &Map) -> Racer {
-        self.move_to(map.find_spot_at_checkpoint(self.checkpoint))
+        self.move_to(map.find_spot_at_checkpoint(self.checkpoint), map).unwrap()
     }
 
     fn car(self) -> Car {

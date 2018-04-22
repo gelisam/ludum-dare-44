@@ -63,34 +63,37 @@ impl Globals {
         })
     }
 
-    fn turn_left(&mut self) {
+    fn set_player(&mut self, player: Racer) {
         self.player.remove(&mut self.map);
-        self.player = self.player.turn_left();
+        self.player = player;
         self.player.insert(&mut self.map);
+    }
+
+    fn turn_left(&mut self) {
+        let player = self.player.turn_left();
+        self.set_player(player)
     }
 
     fn turn_right(&mut self) {
-        self.player.remove(&mut self.map);
-        self.player = self.player.turn_right();
-        self.player.insert(&mut self.map);
+        let player = self.player.turn_right();
+        self.set_player(player)
     }
 
     fn go_forward(&mut self) {
-        self.player.remove(&mut self.map);
-        self.player = self.player.go_forward();
-        self.player.insert(&mut self.map);
+        if let Some(player) = self.player.go_forward(&self.map) {
+            self.set_player(player);
+        }
     }
 
     fn go_backwards(&mut self) {
-        self.player.remove(&mut self.map);
-        self.player = self.player.go_backwards();
-        self.player.insert(&mut self.map);
+        if let Some(player) = self.player.go_backwards(&self.map) {
+            self.set_player(player);
+        }
     }
 
     fn go_back_to_checkpoint(&mut self) {
-        self.player.remove(&mut self.map);
-        self.player = self.player.go_back_to_checkpoint(&self.map);
-        self.player.insert(&mut self.map);
+        let player = self.player.go_back_to_checkpoint(&self.map);
+        self.set_player(player);
     }
 }
 
