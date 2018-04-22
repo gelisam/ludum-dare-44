@@ -96,6 +96,20 @@ impl Globals {
             lap(self.car_checkpoint),
         );
     }
+
+    fn go_back_to_checkpoint(&mut self) {
+        self.map.remove(self.car_position);
+        self.car_position = self.map.find_spot_at_checkpoint(self.car_checkpoint);
+        self.map.insert(self.car_position, CellContents::Car(Car::new(forward(self.car_position))));
+
+        self.car_checkpoint = update_checkpoint(self.car_checkpoint, self.car_position);
+        println!(
+            "section {:?}, checkpoint {:?}, lap {:?}",
+            checkpoint_to_section(self.car_checkpoint),
+            self.car_checkpoint,
+            lap(self.car_checkpoint),
+        );
+    }
 }
 
 impl event::EventHandler for Globals {
@@ -112,6 +126,7 @@ impl event::EventHandler for Globals {
         match keycode {
             Keycode::Up   => self.go_forward(),
             Keycode::Down => self.go_backwards(),
+            Keycode::R    => self.go_back_to_checkpoint(),
             _             => (),
         }
     }

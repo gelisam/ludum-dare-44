@@ -4,6 +4,7 @@ use std::collections::HashMap;
 
 use car::Car;
 use center::draw_centered;
+use checkpoint::*;
 use globals::*;
 use hex::{HexPoint, HexVector};
 use text;
@@ -124,6 +125,31 @@ impl Map {
         } else {
             Some(CellContents::Wall)
         }
+    }
+
+    // prefer an empty spot, or a non-car spot if neccessary.
+    pub fn find_spot_at_checkpoint(&self, checkpoint: Checkpoint) -> HexPoint {
+        let section = checkpoint_to_section(checkpoint);
+        let direction = HexVector::all_directions()[section as usize];
+
+        for distance in (CENTRAL_OBSTACLE_RADIUS+1..MAP_RADIUS+1).rev() {
+            let hex_point = HexPoint::new(0, 0) + direction * distance;
+            match self.get(hex_point) {
+                None => return hex_point,
+                Some(_) => (),
+            }
+        }
+
+        for distance in (CENTRAL_OBSTACLE_RADIUS+1..MAP_RADIUS+1).rev() {
+            let hex_point = HexPoint::new(0, 0) + direction * distance;
+            match self.get(hex_point) {
+                Some(CellContents::Car(_)) => (),
+                Some(_) => return hex_point,
+                None => unreachable!(),
+            }
+        }
+
+        panic!("no spots left!"); // should not happen unless there are more than 3 cars in the game
     }
 
     pub fn insert(&mut self, index: HexPoint, cell_contents: CellContents) {
