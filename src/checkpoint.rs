@@ -97,7 +97,7 @@ pub fn update_checkpoint(old_checkpoint: Checkpoint, new_hex_point: HexPoint) ->
 // negative if the racer drives the wrong way.
 pub type Lap = i32;
 
-pub fn lap(checkpoint: Checkpoint) -> Lap {
+pub fn checkpoint_to_lap(checkpoint: Checkpoint) -> Lap {
     if checkpoint >= 0 {
         checkpoint / 6
     } else {

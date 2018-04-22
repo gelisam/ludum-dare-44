@@ -75,7 +75,7 @@ impl Globals {
             "section {:?}, checkpoint {:?}, lap {:?}",
             checkpoint_to_section(self.car_checkpoint),
             self.car_checkpoint,
-            lap(self.car_checkpoint),
+            checkpoint_to_lap(self.car_checkpoint),
         );
     }
 
@@ -89,7 +89,7 @@ impl Globals {
             "section {:?}, checkpoint {:?}, lap {:?}",
             checkpoint_to_section(self.car_checkpoint),
             self.car_checkpoint,
-            lap(self.car_checkpoint),
+            checkpoint_to_lap(self.car_checkpoint),
         );
     }
 
@@ -103,7 +103,7 @@ impl Globals {
             "section {:?}, checkpoint {:?}, lap {:?}",
             checkpoint_to_section(self.car_checkpoint),
             self.car_checkpoint,
-            lap(self.car_checkpoint),
+            checkpoint_to_lap(self.car_checkpoint),
         );
     }
 }
