@@ -6,6 +6,7 @@ use ggez::event::{self, Keycode, Mod};
 use ggez::graphics::{self, Font};
 use ggez::timer;
 
+mod ai;
 mod bg;
 mod car;
 mod center;
@@ -17,6 +18,7 @@ mod racer;
 mod text;
 mod vector;
 
+use ai::Ai;
 use globals::*;
 use hex::HexPoint;
 use map::Map;
@@ -45,55 +47,77 @@ struct Globals {
     assets: Assets,
     exec_time: f32,
     map: Map,
-    player: Racer,
+    car3: Ai,
+    car2: Ai,
+    car1: Racer,
 }
 
 impl Globals {
     fn new(ctx: &mut Context) -> GameResult<Globals> {
         let mut map = Map::load();
 
-        let player = Racer::new(1, HexPoint::new(CENTRAL_OBSTACLE_RADIUS+2, 0));
-        player.insert(&mut map);
+        let car3 = Racer::new(3, HexPoint::new(CENTRAL_OBSTACLE_RADIUS+1, 0));
+        car3.insert(&mut map);
+
+        let car2 = Racer::new(2, HexPoint::new(CENTRAL_OBSTACLE_RADIUS+2, 0));
+        car2.insert(&mut map);
+
+        let car1 = Racer::new(1, HexPoint::new(CENTRAL_OBSTACLE_RADIUS+3, 0));
+        car1.insert(&mut map);
 
         Ok(Globals {
             assets: load_assets(ctx)?,
             exec_time: 0.0,
             map,
-            player,
+            car3: Ai::new(car3),
+            car2: Ai::new(car2),
+            car1,
         })
     }
 
-    fn set_player(&mut self, player: Racer) {
-        self.player.remove(&mut self.map);
-        self.player = player;
-        self.player.insert(&mut self.map);
+    fn set_car3(&mut self, car3: Ai) {
+        self.car3.racer.remove(&mut self.map);
+        self.car3 = car3;
+        self.car3.racer.insert(&mut self.map);
+    }
+
+    fn set_car2(&mut self, car2: Ai) {
+        self.car2.racer.remove(&mut self.map);
+        self.car2 = car2;
+        self.car2.racer.insert(&mut self.map);
+    }
+
+    fn set_car1(&mut self, car1: Racer) {
+        self.car1.remove(&mut self.map);
+        self.car1 = car1;
+        self.car1.insert(&mut self.map);
     }
 
     fn turn_left(&mut self) {
-        let player = self.player.turn_left();
-        self.set_player(player)
+        let car1 = self.car1.turn_left();
+        self.set_car1(car1)
     }
 
     fn turn_right(&mut self) {
-        let player = self.player.turn_right();
-        self.set_player(player)
+        let car1 = self.car1.turn_right();
+        self.set_car1(car1)
     }
 
     fn go_forward(&mut self) {
-        if let Some(player) = self.player.go_forward(&self.map) {
-            self.set_player(player);
+        if let Some(car1) = self.car1.go_forward(&self.map) {
+            self.set_car1(car1);
         }
     }
 
     fn go_backwards(&mut self) {
-        if let Some(player) = self.player.go_backwards(&self.map) {
-            self.set_player(player);
+        if let Some(car1) = self.car1.go_backwards(&self.map) {
+            self.set_car1(car1);
         }
     }
 
     fn go_back_to_checkpoint(&mut self) {
-        let player = self.player.go_back_to_checkpoint(&self.map);
-        self.set_player(player);
+        let car1 = self.car1.go_back_to_checkpoint(&self.map);
+        self.set_car1(car1);
     }
 }
 
@@ -108,6 +132,14 @@ impl event::EventHandler for Globals {
     }
 
     fn key_up_event(&mut self, _ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
+        let action3 = self.car3.next_action();
+        let car3 = self.car3.perform_action(action3, &mut self.map);
+        self.set_car3(car3);
+
+        let action2 = self.car2.next_action();
+        let car2 = self.car2.perform_action(action2, &mut self.map);
+        self.set_car2(car2);
+
         match keycode {
             Keycode::Left  => self.turn_left(),
             Keycode::Right => self.turn_right(),
