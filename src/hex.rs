@@ -133,16 +133,10 @@ impl HexPoint {
     }
 
     #[allow(dead_code)]
-    pub fn neighbours(self) -> [HexPoint; 6] {
-        let dirs = HexVector::all_directions();
-        [
-            self + dirs[0],
-            self + dirs[1],
-            self + dirs[2],
-            self + dirs[3],
-            self + dirs[4],
-            self + dirs[5],
-        ]
+    pub fn neighbours(self) -> Vec<HexPoint> {
+        (0..6)
+            .map(|direction_index| self + HexVector::from_index(direction_index))
+            .collect()
     }
 
     pub fn distance_from_center(self) -> i32 {
@@ -157,21 +151,25 @@ impl HexPoint {
     }
 }
 
+// 0..6
+type DirectionIndex = i32;
+
 impl HexVector {
     pub fn new(q: i32, r: i32) -> HexVector {
         HexVector {q, r}
     }
 
     // right, then counter-clockwise
-    pub fn all_directions() -> [HexVector; 6] {
-        [
-            HexVector::new( 1,  0),
-            HexVector::new( 1, -1),
-            HexVector::new( 0, -1),
-            HexVector::new(-1,  0),
-            HexVector::new(-1,  1),
-            HexVector::new( 0,  1),
-        ]
+    pub fn from_index(direction_index: DirectionIndex) -> HexVector {
+        match direction_index {
+            0 => HexVector::new( 1,  0),
+            1 => HexVector::new( 1, -1),
+            2 => HexVector::new( 0, -1),
+            3 => HexVector::new(-1,  0),
+            4 => HexVector::new(-1,  1),
+            5 => HexVector::new( 0,  1),
+            _ => unreachable!(),
+        }
     }
 
     pub fn to_vector(self) -> Vector2 {

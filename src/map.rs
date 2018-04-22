@@ -98,15 +98,14 @@ impl Map {
         let cells: HashMap<HexPoint, CellContents> = HashMap::with_capacity(100);
 
         let mut floor: HashMap<HexPoint, FloorContents> = HashMap::with_capacity(100);
-        let directions = HexVector::all_directions();
         for distance in CENTRAL_OBSTACLE_RADIUS+1..MAP_RADIUS+1 {
-            for i in 0..6 {
+            for direction_index in 0..6 {
                 floor.insert(
-                    HexPoint::new(0, 0) + directions[i] * distance,
-                    if i == 0 {
-                        FloorContents::FinishLine(directions[i].to_rotation())
+                    HexPoint::new(0, 0) + HexVector::from_index(direction_index) * distance,
+                    if direction_index == 0 {
+                        FloorContents::FinishLine(HexVector::from_index(direction_index).to_rotation())
                     } else {
-                        FloorContents::CheckpointLine(directions[i].to_rotation())
+                        FloorContents::CheckpointLine(HexVector::from_index(direction_index).to_rotation())
                     },
                 );
             }
@@ -130,7 +129,7 @@ impl Map {
     // prefer an empty spot, or a non-car spot if neccessary.
     pub fn find_spot_at_checkpoint(&self, checkpoint: Checkpoint) -> HexPoint {
         let section = checkpoint_to_section(checkpoint);
-        let direction = HexVector::all_directions()[section as usize];
+        let direction = HexVector::from_index(section);
 
         for distance in (CENTRAL_OBSTACLE_RADIUS+1..MAP_RADIUS+1).rev() {
             let hex_point = HexPoint::new(0, 0) + direction * distance;
