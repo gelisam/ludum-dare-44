@@ -48,9 +48,9 @@ impl FloorContents {
     pub fn draw(self, ctx: &mut Context, assets: &Assets, dest: HexPoint) -> GameResult<()> {
         match self {
             FloorContents::CheckpointLine(rotation) =>
-                draw_centered(ctx,  &assets.checkpoint_line, image_size(), dest.to_point(), rotation),
+                draw_centered(ctx, &assets.checkpoint_line, image_size(), dest.to_point(), rotation),
             FloorContents::FinishLine(rotation) =>
-                draw_centered(ctx,  &assets.finish_line, image_size(), dest.to_point(), rotation),
+                draw_centered(ctx, &assets.finish_line, image_size(), dest.to_point(), rotation),
         }
     }
 }
