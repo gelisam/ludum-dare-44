@@ -4,6 +4,7 @@ extern crate ggez;
 use ggez::{GameResult, Context};
 use ggez::event::{self, Keycode, Mod};
 use ggez::graphics::{self, Font};
+use ggez::timer;
 
 mod action;
 mod bg;
@@ -71,6 +72,18 @@ impl Globals {
 
 impl event::EventHandler for Globals {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
+
+        // Game logic usually happen inside the while loop
+        while timer::check_update_time(_ctx, DESIRED_FPS) {
+            static mut FRAME_COUNT: i32 =  0;
+            unsafe {
+                FRAME_COUNT += 1;
+                if FRAME_COUNT % 60 == 0 {
+                    println!("Game in {}FPS, Execution time: {} frames, \
+                        {} secs", DESIRED_FPS, FRAME_COUNT, FRAME_COUNT / 60);
+                }
+            }
+        }
         Ok(())
     }
 
@@ -88,6 +101,8 @@ impl event::EventHandler for Globals {
         self.map.draw(ctx, &self.assets.map)?;
 
         graphics::present(ctx);
+        timer::yield_now();
+
         Ok(())
     }
 
