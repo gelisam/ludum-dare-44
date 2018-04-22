@@ -10,6 +10,7 @@ mod action;
 mod bg;
 mod car;
 mod center;
+mod checkpoint;
 mod globals;
 mod hex;
 mod map;
@@ -82,8 +83,12 @@ impl event::EventHandler for Globals {
         Ok(())
     }
 
-    fn key_up_event(&mut self, _ctx: &mut Context, _keycode: Keycode, _keymod: Mod, _repeat: bool) {
-        self.map.go_forward();
+    fn key_up_event(&mut self, _ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
+        match keycode {
+            Keycode::Up   => self.map.go_forward(),
+            Keycode::Down => self.map.go_backwards(),
+            _             => (),
+        }
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {

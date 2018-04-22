@@ -4,6 +4,7 @@ use std::collections::HashMap;
 
 use car::Car;
 use center::draw_centered;
+use checkpoint;
 use globals::*;
 use hex::{HexPoint, HexVector};
 use text;
@@ -91,6 +92,7 @@ pub struct Map {
     cells: HashMap<HexPoint, CellContents>,
     floor: HashMap<HexPoint, FloorContents>,
     car_position: HexPoint,
+    car_checkpoint: checkpoint::Checkpoint,
 }
 
 impl Map {
@@ -113,15 +115,38 @@ impl Map {
         }
 
         let car_position = HexPoint::new(CENTRAL_OBSTACLE_RADIUS+2, 0);
-        cells.insert(car_position, CellContents::Car(Car::new(car_position.forward())));
+        let car_checkpoint = 0;
+        cells.insert(car_position, CellContents::Car(Car::new(checkpoint::forward(car_position))));
 
-        Map {cells, floor, car_position}
+        Map {cells, floor, car_position, car_checkpoint}
     }
 
     pub fn go_forward(&mut self) {
         self.cells.remove(&self.car_position);
-        self.car_position += self.car_position.forward();
-        self.cells.insert(self.car_position, CellContents::Car(Car::new(self.car_position.forward())));
+        self.car_position += checkpoint::forward(self.car_position);
+        self.cells.insert(self.car_position, CellContents::Car(Car::new(checkpoint::forward(self.car_position))));
+
+        self.car_checkpoint = checkpoint::update_checkpoint(self.car_checkpoint, self.car_position);
+        println!(
+            "section {:?}, checkpoint {:?}, lap {:?}",
+            checkpoint::point_to_section(self.car_position),
+            self.car_checkpoint,
+            checkpoint::lap(self.car_checkpoint),
+        );
+    }
+
+    pub fn go_backwards(&mut self) {
+        self.cells.remove(&self.car_position);
+        self.car_position += checkpoint::backward(self.car_position);
+        self.cells.insert(self.car_position, CellContents::Car(Car::new(checkpoint::forward(self.car_position))));
+
+        self.car_checkpoint = checkpoint::update_checkpoint(self.car_checkpoint, self.car_position);
+        println!(
+            "section {:?}, checkpoint {:?}, lap {:?}",
+            checkpoint::point_to_section(self.car_position),
+            self.car_checkpoint,
+            checkpoint::lap(self.car_checkpoint),
+        );
     }
 
     #[allow(dead_code)]
