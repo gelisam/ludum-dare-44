@@ -42,24 +42,10 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 }
 
 #[derive(Debug)]
-struct Mouse {
-    pos_x: i32,
-    pos_y: i32,
-    mouse_down: bool,
-}
-
-impl Mouse {
-    fn new() -> Mouse {
-        Mouse{pos_x: 100, pos_y: 100, mouse_down: false}
-    }
-}
-
-#[derive(Debug)]
 struct Globals {
     assets: Assets,
     frame_count: i32,
     map: Map,
-    mouse: Mouse,
 }
 
 impl Globals {
@@ -68,7 +54,6 @@ impl Globals {
             assets: load_assets(ctx)?,
             frame_count: 0,
             map: Map::load(),
-            mouse: Mouse::new()
         })
     }
 }
