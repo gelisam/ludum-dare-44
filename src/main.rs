@@ -13,14 +13,14 @@ mod checkpoint;
 mod globals;
 mod hex;
 mod map;
+mod racer;
 mod text;
 mod vector;
 
 use globals::*;
-use car::Car;
-use hex::{HexPoint,HexVector};
-use checkpoint::*;
-use map::{CellContents,Map};
+use hex::HexPoint;
+use map::Map;
+use racer::Racer;
 
 
 #[derive(Debug)]
@@ -45,66 +45,52 @@ struct Globals {
     assets: Assets,
     exec_time: f32,
     map: Map,
-    car_position: HexPoint,
-    car_checkpoint: Checkpoint,
+    player: Racer,
 }
 
 impl Globals {
     fn new(ctx: &mut Context) -> GameResult<Globals> {
         let mut map = Map::load();
 
-        let car_position = HexPoint::new(CENTRAL_OBSTACLE_RADIUS+2, 0);
-        map.insert(car_position, CellContents::Car(Car::new(HexVector::from_index(forward(car_position)))));
+        let player = Racer::new(1, HexPoint::new(CENTRAL_OBSTACLE_RADIUS+2, 0));
+        player.insert(&mut map);
 
         Ok(Globals {
             assets: load_assets(ctx)?,
             exec_time: 0.0,
             map,
-            car_position,
-            car_checkpoint: 0,
+            player,
         })
     }
 
-    fn go_forward(&mut self) {
-        self.map.remove(self.car_position);
-        self.car_position += HexVector::from_index(forward(self.car_position));
-        self.map.insert(self.car_position, CellContents::Car(Car::new(HexVector::from_index(forward(self.car_position)))));
+    fn turn_left(&mut self) {
+        self.player.remove(&mut self.map);
+        self.player = self.player.turn_left();
+        self.player.insert(&mut self.map);
+    }
 
-        self.car_checkpoint = update_checkpoint(self.car_checkpoint, self.car_position);
-        println!(
-            "section {:?}, checkpoint {:?}, lap {:?}",
-            checkpoint_to_section(self.car_checkpoint),
-            self.car_checkpoint,
-            checkpoint_to_lap(self.car_checkpoint),
-        );
+    fn turn_right(&mut self) {
+        self.player.remove(&mut self.map);
+        self.player = self.player.turn_right();
+        self.player.insert(&mut self.map);
+    }
+
+    fn go_forward(&mut self) {
+        self.player.remove(&mut self.map);
+        self.player = self.player.go_forward();
+        self.player.insert(&mut self.map);
     }
 
     fn go_backwards(&mut self) {
-        self.map.remove(self.car_position);
-        self.car_position += HexVector::from_index(backward(self.car_position));
-        self.map.insert(self.car_position, CellContents::Car(Car::new(HexVector::from_index(forward(self.car_position)))));
-
-        self.car_checkpoint = update_checkpoint(self.car_checkpoint, self.car_position);
-        println!(
-            "section {:?}, checkpoint {:?}, lap {:?}",
-            checkpoint_to_section(self.car_checkpoint),
-            self.car_checkpoint,
-            checkpoint_to_lap(self.car_checkpoint),
-        );
+        self.player.remove(&mut self.map);
+        self.player = self.player.go_backwards();
+        self.player.insert(&mut self.map);
     }
 
     fn go_back_to_checkpoint(&mut self) {
-        self.map.remove(self.car_position);
-        self.car_position = self.map.find_spot_at_checkpoint(self.car_checkpoint);
-        self.map.insert(self.car_position, CellContents::Car(Car::new(HexVector::from_index(forward(self.car_position)))));
-
-        self.car_checkpoint = update_checkpoint(self.car_checkpoint, self.car_position);
-        println!(
-            "section {:?}, checkpoint {:?}, lap {:?}",
-            checkpoint_to_section(self.car_checkpoint),
-            self.car_checkpoint,
-            checkpoint_to_lap(self.car_checkpoint),
-        );
+        self.player.remove(&mut self.map);
+        self.player = self.player.go_back_to_checkpoint(&self.map);
+        self.player.insert(&mut self.map);
     }
 }
 
@@ -120,10 +106,12 @@ impl event::EventHandler for Globals {
 
     fn key_up_event(&mut self, _ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
-            Keycode::Up   => self.go_forward(),
-            Keycode::Down => self.go_backwards(),
-            Keycode::R    => self.go_back_to_checkpoint(),
-            _             => (),
+            Keycode::Left  => self.turn_left(),
+            Keycode::Right => self.turn_right(),
+            Keycode::Up    => self.go_forward(),
+            Keycode::Down  => self.go_backwards(),
+            Keycode::R     => self.go_back_to_checkpoint(),
+            _              => (),
         }
     }
 
