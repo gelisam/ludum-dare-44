@@ -105,37 +105,6 @@ impl event::EventHandler for Globals {
 
         Ok(())
     }
-
-    fn mouse_motion_event(
-        &mut self,
-        _ctx: &mut Context,
-        _state: event::MouseState,
-        x: i32,
-        y: i32,
-        xrel: i32,
-        yrel: i32,
-    ) {
-        if self.mouse.mouse_down {
-            self.mouse.pos_x = x;
-            self.mouse.pos_y = y;
-        }
-        println!(
-            "Mouse motion, x: {}, y: {}, relative x: {}, relative y: {}",
-            x, y, xrel, yrel
-        );
-    }
-
-    fn mouse_button_down_event(&mut self, _ctx: &mut Context,
-            button: event::MouseButton, x: i32, y: i32) {
-        self.mouse.mouse_down = true;
-        println!("Mouse button pressed: {:?}, x: {}, y: {}", button, x, y);
-    }
-
-    fn mouse_button_up_event(&mut self, _ctx: &mut Context,
-            button: event::MouseButton, x: i32, y: i32) {
-        self.mouse.mouse_down = false;
-        println!("Mouse button released: {:?}, x: {}, y: {}", button, x, y);
-    }
 }
 
 pub fn main() {
