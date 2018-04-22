@@ -43,7 +43,7 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 #[derive(Debug)]
 struct Globals {
     assets: Assets,
-    frame_count: i32,
+    exec_time: f32,
     map: Map,
     car_position: HexPoint,
     car_checkpoint: Checkpoint,
@@ -58,7 +58,7 @@ impl Globals {
 
         Ok(Globals {
             assets: load_assets(ctx)?,
-            frame_count: 0,
+            exec_time: 0.0,
             map,
             car_position,
             car_checkpoint: 0,
@@ -113,7 +113,7 @@ impl event::EventHandler for Globals {
 
         // Game logic usually happen inside the while loop
         while timer::check_update_time(_ctx, DESIRED_FPS) {
-            self.frame_count += 1;
+            self.exec_time += 1.0 / DESIRED_FPS as f32;
         }
         Ok(())
     }
