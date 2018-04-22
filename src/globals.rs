@@ -3,7 +3,9 @@ pub const GAME_NAME: &str = "ludum-dare-41";
 pub const WINDOW_WIDTH:  u32 = 800;
 pub const WINDOW_HEIGHT: u32 = 600;
 
-pub const MAP_RADIUS: i32 = 5;
+pub const CENTRAL_OBSTACLE_RADIUS: i32 = 2;
+pub const MAP_RADIUS:              i32 = 5;
+
 
 pub const DESIRED_FPS: u32 = 60;
 

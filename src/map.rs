@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use car::Car;
 use center::draw_centered;
 use globals::*;
-use hex::{HEX_WIDTH, HEX_HEIGHT, HexPoint, HexVector};
+use hex::{HexPoint, HexVector};
 use text;
 
 
@@ -16,7 +16,7 @@ pub struct Assets {
     checkpoint_line: Image,
     finish_line:     Image,
     obstacle:        Text,
-    wall:            Text,
+    wall:            Image,
 }
 
 pub fn load_assets(ctx: &mut Context, font: &Font) -> GameResult<Assets> {
@@ -27,13 +27,13 @@ pub fn load_assets(ctx: &mut Context, font: &Font) -> GameResult<Assets> {
             checkpoint_line: Image::new(ctx, "/checkpoint-line.png")?,
             finish_line:     Image::new(ctx, "/finish-line.png")?,
             obstacle:        Text::new(ctx, "@", &font)?,
-            wall:            Text::new(ctx, "#", &font)?,
+            wall:            Image::new(ctx, "/wall.png")?,
         }
     )
 }
 
 fn image_size() -> Vector2 {
-    Vector2::new(HEX_WIDTH, HEX_HEIGHT)
+    Vector2::new(56.0, 102.0)
 }
 
 
@@ -70,12 +70,14 @@ impl CellContents {
         match self {
             CellContents::Car(car) =>
                 draw_centered(ctx, &assets.car, image_size(), dest.to_point(), car.direction.to_rotation()),
+            CellContents::Wall =>
+                draw_centered(ctx, &assets.wall, image_size(), dest.to_point(), 0.0),
             _ => {
                 let text: &Text = match self {
                     CellContents::BonusBox       => &assets.bonus_box,
                     CellContents::Car(_)         => unreachable!(),
                     CellContents::Obstacle       => &assets.obstacle,
-                    CellContents::Wall           => &assets.wall,
+                    CellContents::Wall           => unreachable!(),
                 };
                 text::draw_centered_text(ctx, text, dest.to_point(), 0.0)
             }
@@ -93,16 +95,7 @@ pub struct Map {
 
 impl Map {
     pub fn load() -> Map {
-        const CENTRAL_OBSTACLE_RADIUS: i32 = 2;
-
         let mut cells: HashMap<HexPoint, CellContents> = HashMap::with_capacity(100);
-        for q in -CENTRAL_OBSTACLE_RADIUS..CENTRAL_OBSTACLE_RADIUS+1 {
-            for r in -CENTRAL_OBSTACLE_RADIUS..CENTRAL_OBSTACLE_RADIUS+1 {
-                if i32::abs(q + r) <= CENTRAL_OBSTACLE_RADIUS {
-                    cells.insert(HexPoint::new(q, r), CellContents::Wall);
-                }
-            }
-        }
 
         let mut floor: HashMap<HexPoint, FloorContents> = HashMap::with_capacity(100);
         let directions = HexVector::all_directions();
@@ -133,9 +126,9 @@ impl Map {
 
     #[allow(dead_code)]
     pub fn get(&self, index: HexPoint) -> Option<CellContents> {
-        if index.q.abs() <= MAP_RADIUS
-        && index.r.abs() <= MAP_RADIUS
-        && (index.q + index.r).abs() <= MAP_RADIUS
+        let distance_from_center = index.distance_from_center();
+        if distance_from_center > CENTRAL_OBSTACLE_RADIUS
+        && distance_from_center <= MAP_RADIUS
         {
             self.cells.get(&index).map (|x| *x)
         } else {
@@ -150,6 +143,17 @@ impl Map {
 
         for (dest, cell_contents) in &self.cells {
             cell_contents.draw(ctx, assets, *dest)?;
+        }
+
+        for r in -CENTRAL_OBSTACLE_RADIUS..CENTRAL_OBSTACLE_RADIUS+1 {
+            for q in -CENTRAL_OBSTACLE_RADIUS..CENTRAL_OBSTACLE_RADIUS+1 {
+                let hex_point = HexPoint::new(q, r);
+                let distance_from_center = hex_point.distance_from_center();
+                if distance_from_center == CENTRAL_OBSTACLE_RADIUS
+                {
+                    CellContents::Wall.draw(ctx, assets, hex_point)?;
+                }
+            }
         }
 
         Ok(())

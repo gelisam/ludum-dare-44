@@ -41,14 +41,14 @@ pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 }
 
 pub fn draw_hex_grid(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
-    for q in -MAP_RADIUS..MAP_RADIUS+1 {
-        for r in -MAP_RADIUS..MAP_RADIUS+1 {
-            if (q + r).abs() <= MAP_RADIUS {
-                assets.outline.draw(
-                    ctx,
-                    HexPoint::new(q, r).to_point(),
-                    0.0,
-                )?;
+    for r in -MAP_RADIUS..MAP_RADIUS+1 {
+        for q in -MAP_RADIUS..MAP_RADIUS+1 {
+            let hex_point = HexPoint::new(q, r);
+            let distance_from_center = hex_point.distance_from_center();
+            if distance_from_center > CENTRAL_OBSTACLE_RADIUS
+            && distance_from_center <= MAP_RADIUS
+            {
+                assets.outline.draw(ctx, hex_point.to_point(), 0.0)?;
             }
         }
     }
@@ -169,6 +169,10 @@ impl HexPoint {
                 HexVector::new(1, 0)
             }
         }
+    }
+
+    pub fn distance_from_center(self) -> i32 {
+        (self.q.abs() + self.r.abs() + (self.q + self.r).abs()) / 2
     }
 
     pub fn to_point(self) -> Point2 {
