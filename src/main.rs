@@ -56,6 +56,7 @@ impl Mouse {
 #[derive(Debug)]
 struct Globals {
     assets: Assets,
+    frame_count: i32,
     map: Map,
     mouse: Mouse,
 }
@@ -64,6 +65,7 @@ impl Globals {
     fn new(ctx: &mut Context) -> GameResult<Globals> {
         Ok(Globals {
             assets: load_assets(ctx)?,
+            frame_count: 0,
             map: Map::load(),
             mouse: Mouse::new()
         })
@@ -75,14 +77,7 @@ impl event::EventHandler for Globals {
 
         // Game logic usually happen inside the while loop
         while timer::check_update_time(_ctx, DESIRED_FPS) {
-            static mut FRAME_COUNT: i32 =  0;
-            unsafe {
-                FRAME_COUNT += 1;
-                if FRAME_COUNT % 60 == 0 {
-                    println!("Game in {}FPS, Execution time: {} frames, \
-                        {} secs", DESIRED_FPS, FRAME_COUNT, FRAME_COUNT / 60);
-                }
-            }
+            self.frame_count += 1;
         }
         Ok(())
     }
