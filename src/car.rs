@@ -8,17 +8,17 @@ use hex::HexVector;
 
 #[derive(Debug)]
 pub struct Assets {
-    car3:            Image,
-    car2:            Image,
-    car1:            Image,
+    car3: Image,
+    car2: Image,
+    car1: Image,
 }
 
 pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     Ok(
         Assets {
-            car3:            Image::new(ctx, "/car3.png")?,
-            car2:            Image::new(ctx, "/car2.png")?,
-            car1:            Image::new(ctx, "/car1.png")?,
+            car3: Image::new(ctx, "/car3.png")?,
+            car2: Image::new(ctx, "/car2.png")?,
+            car1: Image::new(ctx, "/car1.png")?,
         }
     )
 }

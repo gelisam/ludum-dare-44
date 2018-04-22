@@ -1,31 +1,35 @@
 use ggez::{GameResult, Context};
-use ggez::graphics::{Font, Image, Text};
+use ggez::graphics::Image;
 use std::collections::HashMap;
 
+use bomb::{self,Bomb};
 use car::{self,Car};
 use center::draw_centered;
 use checkpoint::*;
 use globals::*;
 use hex::{HexPoint, HexVector};
-use text;
 
 
 #[derive(Debug)]
 pub struct Assets {
-    bonus_box:       Text,
+    bomb3:           Image,
+    bomb2:           Image,
+    bomb1:           Image,
+    bomb0:           Image,
     checkpoint_line: Image,
     finish_line:     Image,
-    obstacle:        Text,
     wall:            Image,
 }
 
-pub fn load_assets(ctx: &mut Context, font: &Font) -> GameResult<Assets> {
+pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     Ok(
         Assets {
-            bonus_box:       Text::new(ctx, "?", &font)?,
+            bomb3:           Image::new(ctx, "/bomb3.png")?,
+            bomb2:           Image::new(ctx, "/bomb2.png")?,
+            bomb1:           Image::new(ctx, "/bomb1.png")?,
+            bomb0:           Image::new(ctx, "/bomb0.png")?,
             checkpoint_line: Image::new(ctx, "/checkpoint-line.png")?,
             finish_line:     Image::new(ctx, "/finish-line.png")?,
-            obstacle:        Text::new(ctx, "@", &font)?,
             wall:            Image::new(ctx, "/wall.png")?,
         }
     )
@@ -54,29 +58,20 @@ impl FloorContents {
 #[allow(dead_code)]
 #[derive(Clone, Copy, Debug)]
 pub enum CellContents {
-    BonusBox,
+    Bomb(Bomb),
     Car(Car),
-    Obstacle,
     Wall,
 }
 
 impl CellContents {
-    pub fn draw(self, ctx: &mut Context, assets: &Assets, car_assets: &car::Assets, dest: HexPoint) -> GameResult<()> {
+    pub fn draw(self, ctx: &mut Context, assets: &Assets, bomb_assets: &bomb::Assets, car_assets: &car::Assets, dest: HexPoint) -> GameResult<()> {
         match self {
-            CellContents::Car(car) => {
-                car.draw(ctx, car_assets, dest.to_point())
-            },
+            CellContents::Bomb(bomb) =>
+                bomb.draw(ctx, bomb_assets, dest.to_point()),
+            CellContents::Car(car) =>
+                car.draw(ctx, car_assets, dest.to_point()),
             CellContents::Wall =>
                 draw_centered(ctx, &assets.wall, image_size(), dest.to_point(), 0.0),
-            _ => {
-                let text: &Text = match self {
-                    CellContents::BonusBox       => &assets.bonus_box,
-                    CellContents::Car(_)         => unreachable!(),
-                    CellContents::Obstacle       => &assets.obstacle,
-                    CellContents::Wall           => unreachable!(),
-                };
-                text::draw_centered_text(ctx, text, dest.to_point(), 0.0)
-            }
         }
     }
 }
@@ -154,13 +149,13 @@ impl Map {
         self.cells.remove(&index);
     }
 
-    pub fn draw(&self, ctx: &mut Context, assets: &Assets, car_assets: &car::Assets) -> GameResult<()> {
+    pub fn draw(&self, ctx: &mut Context, assets: &Assets, bomb_assets: &bomb::Assets, car_assets: &car::Assets) -> GameResult<()> {
         for (dest, floor_contents) in &self.floor {
             floor_contents.draw(ctx, assets, *dest)?;
         }
 
         for (dest, cell_contents) in &self.cells {
-            cell_contents.draw(ctx, assets, car_assets, *dest)?;
+            cell_contents.draw(ctx, assets, bomb_assets, car_assets, *dest)?;
         }
 
         for r in -CENTRAL_OBSTACLE_RADIUS..CENTRAL_OBSTACLE_RADIUS+1 {
@@ -169,7 +164,7 @@ impl Map {
                 let distance_from_center = hex_point.distance_from_center();
                 if distance_from_center == CENTRAL_OBSTACLE_RADIUS
                 {
-                    CellContents::Wall.draw(ctx, assets, car_assets, hex_point)?;
+                    CellContents::Wall.draw(ctx, assets, bomb_assets, car_assets, hex_point)?;
                 }
             }
         }

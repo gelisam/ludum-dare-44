@@ -3,12 +3,13 @@ extern crate ggez;
 
 use ggez::{GameResult, Context};
 use ggez::event::{self, Keycode, Mod};
-use ggez::graphics::{self, Font};
+use ggez::graphics;
 use ggez::timer;
 
 mod ai;
 mod animation;
 mod bg;
+mod bomb;
 mod car;
 mod center;
 mod checkpoint;
@@ -30,19 +31,19 @@ use racer::Racer;
 #[derive(Debug)]
 struct Assets {
     bg: bg::Assets,
+    bomb: bomb::Assets,
     car: car::Assets,
     hex: hex::Assets,
     map: map::Assets,
 }
 
 fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
-    let font = Font::default_font()?;
-
     Ok(Assets {
         bg: bg::load_assets(ctx)?,
+        bomb: bomb::load_assets(ctx)?,
         car: car::load_assets(ctx)?,
         hex: hex::load_assets(ctx)?,
-        map: map::load_assets(ctx, &font)?,
+        map: map::load_assets(ctx)?,
     })
 }
 
@@ -188,7 +189,7 @@ impl event::EventHandler for Globals {
             ctx,
             &self.assets.hex,
         )?;
-        self.map.draw(ctx, &self.assets.map, &self.assets.car)?;
+        self.map.draw(ctx, &self.assets.map, &self.assets.bomb, &self.assets.car)?;
 
         match self.state {
             State::WaitingForAnimation(animation, _car1) => {
