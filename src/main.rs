@@ -188,6 +188,8 @@ impl event::EventHandler for Globals {
                     Keycode::R     => self.go_back_to_checkpoint(ctx),
                     _              => (),
                 }
+
+                self.map.decrement_all_bombs();
             },
             _ => (),
         }

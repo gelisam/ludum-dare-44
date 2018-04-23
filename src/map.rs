@@ -167,6 +167,22 @@ impl Map {
         }
     }
 
+    pub fn decrement_all_bombs(&mut self) {
+        let mut changes: Vec<(HexPoint, Option<Bomb>)> = Vec::with_capacity(100);
+        for (hex_point, cell_contents) in self.cells.iter() {
+            match cell_contents {
+                &CellContents::Bomb(bomb) => changes.push((*hex_point, bomb.decrement())),
+                _ => (),
+            }
+        }
+        for (hex_point, option_bomb) in changes {
+            self.remove(hex_point);
+            if let Some(bomb) = option_bomb {
+                self.insert(hex_point, CellContents::Bomb(bomb));
+            }
+        }
+    }
+
     pub fn insert(&mut self, index: HexPoint, cell_contents: CellContents) {
         self.cells.insert(index, cell_contents);
     }

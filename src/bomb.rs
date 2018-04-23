@@ -41,14 +41,21 @@ impl Bomb {
     }
 
     #[allow(dead_code)]
-    pub fn trigger_chain_reaction(&mut self) {
-        self.fuse_length = 0;
+    pub fn trigger_chain_reaction(self) -> Bomb {
+        Bomb {
+            fuse_length: 0,
+            ..self
+        }
     }
 
-    #[allow(dead_code)]
-    pub fn update(&mut self) {
+    pub fn decrement(self) -> Option<Bomb> {
         if self.fuse_length > 0 {
-            self.fuse_length -= 1;
+            Some(Bomb {
+                fuse_length: self.fuse_length - 1,
+                ..self
+            })
+        } else {
+            None
         }
     }
 
