@@ -12,6 +12,8 @@ pub const WINDOW_HEIGHT: u32 = 600;
 pub const CENTRAL_OBSTACLE_RADIUS: i32 = 2;
 pub const MAP_RADIUS:              i32 = 5;
 
+pub const MAX_FUSE_LENGTH: usize = 6;
+
 
 #[allow(dead_code)]
 pub const PI:     f32 = 3.141592653589793;

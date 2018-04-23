@@ -24,10 +24,9 @@ mod vector;
 
 use ai::Ai;
 use animation::*;
-use bomb::Bomb;
 use globals::*;
 use hex::HexPoint;
-use map::{CellContents,Map};
+use map::Map;
 use racer::Racer;
 
 
@@ -83,10 +82,10 @@ impl Globals {
         car1.insert(&mut map);
 
         let mut rng = rand::thread_rng();
-        for _i in 0..10 {
+        for _i in 0..15 {
             if let Some(hex_point) = map.random_available_spot() {
-                let fuse_length = rng.gen_range(1, 3+1);
-                map.insert(hex_point, CellContents::Bomb(Bomb::new(fuse_length)));
+                let fuse_length = rng.gen_range(1, MAX_FUSE_LENGTH+1);
+                map.insert_bomb(hex_point, fuse_length);
             }
         }
 

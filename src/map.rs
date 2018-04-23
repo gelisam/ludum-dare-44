@@ -3,7 +3,7 @@ use ggez::graphics::Image;
 use std::collections::HashMap;
 use rand::{self,Rng};
 
-use bomb::{self,Bomb};
+use bomb::{self,Bomb,FuseLength};
 use car::{self,Car};
 use center::draw_centered;
 use checkpoint::*;
@@ -15,6 +15,7 @@ use hex::{HexPoint, HexVector};
 pub struct Assets {
     checkpoint_line: Image,
     finish_line:     Image,
+    future_bomb:     Image,
     wall:            Image,
 }
 
@@ -23,6 +24,7 @@ pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
         Assets {
             checkpoint_line: Image::new(ctx, "/checkpoint-line.png")?,
             finish_line:     Image::new(ctx, "/finish-line.png")?,
+            future_bomb:     Image::new(ctx, "/future-bomb.png")?,
             wall:            Image::new(ctx, "/wall.png")?,
         }
     )
@@ -34,6 +36,7 @@ pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 pub enum FloorContents {
     CheckpointLine(f32),
     FinishLine(f32),
+    FutureBomb(FuseLength),
 }
 
 impl FloorContents {
@@ -43,6 +46,8 @@ impl FloorContents {
                 draw_centered(ctx, &assets.checkpoint_line, image_size(), dest.to_point(), rotation),
             FloorContents::FinishLine(rotation) =>
                 draw_centered(ctx, &assets.finish_line, image_size(), dest.to_point(), rotation),
+            FloorContents::FutureBomb(_) =>
+                draw_centered(ctx, &assets.future_bomb, image_size(), dest.to_point(), 0.0),
         }
     }
 }
@@ -98,12 +103,12 @@ impl Map {
     }
 
     #[allow(dead_code)]
-    pub fn get(&self, index: HexPoint) -> Option<CellContents> {
-        let distance_from_center = index.distance_from_center();
+    pub fn get(&self, hex_point: HexPoint) -> Option<CellContents> {
+        let distance_from_center = hex_point.distance_from_center();
         if distance_from_center > CENTRAL_OBSTACLE_RADIUS
         && distance_from_center <= MAP_RADIUS
         {
-            self.cells.get(&index).map (|x| *x)
+            self.cells.get(&hex_point).map (|x| *x)
         } else {
             Some(CellContents::Wall)
         }
@@ -160,31 +165,68 @@ impl Map {
     }
 
     pub fn decrement_all_bombs(&mut self) {
-        let mut changes: Vec<(HexPoint, Option<Bomb>)> = Vec::with_capacity(100);
+        let mut bomb_changes: Vec<(HexPoint, Option<Bomb>)> = Vec::with_capacity(100);
+        let mut future_bomb_changes: Vec<(HexPoint, FuseLength)> = Vec::with_capacity(100);
+
         for (hex_point, cell_contents) in self.cells.iter() {
             match cell_contents {
-                &CellContents::Bomb(bomb) => changes.push((*hex_point, bomb.decrement())),
+                &CellContents::Bomb(bomb) => bomb_changes.push((*hex_point, bomb.decrement())),
                 _ => (),
             }
         }
-        for (hex_point, option_bomb) in changes {
+        for (hex_point, option_bomb) in bomb_changes {
             self.remove(hex_point);
             match option_bomb {
-                Some(bomb) => self.insert(hex_point, CellContents::Bomb(bomb)),
-                None => match self.random_available_spot() {
-                    Some(new_spot) => self.insert(new_spot, CellContents::Bomb(Bomb::new(3))),
-                    None => (),
+                Some(bomb) => {
+                    self.insert(hex_point, CellContents::Bomb(bomb));
+                },
+                None => {
+                    match self.random_available_spot() {
+                        Some(new_spot) => {
+                            future_bomb_changes.push((new_spot, MAX_FUSE_LENGTH));
+                        },
+                        None => (),
+                    }
                 },
             }
         }
+
+        for (hex_point, floor_contents) in self.floor.iter() {
+            match floor_contents {
+                &FloorContents::FutureBomb(fuse_length) => {
+                    future_bomb_changes.push((*hex_point, fuse_length - 1));
+                },
+                _ => (),
+            }
+        }
+        for (hex_point, fuse_length) in future_bomb_changes {
+            self.floor.remove(&hex_point);
+            self.insert_bomb(hex_point, fuse_length);
+        }
     }
 
-    pub fn insert(&mut self, index: HexPoint, cell_contents: CellContents) {
-        self.cells.insert(index, cell_contents);
+    pub fn insert(&mut self, hex_point: HexPoint, cell_contents: CellContents) {
+        self.cells.insert(hex_point, cell_contents);
     }
 
-    pub fn remove(&mut self, index: HexPoint) {
-        self.cells.remove(&index);
+    pub fn insert_bomb(&mut self, hex_point: HexPoint, fuse_length: FuseLength) {
+        if fuse_length <= 3 {
+            match self.get(hex_point) {
+                None => {
+                    self.insert(hex_point, CellContents::Bomb(Bomb::new(fuse_length)));
+                },
+                Some(_) => {
+                    // delay the appearance of the bomb until the obstacle moves away
+                    self.floor.insert(hex_point, FloorContents::FutureBomb(fuse_length + 1));
+                },
+            }
+        } else {
+            self.floor.insert(hex_point, FloorContents::FutureBomb(fuse_length));
+        }
+    }
+
+    pub fn remove(&mut self, hex_point: HexPoint) {
+        self.cells.remove(&hex_point);
     }
 
     pub fn draw(&self, ctx: &mut Context, assets: &Assets, bomb_assets: &bomb::Assets, car_assets: &car::Assets) -> GameResult<()> {

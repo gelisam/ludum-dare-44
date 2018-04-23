@@ -27,7 +27,7 @@ pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 }
 
 
-// 0..4
+// 0..4 for Bomb, and 4..MAX_FUSE_LENGTH+1 for FutureBomb
 pub type FuseLength = usize;
 
 #[derive(Clone, Copy, Debug)]
