@@ -7,11 +7,11 @@ use center::*;
 
 #[derive(Debug)]
 pub struct Assets {
-    bomb3: Image,
-    bomb2: Image,
-    bomb1: Image,
-    bomb0: Image,
-    boom:  Image,
+    bomb3:       Image,
+    bomb2:       Image,
+    bomb1:       Image,
+    bomb0:       Image,
+    boom:        Image,
 }
 
 pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {

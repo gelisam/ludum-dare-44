@@ -13,10 +13,6 @@ use hex::{HexPoint, HexVector};
 
 #[derive(Debug)]
 pub struct Assets {
-    bomb3:           Image,
-    bomb2:           Image,
-    bomb1:           Image,
-    bomb0:           Image,
     checkpoint_line: Image,
     finish_line:     Image,
     wall:            Image,
@@ -25,10 +21,6 @@ pub struct Assets {
 pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     Ok(
         Assets {
-            bomb3:           Image::new(ctx, "/bomb3.png")?,
-            bomb2:           Image::new(ctx, "/bomb2.png")?,
-            bomb1:           Image::new(ctx, "/bomb1.png")?,
-            bomb0:           Image::new(ctx, "/bomb0.png")?,
             checkpoint_line: Image::new(ctx, "/checkpoint-line.png")?,
             finish_line:     Image::new(ctx, "/finish-line.png")?,
             wall:            Image::new(ctx, "/wall.png")?,
