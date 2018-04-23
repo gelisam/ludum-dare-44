@@ -228,8 +228,6 @@ impl event::EventHandler for Globals {
                 if animation1.is_finished(current_time) {
                     self.car1 = car1;
                     self.car1.insert(&mut self.map);
-                    self.map.decrement_all_bombs();
-                    self.state = State::WaitingForInput;
                 }
                 if animation2.is_finished(current_time) {
                     self.car2 = car2;
@@ -241,11 +239,16 @@ impl event::EventHandler for Globals {
                     self.car3.racer.insert(&mut self.map);
                 }
                 
-                self.state = if animation1.is_finished(current_time)
+                if animation1.is_finished(current_time)
                     && animation2.is_finished(current_time)
-                    && animation3.is_finished(current_time)
-                    {State::WaitingForInput} else {self.state};
-                
+                    && animation3.is_finished(current_time) {
+                        self.state = State::WaitingForInput;
+                        self.map.decrement_all_bombs();
+                        self.state = State::WaitingForInput;
+                        } else {
+                        self.state = self.state;
+                    };
+                                    
             },
             State::WaitingForInput => (),
         }
