@@ -4,7 +4,7 @@ extern crate rand;
 
 use ggez::{GameResult, Context};
 use ggez::event::{self, Keycode, Mod};
-use ggez::graphics;
+use ggez::graphics::{self, Font};
 use ggez::timer;
 use rand::Rng;
 
@@ -34,15 +34,19 @@ struct Assets {
     bg: bg::Assets,
     bomb: bomb::Assets,
     car: car::Assets,
+    checkpoint: checkpoint::Assets,
     hex: hex::Assets,
     map: map::Assets,
 }
 
 fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
+    let font = Font::default_font()?;
+
     Ok(Assets {
         bg: bg::load_assets(ctx)?,
         bomb: bomb::load_assets(ctx)?,
         car: car::load_assets(ctx)?,
+        checkpoint: checkpoint::load_assets(ctx, &font)?,
         hex: hex::load_assets(ctx)?,
         map: map::load_assets(ctx)?,
     })
@@ -66,11 +70,12 @@ struct Globals {
     car2: Ai,
     car1: Racer,
     state: State,
+    race_result: Option<bool>,
 }
 
 impl Globals {
     fn new(ctx: &mut Context) -> GameResult<Globals> {
-        let (exec_time, map, car3, car2, car1, state) = Globals::new_everything();
+        let (exec_time, map, car3, car2, car1, state, race_result) = Globals::new_everything();
 
         Ok(Globals {
             assets: load_assets(ctx)?,
@@ -80,21 +85,23 @@ impl Globals {
             car2,
             car1,
             state,
+            race_result,
         })
     }
 
     fn reset(&mut self) {
-        let (exec_time, map, car3, car2, car1, state) = Globals::new_everything();
+        let (exec_time, map, car3, car2, car1, state, race_result) = Globals::new_everything();
 
-        self.exec_time = exec_time;
-        self.map       = map;
-        self.car3      = car3;
-        self.car2      = car2;
-        self.car1      = car1;
-        self.state     = state;
+        self.exec_time   = exec_time;
+        self.map         = map;
+        self.car3        = car3;
+        self.car2        = car2;
+        self.car1        = car1;
+        self.state       = state;
+        self.race_result = race_result;
     }
 
-    fn new_everything() -> (f32, Map, Ai, Ai, Racer, State) {
+    fn new_everything() -> (f32, Map, Ai, Ai, Racer, State, Option<bool>) {
         let mut map = Map::load();
 
         let car3 = Racer::new(3, HexPoint::new(CENTRAL_OBSTACLE_RADIUS+1, 0));
@@ -114,7 +121,7 @@ impl Globals {
             }
         }
 
-        (0.0, map, Ai::new(car3), Ai::new(car2), car1, State::WaitingForInput)
+        (0.0, map, Ai::new(car3), Ai::new(car2), car1, State::WaitingForInput, None)
     }
 
     fn set_car3(&mut self, ctx: &Context, car3: Ai) {
@@ -298,6 +305,28 @@ impl event::EventHandler for Globals {
                 animation3.draw(ctx, &self.assets.car, current_time)?;
             },
             State::WaitingForInput => (),
+        }
+
+        match self.race_result {
+            None =>
+                if checkpoint::checkpoint_to_lap(self.car3.racer.checkpoint) >= 3
+                || checkpoint::checkpoint_to_lap(self.car2.racer.checkpoint) >= 3
+                {
+                    self.race_result = Some(false);
+                    checkpoint::draw_loss_message(ctx, &self.assets.checkpoint)?;
+                } else {
+                    let lap = checkpoint::checkpoint_to_lap(self.car1.checkpoint);
+                    if lap >= 3 {
+                        self.race_result = Some(true);
+                    }
+                    checkpoint::draw_lap_message(ctx, &self.assets.checkpoint, lap)?;
+                },
+            Some(true) => {
+                checkpoint::draw_lap_message(ctx, &self.assets.checkpoint, 3)?;
+            },
+            Some(false) => {
+                checkpoint::draw_loss_message(ctx, &self.assets.checkpoint)?;
+            },
         }
 
         graphics::present(ctx);

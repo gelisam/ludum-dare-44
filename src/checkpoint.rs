@@ -1,4 +1,68 @@
+use ggez::{GameResult, Context};
+use ggez::graphics::{Font, Point2, Text, Vector2};
+
+use globals::*;
 use hex::{DirectionIndex, HexPoint};
+use text::*;
+
+
+#[derive(Debug)]
+pub struct Assets {
+    lap1_a: Text,
+    lap1_b: Text,
+    lap2:   Text,
+    lap3:   Text,
+    win_a:  Text,
+    win_b:  Text,
+    lose_a: Text,
+    lose_b: Text,
+}
+
+pub fn load_assets(ctx: &mut Context, font: &Font) -> GameResult<Assets> {
+    Ok(
+        Assets {
+            lap1_a: Text::new(ctx, "First to complete", &font)?,
+            lap1_b: Text::new(ctx, "3 laps wins!", &font)?,
+            lap2:   Text::new(ctx, "Second lap!", &font)?,
+            lap3:   Text::new(ctx, "Final lap!", &font)?,
+            win_a:  Text::new(ctx, "You win!", &font)?,
+            win_b:  Text::new(ctx, "Press ESC to quit.", &font)?,
+            lose_a: Text::new(ctx, "You lose :(", &font)?,
+            lose_b: Text::new(ctx, "Press R to try again.", &font)?,
+        }
+    )
+}
+
+pub fn draw_lap_message(ctx: &mut Context, assets: &Assets, lap: Lap) -> GameResult<()> {
+    let center = Point2::new(
+        WINDOW_WIDTH as f32 / 2.0,
+        WINDOW_HEIGHT as f32 / 2.0 - 13.0,
+    );
+    match lap {
+        0 => {
+            draw_centered_text(ctx, &assets.lap1_a, center, 0.0)?;
+            draw_centered_text(ctx, &assets.lap1_b, center + Vector2::new(0.0, 20.0), 0.0)?;
+            Ok(())
+        },
+        1 => draw_centered_text(ctx, &assets.lap2, center, 0.0),
+        2 => draw_centered_text(ctx, &assets.lap3, center, 0.0),
+        _ => {
+            draw_centered_text(ctx, &assets.win_a, center - Vector2::new(0.0, 20.0), 0.0)?;
+            draw_centered_text(ctx, &assets.win_b, center, 0.0)?;
+            Ok(())
+        },
+    }
+}
+
+pub fn draw_loss_message(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
+    let center = Point2::new(
+        WINDOW_WIDTH as f32 / 2.0,
+        WINDOW_HEIGHT as f32 / 2.0 - 13.0,
+    );
+    draw_centered_text(ctx, &assets.lose_a, center - Vector2::new(0.0, 20.0), 0.0)?;
+    draw_centered_text(ctx, &assets.lose_b, center, 0.0)?;
+    Ok(())
+}
 
 
 // 0 is from right up to but not including the first checkpoint,
