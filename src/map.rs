@@ -177,8 +177,12 @@ impl Map {
         }
         for (hex_point, option_bomb) in changes {
             self.remove(hex_point);
-            if let Some(bomb) = option_bomb {
-                self.insert(hex_point, CellContents::Bomb(bomb));
+            match option_bomb {
+                Some(bomb) => self.insert(hex_point, CellContents::Bomb(bomb)),
+                None => match self.random_available_spot() {
+                    Some(new_spot) => self.insert(new_spot, CellContents::Bomb(Bomb::new(3))),
+                    None => (),
+                },
             }
         }
     }
