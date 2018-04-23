@@ -4,6 +4,7 @@ use ggez::graphics::{Point2,Vector2};
 
 use car::{self,Car};
 use globals::*;
+use hex::*;
 
 
 #[derive(Clone, Copy, Debug)]
@@ -34,6 +35,17 @@ impl TranslationAnimation {
             start_position,
             delta: end_position - start_position,
             drawable_object,
+        }
+    }
+
+    pub fn new_default() -> TranslationAnimation {
+        let default_draw_obj = DrawableObject::DrawableCar(Car::new(0, HexVector::new(0, 0)));
+        TranslationAnimation {
+            start_time: Duration::new(0, 0),
+            duration: 0.0,
+            start_position: Point2::new(0.0, 0.0),
+            delta: Vector2::new(0.0, 0.0),
+            drawable_object: default_draw_obj,
         }
     }
 
