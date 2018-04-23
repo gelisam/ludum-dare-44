@@ -56,8 +56,11 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 #[derive(Clone, Copy, Debug)]
 enum State {
     WaitingForInput,
-    WaitingForAnimation(TranslationAnimation, Racer,
-        TranslationAnimation, Ai, TranslationAnimation, Ai),
+    WaitingForAnimation(
+        Option<(TranslationAnimation, Racer)>,
+        Option<(TranslationAnimation, Ai)>,
+        Option<(TranslationAnimation, Ai)>,
+    ),
 }
 
 
@@ -134,15 +137,10 @@ impl Globals {
             DrawableObject::DrawableCar(car3.racer.to_car()),
         );
         match self.state {
-            State::WaitingForAnimation(a1, c1, a2, c2, _a3, _c3) =>
-                self.state = State::WaitingForAnimation(a1, c1, a2, c2, animation, car3),
+            State::WaitingForAnimation(a1, a2, _a3) =>
+                self.state = State::WaitingForAnimation(a1, a2, Some((animation, car3))),
             _ => {
-                let a1 = TranslationAnimation::new_default();
-                let a2 = TranslationAnimation::new_default();
-                let c1 = Racer::new(0, HexPoint::new(0,0));
-                let c2 = Ai::new(Racer::new(0, HexPoint::new(0,0)));
-                self.state = State::WaitingForAnimation(a1, c1, a2, c2,
-                    animation, car3)
+                self.state = State::WaitingForAnimation(None, None, Some((animation, car3)));
             },
         }
         // self.state = State::WaitingForAnimation(animation, car3: car3.racer);
@@ -161,16 +159,11 @@ impl Globals {
         );
 
         match self.state {
-            State::WaitingForAnimation(a1, c1, _a2, _c2, a3, c3) => 
-                self.state = State::WaitingForAnimation(a1, c1, animation, car2,
-                    a3, c3),
+            State::WaitingForAnimation(a1, _a2, a3) => 
+                self.state = State::WaitingForAnimation(a1, Some((animation, car2)), a3),
             _ => {
-                let a1 = TranslationAnimation::new_default();
-                let a3 = TranslationAnimation::new_default();
-                let c1 = Racer::new(0, HexPoint::new(0,0));
-                let c3 = Ai::new(Racer::new(0, HexPoint::new(0,0)));
-                self.state = State::WaitingForAnimation(a1, c1, animation,
-                    car2, a3, c3)},
+                self.state = State::WaitingForAnimation(None, Some((animation, car2)), None);
+            },
         }
     }
 
@@ -184,16 +177,10 @@ impl Globals {
             DrawableObject::DrawableCar(car1.to_car()),
         );
         match self.state {
-            State::WaitingForAnimation(_a1, _c1, a2, c2, a3, c3) =>
-                self.state = State::WaitingForAnimation(animation, car1, a2, c2,
-                    a3, c3),
+            State::WaitingForAnimation(_a1, a2, a3) =>
+                self.state = State::WaitingForAnimation(Some((animation, car1)), a2, a3),
             _ => {
-                let a2 = TranslationAnimation::new_default();
-                let a3 = TranslationAnimation::new_default();
-                let c2 = Ai::new(Racer::new(0, HexPoint::new(0,0)));
-                let c3 = Ai::new(Racer::new(0, HexPoint::new(0,0)));
-                self.state = State::WaitingForAnimation(animation, car1, a2, c2,
-                    a3, c3)
+                self.state = State::WaitingForAnimation(Some((animation, car1)), None, None);
             },
         }
     }
@@ -229,33 +216,37 @@ impl Globals {
 impl event::EventHandler for Globals {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         match self.state {
-            State::WaitingForAnimation(animation1, car1, animation2, car2,
-                animation3, car3) => {
+            State::WaitingForAnimation(mut a1, mut a2, mut a3) => {
                 let current_time = get_current_time(ctx);
-                if animation1.is_finished(current_time) {
-                    self.car1 = car1;
-                    self.car1.insert(&mut self.map);
+                if let Some((animation1, car1)) = a1 {
+                    if animation1.is_finished(current_time) {
+                        self.car1 = car1;
+                        self.car1.insert(&mut self.map);
+                        a1 = None;
+                    }
                 }
-                if animation2.is_finished(current_time) {
-                    self.car2 = car2;
-                    self.car2.racer.insert(&mut self.map);
+                if let Some((animation2, car2)) = a2 {
+                    if animation2.is_finished(current_time) {
+                        self.car2 = car2;
+                        self.car2.racer.insert(&mut self.map);
+                        a2 = None;
+                    }
                 }
 
-                if animation3.is_finished(current_time) {
-                    self.car3 = car3;
-                    self.car3.racer.insert(&mut self.map);
+                if let Some((animation3, car3)) = a3 {
+                    if animation3.is_finished(current_time) {
+                        self.car3 = car3;
+                        self.car3.racer.insert(&mut self.map);
+                        a3 = None;
+                    }
                 }
                 
-                if animation1.is_finished(current_time)
-                    && animation2.is_finished(current_time)
-                    && animation3.is_finished(current_time) {
-                        self.state = State::WaitingForInput;
-                        self.map.decrement_all_bombs();
-                        self.state = State::WaitingForInput;
-                        } else {
-                        self.state = self.state;
-                    };
-                                    
+                if a1.is_none() && a2.is_none() && a3.is_none() {
+                    self.map.decrement_all_bombs();
+                    self.state = State::WaitingForInput;
+                } else {
+                    self.state = State::WaitingForAnimation(a1, a2, a3);
+                }
             },
             State::WaitingForInput => (),
         }
@@ -297,12 +288,17 @@ impl event::EventHandler for Globals {
         self.map.draw(ctx, &self.assets.map, &self.assets.bomb, &self.assets.car)?;
 
         match self.state {
-            State::WaitingForAnimation(animation1, _car1, animation2, _car2,
-                animation3, _car3) => {
+            State::WaitingForAnimation(a1, a2, a3) => {
                 let current_time = get_current_time(ctx);
-                animation1.draw(ctx, &self.assets.car, current_time)?;
-                animation2.draw(ctx, &self.assets.car, current_time)?;
-                animation3.draw(ctx, &self.assets.car, current_time)?;
+                if let Some((animation1, _car1)) = a1 {
+                    animation1.draw(ctx, &self.assets.car, current_time)?;
+                }
+                if let Some((animation2, _car2)) = a2 {
+                    animation2.draw(ctx, &self.assets.car, current_time)?;
+                }
+                if let Some((animation3, _car3)) = a3 {
+                    animation3.draw(ctx, &self.assets.car, current_time)?;
+                }
             },
             State::WaitingForInput => (),
         }
