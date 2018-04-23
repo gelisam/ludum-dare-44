@@ -70,6 +70,31 @@ struct Globals {
 
 impl Globals {
     fn new(ctx: &mut Context) -> GameResult<Globals> {
+        let (exec_time, map, car3, car2, car1, state) = Globals::new_everything();
+
+        Ok(Globals {
+            assets: load_assets(ctx)?,
+            exec_time,
+            map,
+            car3,
+            car2,
+            car1,
+            state,
+        })
+    }
+
+    fn reset(&mut self) {
+        let (exec_time, map, car3, car2, car1, state) = Globals::new_everything();
+
+        self.exec_time = exec_time;
+        self.map       = map;
+        self.car3      = car3;
+        self.car2      = car2;
+        self.car1      = car1;
+        self.state     = state;
+    }
+
+    fn new_everything() -> (f32, Map, Ai, Ai, Racer, State) {
         let mut map = Map::load();
 
         let car3 = Racer::new(3, HexPoint::new(CENTRAL_OBSTACLE_RADIUS+1, 0));
@@ -89,15 +114,7 @@ impl Globals {
             }
         }
 
-        Ok(Globals {
-            assets: load_assets(ctx)?,
-            exec_time: 0.0,
-            map,
-            car3: Ai::new(car3),
-            car2: Ai::new(car2),
-            car1,
-            state: State::WaitingForInput,
-        })
+        (0.0, map, Ai::new(car3), Ai::new(car2), car1, State::WaitingForInput)
     }
 
     fn set_car3(&mut self, car3: Ai) {
@@ -185,7 +202,8 @@ impl event::EventHandler for Globals {
                     Keycode::Right => self.turn_right(ctx),
                     Keycode::Up    => self.go_forward(ctx),
                     Keycode::Down  => self.go_backwards(ctx),
-                    Keycode::R     => self.go_back_to_checkpoint(ctx),
+                    Keycode::K     => self.go_back_to_checkpoint(ctx),
+                    Keycode::R     => self.reset(),
                     _              => (),
                 }
             },
