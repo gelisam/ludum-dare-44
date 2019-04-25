@@ -6,6 +6,7 @@ use ggez::{GameResult, Context};
 use ggez::event::{self, Keycode, Mod};
 use ggez::graphics::{self, Font};
 use ggez::timer;
+use ggez::audio;
 use rand::Rng;
 
 mod ai;
@@ -351,5 +352,21 @@ pub fn main() {
     ).unwrap();
 
     let globals = &mut Globals::new(ctx).unwrap();
+	
+	let ambient_sound_with_error =
+		match audio::Source::new(ctx, "/ambient.ogg") {
+			Err(_) => {
+				println!("error opening ambient.ogg");
+				panic!()
+			},
+			Ok(ambient_sound) => {
+				ambient_sound
+			},
+		};
+	ambient_sound_with_error.play().unwrap();
+	
+    let key_sound: ggez::audio::Source = audio::Source::new(ctx, "/sound_keystroke_5b.ogg").unwrap();
+	key_sound.play().unwrap();
+	
     event::run(ctx, globals).unwrap();
 }
