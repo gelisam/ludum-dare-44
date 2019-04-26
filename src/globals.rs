@@ -4,7 +4,7 @@ use ggez::graphics::Vector2;
 use ggez::timer;
 
 
-pub const GAME_NAME: &str = "ludum-dare-41";
+pub const GAME_NAME: &str = "ludum-dare-44";
 
 pub const WINDOW_WIDTH:  u32 = 800;
 pub const WINDOW_HEIGHT: u32 = 600;
