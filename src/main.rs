@@ -9,7 +9,10 @@ use ggez::timer;
 use ggez::audio;
 
 mod bg;
+mod center;
 mod globals;
+mod text;
+mod vector;
 
 use globals::*;
 
@@ -62,6 +65,17 @@ impl event::EventHandler for Globals {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         bg::draw_bg(ctx, &self.assets.bg)?;
+
+        let hello = graphics::Text::new(
+            ctx,
+            "hello world",
+            &self.assets.font
+        )?;
+        let center = graphics::Point2::new(
+            WINDOW_WIDTH as f32 / 2.0,
+            WINDOW_HEIGHT as f32 / 2.0,
+        );
+        text::draw_centered_text(ctx, &hello, center, 0.0)?;
 
         graphics::present(ctx);
         timer::yield_now();
