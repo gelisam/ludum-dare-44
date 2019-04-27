@@ -266,6 +266,18 @@ impl BranchPoint {
             Orientation::AntiDiag
         }
     }
+
+    #[allow(dead_code)]
+    pub fn gift_neighbours(self) -> Vec<GiftPoint> {
+        self.hex_point.neighbours()
+            .iter()
+            .filter_map(|p| p.is_in_bounds())
+            .filter_map(|p| match p {
+                InBoundsPoint::GiftPoint(gift_point) => Some(gift_point),
+                _ => None
+            })
+            .collect()
+    }
 }
 
 impl GiftPoint {
@@ -275,6 +287,30 @@ impl GiftPoint {
 
     pub fn to_point(self) -> Point2 {
         self.hex_point.to_point()
+    }
+
+    #[allow(dead_code)]
+    pub fn branch_neighbours(self) -> Vec<BranchPoint> {
+        self.hex_point.neighbours()
+            .iter()
+            .filter_map(|p| p.is_in_bounds())
+            .filter_map(|p| match p {
+                InBoundsPoint::BranchPoint(branch_point) => Some(branch_point),
+                _ => None
+            })
+            .collect()
+    }
+
+    #[allow(dead_code)]
+    pub fn gift_neighbours(self) -> Vec<GiftPoint> {
+        self.hex_point.neighbours2()
+            .iter()
+            .filter_map(|p| p.is_in_bounds())
+            .filter_map(|p| match p {
+                InBoundsPoint::GiftPoint(gift_point) => Some(gift_point),
+                _ => None
+            })
+            .collect()
     }
 }
 

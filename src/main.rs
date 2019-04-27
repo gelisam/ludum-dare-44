@@ -237,9 +237,27 @@ impl EventHandler for Globals {
             center::draw_centered_image(ctx, image, hex_point.to_point(), 0.0)?;
         }
 
-        if let Some(hex_point) = self.hover {
+        if let Some(in_bounds_point) = self.hover {
             set_color(ctx, Color::from_rgb(255, 128, 128))?;
-            self.assets.dot.draw(ctx, hex_point.to_point(), 0.0)?;
+            self.assets.dot.draw(ctx, in_bounds_point.to_point(), 0.0)?;
+
+            // neighbour-debugging code; uncomment me, it's fun!
+            //set_color(ctx, Color::from_rgb(128, 128, 255))?;
+            //match in_bounds_point {
+            //    hex::InBoundsPoint::BranchPoint(branch_point) => {
+            //        for n in branch_point.gift_neighbours() {
+            //            self.assets.dot.draw(ctx, n.to_point(), 0.0)?;
+            //        }
+            //    },
+            //    hex::InBoundsPoint::GiftPoint(gift_point) => {
+            //        for n in gift_point.branch_neighbours() {
+            //            self.assets.dot.draw(ctx, n.to_point(), 0.0)?;
+            //        }
+            //        for n in gift_point.gift_neighbours() {
+            //            self.assets.dot.draw(ctx, n.to_point(), 0.0)?;
+            //        }
+            //    },
+            //}
         }
 
         //println!("FPS: {}", ggez::timer::get_fps(ctx));
