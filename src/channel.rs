@@ -38,10 +38,10 @@ impl Channel {
     }
 
     pub fn update(&mut self, ctx: &mut Context) {
-        let t0 = timer::duration_to_f64(self.start_time) as f32;
-        let t1 = timer::duration_to_f64(self.start_time + self.duration) as f32;
-        let dt = timer::duration_to_f64(self.duration) as f32;
-        let t = timer::duration_to_f64(get_current_time(ctx)) as f32;
+        let t0 = duration_to_f32(self.start_time);
+        let t1 = duration_to_f32(self.start_time + self.duration);
+        let dt = duration_to_f32(self.duration);
+        let t = duration_to_f32(get_current_time(ctx));
         let v0 = self.initial_volume;
         let v1 = self.target_volume;
         let dv = v1 - v0;
