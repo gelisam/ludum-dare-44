@@ -96,6 +96,9 @@ impl Globals {
             WINDOW_WIDTH as f32 - sidebar::SIDEBAR_WIDTH
         )?;
 
+        let mut branches = HashMap::with_capacity(100);
+        branches.insert(hex::HexPoint::new(0, 1), 12);
+
         Ok(Globals {
             assets,
             start_time: get_current_time(ctx),
@@ -104,7 +107,7 @@ impl Globals {
             bounty,
             life,
             hover: None,
-            branches: HashMap::with_capacity(100),
+            branches,
             gifts: HashMap::with_capacity(100),
         })
     }
