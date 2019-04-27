@@ -22,7 +22,6 @@ pub const ORIGIN_Y:           f32 = WINDOW_HEIGHT as f32 - 70.0;
 #[derive(Debug)]
 pub struct Assets {
     hex: Mesh,
-    dot: Mesh,
 }
 
 fn load_polygon_asset(ctx: &mut Context, mode: DrawMode) -> GameResult<Mesh> {
@@ -43,7 +42,6 @@ fn load_polygon_asset(ctx: &mut Context, mode: DrawMode) -> GameResult<Mesh> {
 pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     Ok(Assets {
         hex: load_polygon_asset(ctx, DrawMode::Line(1.0))?,
-        dot: Mesh::new_circle(ctx, DrawMode::Fill, Point2::new(0.0, 0.0), 3.0, 3.0)?,
     })
 }
 
@@ -54,16 +52,6 @@ pub fn draw_hex_grid(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
             let hex_point = HexPoint::new(q, r);
             if hex_point.is_cell_center() {
                 assets.hex.draw(ctx, hex_point.to_point(), 0.0)?;
-            }
-        }
-    }
-
-    graphics::set_color(ctx, Color::from_rgb(163, 186, 188))?;
-    for q in -8..=8 {
-        for r in -20..=0 {
-            let hex_point = HexPoint::new(q, r);
-            if hex_point.is_in_bounds() {
-                assets.dot.draw(ctx, hex_point.to_point(), 0.0)?;
             }
         }
     }
@@ -173,6 +161,15 @@ impl HexPoint {
         (0..6)
             .map(|direction_index| self + HexVector::from_index(direction_index))
             .collect()
+    }
+
+    pub fn from_point(point: Point2) -> HexPoint {
+        let q = (point.x - ORIGIN_X) * 4.0 / 3.0 / HEX_WIDTH;
+        let r = (point.y - ORIGIN_Y) / HEX_HEIGHT - q / 2.0;
+        HexPoint {
+            q: q.round() as i32,
+            r: r.round() as i32,
+        }
     }
 
     pub fn to_point(self) -> Point2 {

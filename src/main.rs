@@ -4,8 +4,8 @@ extern crate rand;
 
 use core::time::Duration;
 use ggez::{GameResult, Context};
-use ggez::event::{self, Keycode, Mod};
-use ggez::graphics::{self, Font};
+use ggez::event::*;
+use ggez::graphics::*;
 use ggez::timer;
 
 mod bg;
@@ -23,6 +23,7 @@ use globals::*;
 #[derive(Debug)]
 struct Assets {
     bg: bg::Assets,
+    dot: Mesh,
     font: Font,
     hex: hex::Assets,
 }
@@ -32,6 +33,7 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 
     Ok(Assets {
         bg: bg::load_assets(ctx)?,
+        dot: Mesh::new_circle(ctx, DrawMode::Fill, Point2::new(0.0, 0.0), 10.0, 3.0)?,
         font,
         hex: hex::load_assets(ctx)?,
     })
@@ -45,6 +47,7 @@ struct Globals {
     birds: channel::Channel,
     bounty: sidebar::Sidebar,
     life: sidebar::Sidebar,
+    hover: Option<hex::HexPoint>,
 }
 
 impl Globals {
@@ -54,14 +57,14 @@ impl Globals {
             ctx,
             &assets.font,
             "Bounty",
-            graphics::Color::from_rgb(181, 208, 212),
+            Color::from_rgb(181, 208, 212),
             0.0
         )?;
         let life = sidebar::Sidebar::new(
             ctx,
             &assets.font,
             "Life",
-            graphics::Color::from_rgb(242, 240, 186),
+            Color::from_rgb(242, 240, 186),
             WINDOW_WIDTH as f32 - sidebar::SIDEBAR_WIDTH
         )?;
 
@@ -72,6 +75,7 @@ impl Globals {
             birds: channel::Channel::new(ctx, "/birds.ogg")?,
             bounty,
             life,
+            hover: None,
         })
     }
 
@@ -80,7 +84,7 @@ impl Globals {
     }
 }
 
-impl event::EventHandler for Globals {
+impl EventHandler for Globals {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         self.bees.update(ctx);
         self.birds.update(ctx);
@@ -106,16 +110,31 @@ impl event::EventHandler for Globals {
         }
     }
 
+    fn mouse_motion_event(&mut self, _ctx: &mut Context, _state: MouseState, x: i32, y: i32, _xrel: i32, _yrel: i32) {
+        let hex_point = hex::HexPoint::from_point(Point2::new(x as f32, y as f32));
+        self.hover = if hex_point.is_in_bounds() {
+            Some(hex_point)
+        } else {
+            None
+        };
+    }
+
+
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         // must use white for drawing images, otherwise they get tinted
-        graphics::set_color(ctx, graphics::Color::from_rgb(255, 255, 255))?;
+        set_color(ctx, Color::from_rgb(255, 255, 255))?;
 
         bg::draw_bg(ctx, &self.assets.bg)?;
         hex::draw_hex_grid(ctx, &self.assets.hex)?;
         self.bounty.draw(ctx)?;
         self.life.draw(ctx)?;
 
-        graphics::present(ctx);
+        if let Some(hex_point) = self.hover {
+            set_color(ctx, Color::from_rgb(255, 128, 128))?;
+            self.assets.dot.draw(ctx, hex_point.to_point(), 0.0)?;
+        }
+
+        present(ctx);
         timer::yield_now();
 
         Ok(())
@@ -144,5 +163,5 @@ pub fn main() {
 	globals.bees.source.play().unwrap();
 	globals.birds.source.play().unwrap();
 
-    event::run(ctx, globals).unwrap();
+    run(ctx, globals).unwrap();
 }
