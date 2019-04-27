@@ -7,15 +7,18 @@ use ggez::graphics::{self, Color, Drawable, DrawMode, Point2, Mesh, Vector2};
 use globals::*;
 
 
-pub const HEX_RADIUS:   f32 = 32.0;
-pub const HEX_WIDTH:    f32 = HEX_RADIUS * 2.0;
-pub const HEX_HEIGHT:   f32 = HEX_RADIUS * SQRT_3;
+pub const HEX_RADIUS:         f32 = 16.0;
+pub const HEX_WIDTH:          f32 = HEX_RADIUS * 2.0;
+pub const HEX_HEIGHT:         f32 = HEX_RADIUS * SQRT_3;
+pub const VISIBLE_HEX_RADIUS: f32 = HEX_RADIUS * 2.0;
+pub const VISIBLE_HEX_WIDTH:  f32 = HEX_WIDTH  * 2.0;
+pub const VISIBLE_HEX_HEIGHT: f32 = HEX_HEIGHT * 2.0;
 
 
 #[derive(Debug)]
 pub struct Assets {
-    outline: Mesh,
-    filled: Mesh,
+    hex: Mesh,
+    dot: Mesh,
 }
 
 fn load_polygon_asset(ctx: &mut Context, mode: DrawMode) -> GameResult<Mesh> {
@@ -23,31 +26,40 @@ fn load_polygon_asset(ctx: &mut Context, mode: DrawMode) -> GameResult<Mesh> {
         ctx,
         mode,
         &[
-            Point2::new(0.5 * HEX_RADIUS, HEX_HEIGHT / 2.0),
-            Point2::new(HEX_WIDTH / 2.0, 0.0),
-            Point2::new(0.5 * HEX_RADIUS, -HEX_HEIGHT / 2.0),
-            Point2::new(-0.5 * HEX_RADIUS, -HEX_HEIGHT / 2.0),
-            Point2::new(-HEX_WIDTH / 2.0, 0.0),
-            Point2::new(-0.5 * HEX_RADIUS, HEX_HEIGHT / 2.0),
+            Point2::new(0.5 * VISIBLE_HEX_RADIUS, VISIBLE_HEX_HEIGHT / 2.0),
+            Point2::new(VISIBLE_HEX_WIDTH / 2.0, 0.0),
+            Point2::new(0.5 * VISIBLE_HEX_RADIUS, -VISIBLE_HEX_HEIGHT / 2.0),
+            Point2::new(-0.5 * VISIBLE_HEX_RADIUS, -VISIBLE_HEX_HEIGHT / 2.0),
+            Point2::new(-VISIBLE_HEX_WIDTH / 2.0, 0.0),
+            Point2::new(-0.5 * VISIBLE_HEX_RADIUS, VISIBLE_HEX_HEIGHT / 2.0),
         ],
     )
 }
 
 pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     Ok(Assets {
-        outline: load_polygon_asset(ctx, DrawMode::Line(1.0))?,
-        filled:  load_polygon_asset(ctx, DrawMode::Fill)?,
+        hex: load_polygon_asset(ctx, DrawMode::Line(1.0))?,
+        dot: Mesh::new_circle(ctx, DrawMode::Fill, Point2::new(0.0, 0.0), 3.0, 3.0)?,
     })
 }
 
 pub fn draw_hex_grid(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
     graphics::set_color(ctx, Color::from_rgb(163, 186, 188))?;
-
-    for q in -4..=4 {
-        for r in -10..=0 {
+    for q in -8..=8 {
+        for r in -20..=0 {
             let hex_point = HexPoint::new(q, r);
-            if hex_point.is_in_map() {
-                assets.outline.draw(ctx, hex_point.to_point(), 0.0)?;
+            if hex_point.is_cell_center() {
+                assets.hex.draw(ctx, hex_point.to_point(), 0.0)?;
+            }
+        }
+    }
+
+    graphics::set_color(ctx, Color::from_rgb(163, 186, 188))?;
+    for q in -8..=8 {
+        for r in -20..=0 {
+            let hex_point = HexPoint::new(q, r);
+            if hex_point.is_in_bounds() {
+                assets.dot.draw(ctx, hex_point.to_point(), 0.0)?;
             }
         }
     }
@@ -139,8 +151,16 @@ impl HexPoint {
         self.r * 2 + self.q
     }
 
-    pub fn is_in_map(self) -> bool {
-        self.r <= 0 && self.s() >= 0 && self.q >= -4 && self.q <= 4 && self.y() >= -17
+    pub fn is_in_bounds(self) -> bool {
+        self.r <= 0 && self.s() >= 0 && self.q >= -8 && self.q <= 8 && self.y() >= -34 && self.s() < 21
+    }
+
+    pub fn is_cell_center(self) -> bool {
+        self.is_in_bounds() && self.q % 2 == 0 && self.r % 2 == 0
+    }
+
+    pub fn is_cell_border(self) -> bool {
+        self.is_in_bounds() && !self.is_cell_center()
     }
 
 
