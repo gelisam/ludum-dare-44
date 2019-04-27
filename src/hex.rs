@@ -8,8 +8,8 @@ use globals::*;
 
 
 pub const HEX_RADIUS:   f32 = 32.0;
-pub const HEX_WIDTH:    f32 = HEX_RADIUS * SQRT_3;
-pub const HEX_HEIGHT:   f32 = HEX_RADIUS * 2.0;
+pub const HEX_WIDTH:    f32 = HEX_RADIUS * 2.0;
+pub const HEX_HEIGHT:   f32 = HEX_RADIUS * SQRT_3;
 
 
 #[derive(Debug)]
@@ -23,12 +23,12 @@ fn load_polygon_asset(ctx: &mut Context, mode: DrawMode) -> GameResult<Mesh> {
         ctx,
         mode,
         &[
-            Point2::new(HEX_WIDTH / 2.0, 0.5 * HEX_RADIUS),
-            Point2::new(0.0, HEX_HEIGHT / 2.0),
-            Point2::new(-HEX_WIDTH / 2.0, 0.5 * HEX_RADIUS),
-            Point2::new(-HEX_WIDTH / 2.0, -0.5 * HEX_RADIUS),
-            Point2::new(0.0, -HEX_HEIGHT / 2.0),
-            Point2::new(HEX_WIDTH / 2.0, -0.5 * HEX_RADIUS),
+            Point2::new(0.5 * HEX_RADIUS, HEX_HEIGHT / 2.0),
+            Point2::new(HEX_WIDTH / 2.0, 0.0),
+            Point2::new(0.5 * HEX_RADIUS, -HEX_HEIGHT / 2.0),
+            Point2::new(-0.5 * HEX_RADIUS, -HEX_HEIGHT / 2.0),
+            Point2::new(-HEX_WIDTH / 2.0, 0.0),
+            Point2::new(-0.5 * HEX_RADIUS, HEX_HEIGHT / 2.0),
         ],
     )
 }
@@ -43,12 +43,12 @@ pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 pub fn draw_hex_grid(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
     graphics::set_color(ctx, Color::new(163.0/255.0, 186.0/255.0, 188.0/255.0, 1.0))?;
 
-    let w = (WINDOW_WIDTH as f32 / HEX_WIDTH) as i32 - 1;
-    let h = (WINDOW_HEIGHT as f32 / (HEX_RADIUS * 1.5)) as i32 - 1;
-    for r in 1..=h {
-        for q in 1-(r/2)..=w-(r/2) {
+    for q in -4..=4 {
+        for r in -10..=0 {
             let hex_point = HexPoint::new(q, r);
-            assets.outline.draw(ctx, hex_point.to_point(), 0.0)?;
+            if hex_point.is_in_map() {
+                assets.outline.draw(ctx, hex_point.to_point(), 0.0)?;
+            }
         }
     }
 
@@ -56,7 +56,7 @@ pub fn draw_hex_grid(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
 }
 
 
-// using "pointy-topped axial coordinates":
+// using "flat-topped axial coordinates":
 // https://www.redblobgames.com/grids/hexagons/#coordinates-axial
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct HexPoint {
@@ -131,6 +131,19 @@ impl HexPoint {
         HexPoint {q, r}
     }
 
+    pub fn s(self) -> i32 {
+        -self.q - self.r
+    }
+
+    pub fn y(self) -> i32 {
+        self.r * 2 + self.q
+    }
+
+    pub fn is_in_map(self) -> bool {
+        self.r <= 0 && self.s() >= 0 && self.q >= -4 && self.q <= 4 && self.y() >= -17
+    }
+
+
     #[allow(dead_code)]
     pub fn neighbours(self) -> Vec<HexPoint> {
         (0..6)
@@ -140,8 +153,8 @@ impl HexPoint {
 
     pub fn to_point(self) -> Point2 {
         Point2::new(
-            (self.q as f32 + self.r as f32 / 2.0) * HEX_WIDTH,
-            self.r as f32 * HEX_HEIGHT * 3.0 / 4.0,
+            WINDOW_WIDTH as f32 / 2.0 + self.q as f32 * HEX_WIDTH * 3.0 / 4.0,
+            WINDOW_HEIGHT as f32 - 70.0 + (self.r as f32 + self.q as f32 / 2.0) * HEX_HEIGHT,
         )
     }
 }
