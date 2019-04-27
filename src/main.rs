@@ -2,6 +2,7 @@ extern crate core;
 extern crate ggez;
 extern crate rand;
 
+use core::time::Duration;
 use ggez::{GameResult, Context};
 use ggez::event::{self, Keycode, Mod};
 use ggez::graphics::{self, Font};
@@ -38,16 +39,19 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 #[derive(Debug)]
 struct Globals {
     assets: Assets,
+    start_time: Duration,
 }
 
 impl Globals {
     fn new(ctx: &mut Context) -> GameResult<Globals> {
         Ok(Globals {
             assets: load_assets(ctx)?,
+            start_time: get_current_time(ctx),
         })
     }
 
-    fn reset(&mut self) {
+    fn reset(&mut self, ctx: &mut Context) {
+        self.start_time = get_current_time(ctx);
     }
 }
 
@@ -56,9 +60,9 @@ impl event::EventHandler for Globals {
         Ok(())
     }
 
-    fn key_up_event(&mut self, _ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
+    fn key_up_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
-            Keycode::R     => self.reset(),
+            Keycode::R     => self.reset(ctx),
             _              => (),
         }
     }
@@ -66,16 +70,17 @@ impl event::EventHandler for Globals {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         bg::draw_bg(ctx, &self.assets.bg)?;
 
-        let hello = graphics::Text::new(
+        let msg = format!("{:#?}", get_current_time(ctx) - self.start_time);
+        let text = graphics::Text::new(
             ctx,
-            "hello world",
+            &msg,
             &self.assets.font
         )?;
         let center = graphics::Point2::new(
             WINDOW_WIDTH as f32 / 2.0,
             WINDOW_HEIGHT as f32 / 2.0,
         );
-        text::draw_centered_text(ctx, &hello, center, 0.0)?;
+        text::draw_centered_text(ctx, &text, center, 0.0)?;
 
         graphics::present(ctx);
         timer::yield_now();
