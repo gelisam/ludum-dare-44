@@ -74,6 +74,13 @@ pub struct HexVector {
     pub r: i32,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Orientation {
+    Vert,     // |
+    Diag,     // /
+    AntiDiag, // \
+}
+
 
 impl Add<HexVector> for HexPoint {
     type Output = HexPoint;
@@ -147,12 +154,27 @@ impl HexPoint {
         self.r <= 0 && self.s() >= 0 && self.q >= -8 && self.q <= 8 && self.y() + (if (self.q + 100) % 4 == 2 {1} else {0}) >= -33 && self.s() < 21
     }
 
+    fn would_be_cell_center(self) -> bool {
+        self.q % 2 == 0 && self.r % 2 == 0
+    }
+
     pub fn is_cell_center(self) -> bool {
-        self.is_in_bounds() && self.q % 2 == 0 && self.r % 2 == 0
+        self.is_in_bounds() && self.would_be_cell_center()
     }
 
     pub fn is_cell_border(self) -> bool {
-        self.is_in_bounds() && !self.is_cell_center()
+        self.is_in_bounds() && !self.would_be_cell_center()
+    }
+
+    // undefined unless self is a cell border
+    pub fn orientation(self) -> Orientation {
+        if (self + HexVector::from_index(0)).would_be_cell_center() {
+            Orientation::Vert
+        } else if (self + HexVector::from_index(5)).would_be_cell_center() {
+            Orientation::Diag
+        } else {
+            Orientation::AntiDiag
+        }
     }
 
 
@@ -188,15 +210,15 @@ impl HexVector {
         HexVector {q, r}
     }
 
-    // right, then counter-clockwise
+    // up, then counter-clockwise
     pub fn from_index(direction_index: DirectionIndex) -> HexVector {
         match direction_index {
-            0 => HexVector::new( 1,  0),
-            1 => HexVector::new( 1, -1),
-            2 => HexVector::new( 0, -1),
-            3 => HexVector::new(-1,  0),
-            4 => HexVector::new(-1,  1),
-            5 => HexVector::new( 0,  1),
+            0 => HexVector::new( 0, -1),
+            1 => HexVector::new(-1,  0),
+            2 => HexVector::new(-1,  1),
+            3 => HexVector::new( 0,  1),
+            4 => HexVector::new( 1,  0),
+            5 => HexVector::new( 1, -1),
             _ => unreachable!(),
         }
     }

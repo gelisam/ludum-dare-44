@@ -27,42 +27,58 @@ struct Assets {
     dot: Mesh,
     font: Font,
     hex: hex::Assets,
-    border_images: Vec<Image>,
-    center_images: Vec<Image>,
+    vert_branch_images: Vec<Image>,
+    diag_branch_images: Vec<Image>,
+    anti_diag_branch_images: Vec<Image>,
+    gift_images: Vec<Image>,
 }
 
-fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
-    let font = Font::default_font()?;
+impl Assets {
+    fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
+        let font = Font::default_font()?;
 
-    Ok(Assets {
-        bg: bg::load_assets(ctx)?,
-        dot: Mesh::new_circle(ctx, DrawMode::Fill, Point2::new(0.0, 0.0), 10.0, 3.0)?,
-        font,
-        hex: hex::load_assets(ctx)?,
-        border_images: vec!(
-            Image::new(ctx, "/branch dia 1.png")?,
-            Image::new(ctx, "/branch dia 2.png")?,
-            Image::new(ctx, "/branch anti-dia 1.png")?,
-            Image::new(ctx, "/branch anti-dia 2.png")?,
-            Image::new(ctx, "/branch vert 1.png")?,
-            Image::new(ctx, "/branch vert 2.png")?,
-            Image::new(ctx, "/branch vert 3.png")?,
-            Image::new(ctx, "/trunk dia 1.png")?,
-            Image::new(ctx, "/trunk dia 2.png")?,
-            Image::new(ctx, "/trunk anti-dia 1.png")?,
-            Image::new(ctx, "/trunk anti-dia 2.png")?,
-            Image::new(ctx, "/trunk vert 1.png")?,
-            Image::new(ctx, "/trunk vert 2.png")?,
-        ),
-        center_images: vec!(
-            Image::new(ctx, "/leaves 1.png")?,
-            Image::new(ctx, "/leaves 2.png")?,
-            Image::new(ctx, "/flower 1.png")?,
-            Image::new(ctx, "/flower 2.png")?,
-            Image::new(ctx, "/flowers 3.png")?,
-            Image::new(ctx, "/beehive.png")?,
-        ),
-    })
+        Ok(Assets {
+            bg: bg::load_assets(ctx)?,
+            dot: Mesh::new_circle(ctx, DrawMode::Fill, Point2::new(0.0, 0.0), 10.0, 3.0)?,
+            font,
+            hex: hex::load_assets(ctx)?,
+            vert_branch_images: vec!(
+                Image::new(ctx, "/trunk vert 1.png")?,
+                Image::new(ctx, "/trunk vert 2.png")?,
+                Image::new(ctx, "/branch vert 1.png")?,
+                Image::new(ctx, "/branch vert 2.png")?,
+                Image::new(ctx, "/branch vert 3.png")?,
+            ),
+            diag_branch_images: vec!(
+                Image::new(ctx, "/branch dia 1.png")?,
+                Image::new(ctx, "/branch dia 2.png")?,
+                Image::new(ctx, "/trunk dia 1.png")?,
+                Image::new(ctx, "/trunk dia 2.png")?,
+            ),
+            anti_diag_branch_images: vec!(
+                Image::new(ctx, "/branch anti-dia 1.png")?,
+                Image::new(ctx, "/branch anti-dia 2.png")?,
+                Image::new(ctx, "/trunk anti-dia 1.png")?,
+                Image::new(ctx, "/trunk anti-dia 2.png")?,
+            ),
+            gift_images: vec!(
+                Image::new(ctx, "/leaves 1.png")?,
+                Image::new(ctx, "/leaves 2.png")?,
+                Image::new(ctx, "/flower 1.png")?,
+                Image::new(ctx, "/flower 2.png")?,
+                Image::new(ctx, "/flowers 3.png")?,
+                Image::new(ctx, "/beehive.png")?,
+            ),
+        })
+    }
+
+    fn branch_images(&self, orientation: hex::Orientation) -> &Vec<Image> {
+        match orientation {
+            hex::Orientation::Vert     => &self.vert_branch_images,
+            hex::Orientation::Diag     => &self.diag_branch_images,
+            hex::Orientation::AntiDiag => &self.anti_diag_branch_images,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -80,7 +96,7 @@ struct Globals {
 
 impl Globals {
     fn new(ctx: &mut Context) -> GameResult<Globals> {
-        let assets = load_assets(ctx)?;
+        let assets = Assets::load_assets(ctx)?;
         let bounty = sidebar::Sidebar::new(
             ctx,
             &assets.font,
@@ -97,7 +113,7 @@ impl Globals {
         )?;
 
         let mut branches = HashMap::with_capacity(100);
-        branches.insert(hex::HexPoint::new(0, 1), 12);
+        branches.insert(hex::HexPoint::new(0, 1), 1);
 
         Ok(Globals {
             assets,
@@ -154,7 +170,7 @@ impl EventHandler for Globals {
                             self.gifts.insert(hex_point, 0);
                         },
                         Some(i) => {
-                            self.gifts.insert(hex_point, (i + 1) % self.assets.center_images.len());
+                            self.gifts.insert(hex_point, (i + 1) % self.assets.gift_images.len());
                         },
                     }
                 } else if hex_point.is_cell_border() {
@@ -163,7 +179,7 @@ impl EventHandler for Globals {
                             self.branches.insert(hex_point, 0);
                         },
                         Some(i) => {
-                            self.branches.insert(hex_point, (i + 1) % self.assets.border_images.len());
+                            self.branches.insert(hex_point, (i + 1) % self.assets.branch_images(hex_point.orientation()).len());
                         },
                     }
                 }
@@ -200,11 +216,11 @@ impl EventHandler for Globals {
 
         set_color(ctx, Color::from_rgb(255, 255, 255))?;
         for (hex_point, branch_index) in self.branches.iter() {
-            let image = &self.assets.border_images[*branch_index];
+            let image = &self.assets.branch_images(hex_point.orientation())[*branch_index];
             center::draw_centered_image(ctx, image, hex_point.to_point(), 0.0)?;
         }
         for (hex_point, gift_index) in self.gifts.iter() {
-            let image = &self.assets.center_images[*gift_index];
+            let image = &self.assets.gift_images[*gift_index];
             center::draw_centered_image(ctx, image, hex_point.to_point(), 0.0)?;
         }
 
