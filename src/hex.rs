@@ -185,6 +185,13 @@ impl HexPoint {
             .collect()
     }
 
+    #[allow(dead_code)]
+    pub fn neighbours2(self) -> Vec<HexPoint> {
+        (0..6)
+            .map(|direction_index| self + HexVector::from_index(direction_index) * 2)
+            .collect()
+    }
+
     pub fn from_point(point: Point2) -> HexPoint {
         let q = (point.x - ORIGIN_X) * 4.0 / 3.0 / HEX_WIDTH;
         let r = (point.y - ORIGIN_Y) / HEX_HEIGHT - q / 2.0;
