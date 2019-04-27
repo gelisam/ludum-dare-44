@@ -86,6 +86,7 @@ impl event::EventHandler for Globals {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+        graphics::set_color(ctx, graphics::Color::new(1.0, 1.0, 1.0, 1.0))?;
         bg::draw_bg(ctx, &self.assets.bg)?;
         hex::draw_hex_grid(ctx, &self.assets.hex)?;
 

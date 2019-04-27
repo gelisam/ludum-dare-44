@@ -2,7 +2,7 @@ extern crate nalgebra;
 
 use core::ops::{Add,AddAssign,Mul,MulAssign};
 use ggez::{GameResult, Context};
-use ggez::graphics::{Drawable, DrawMode, Point2, Mesh, Vector2};
+use ggez::graphics::{self, Color, Drawable, DrawMode, Point2, Mesh, Vector2};
 
 use globals::*;
 
@@ -41,6 +41,8 @@ pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 }
 
 pub fn draw_hex_grid(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
+    graphics::set_color(ctx, Color::new(163.0/255.0, 186.0/255.0, 188.0/255.0, 1.0))?;
+
     let w = (WINDOW_WIDTH as f32 / HEX_WIDTH) as i32 - 1;
     let h = (WINDOW_HEIGHT as f32 / (HEX_RADIUS * 1.5)) as i32 - 1;
     for r in 1..=h {
