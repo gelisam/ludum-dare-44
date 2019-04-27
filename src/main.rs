@@ -98,9 +98,9 @@ struct Globals {
     birds: channel::Channel,
     bounty: sidebar::Sidebar,
     life: sidebar::Sidebar,
-    hover: Option<hex::HexPoint>,
-    branches: HashMap<hex::HexPoint, usize>,
-    gifts: HashMap<hex::HexPoint, usize>,
+    hover: Option<hex::InBoundsPoint>,
+    branches: HashMap<hex::BranchPoint, usize>,
+    gifts: HashMap<hex::GiftPoint, usize>,
 }
 
 impl Globals {
@@ -122,7 +122,7 @@ impl Globals {
         )?;
 
         let mut branches = HashMap::with_capacity(100);
-        branches.insert(hex::HexPoint::new(0, 1), 7);
+        branches.insert(hex::BranchPoint::new(hex::HexPoint::new(0, 1)), 7);
 
         Ok(Globals {
             assets,
@@ -174,31 +174,39 @@ impl EventHandler for Globals {
 
         match button {
             MouseButton::Left => {
-                if hex_point.is_cell_center() {
-                    match self.gifts.get(&hex_point).map (|x| *x) {
-                        None => {
-                            self.gifts.insert(hex_point, 0);
-                        },
-                        Some(i) => {
-                            self.gifts.insert(hex_point, (i + 1) % self.assets.gift_images.len());
-                        },
-                    }
-                } else if hex_point.is_cell_border() {
-                    match self.branches.get(&hex_point).map (|x| *x) {
-                        None => {
-                            self.branches.insert(hex_point, 0);
-                        },
-                        Some(i) => {
-                            self.branches.insert(hex_point, (i + 1) % self.assets.branch_images(hex_point.orientation()).len());
-                        },
-                    }
+                match hex_point.is_in_bounds() {
+                    Some(hex::InBoundsPoint::BranchPoint(branch_point)) => {
+                        match self.branches.get(&branch_point).map (|x| *x) {
+                            None => {
+                                self.branches.insert(branch_point, 0);
+                            },
+                            Some(i) => {
+                                self.branches.insert(branch_point, (i + 1) % self.assets.branch_images(branch_point.orientation()).len());
+                            },
+                        }
+                    },
+                    Some(hex::InBoundsPoint::GiftPoint(gift_point)) => {
+                        match self.gifts.get(&gift_point).map (|x| *x) {
+                            None => {
+                                self.gifts.insert(gift_point, 0);
+                            },
+                            Some(i) => {
+                                self.gifts.insert(gift_point, (i + 1) % self.assets.gift_images.len());
+                            },
+                        }
+                    },
+                    None => {},
                 }
             },
             MouseButton::Right => {
-                if hex_point.is_cell_center() {
-                    self.gifts.remove(&hex_point);
-                } else if hex_point.is_cell_border() {
-                    self.branches.remove(&hex_point);
+                match hex_point.is_in_bounds() {
+                    Some(hex::InBoundsPoint::BranchPoint(branch_point)) => {
+                        self.branches.remove(&branch_point);
+                    },
+                    Some(hex::InBoundsPoint::GiftPoint(gift_point)) => {
+                        self.gifts.remove(&gift_point);
+                    },
+                    None => {},
                 }
             }
             _ => {}
@@ -207,11 +215,7 @@ impl EventHandler for Globals {
 
     fn mouse_motion_event(&mut self, _ctx: &mut Context, _state: MouseState, x: i32, y: i32, _xrel: i32, _yrel: i32) {
         let hex_point = hex::HexPoint::from_point(Point2::new(x as f32, y as f32));
-        self.hover = if hex_point.is_in_bounds() {
-            Some(hex_point)
-        } else {
-            None
-        };
+        self.hover = hex_point.is_in_bounds()
     }
 
 

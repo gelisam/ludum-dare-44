@@ -49,9 +49,8 @@ pub fn draw_hex_grid(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
     graphics::set_color(ctx, Color::from_rgb(163, 186, 188))?;
     for q in -8..=8 {
         for r in -20..=0 {
-            let hex_point = HexPoint::new(q, r);
-            if hex_point.is_cell_center() {
-                assets.hex.draw(ctx, hex_point.to_point(), 0.0)?;
+            if let Some(InBoundsPoint::GiftPoint(gift_point)) = HexPoint::new(q, r).is_in_bounds() {
+                assets.hex.draw(ctx, gift_point.to_point(), 0.0)?;
             }
         }
     }
@@ -72,6 +71,22 @@ pub struct HexPoint {
 pub struct HexVector {
     pub q: i32,
     pub r: i32,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct BranchPoint {
+    pub hex_point: HexPoint,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct GiftPoint {
+    pub hex_point: HexPoint,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum InBoundsPoint {
+    BranchPoint(BranchPoint),
+    GiftPoint(GiftPoint),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -150,33 +165,21 @@ impl HexPoint {
         self.r * 2 + self.q
     }
 
-    pub fn is_in_bounds(self) -> bool {
-        self.r <= 0 && self.s() >= 0 && self.q >= -8 && self.q <= 8 && self.y() + (if (self.q + 100) % 4 == 2 {1} else {0}) >= -33 && self.s() < 21
-    }
-
     fn would_be_cell_center(self) -> bool {
         self.q % 2 == 0 && self.r % 2 == 0
     }
 
-    pub fn is_cell_center(self) -> bool {
-        self.is_in_bounds() && self.would_be_cell_center()
-    }
-
-    pub fn is_cell_border(self) -> bool {
-        self.is_in_bounds() && !self.would_be_cell_center()
-    }
-
-    // undefined unless self is a cell border
-    pub fn orientation(self) -> Orientation {
-        if (self + HexVector::from_index(0)).would_be_cell_center() {
-            Orientation::Vert
-        } else if (self + HexVector::from_index(5)).would_be_cell_center() {
-            Orientation::Diag
+    pub fn is_in_bounds(self) -> Option<InBoundsPoint> {
+        if self.r <= 0 && self.s() >= 0 && self.q >= -8 && self.q <= 8 && self.y() + (if (self.q + 100) % 4 == 2 {1} else {0}) >= -33 && self.s() < 21 {
+            if self.would_be_cell_center() {
+                Some(InBoundsPoint::GiftPoint(GiftPoint::new(self)))
+            } else {
+                Some(InBoundsPoint::BranchPoint(BranchPoint::new(self)))
+            }
         } else {
-            Orientation::AntiDiag
+            None
         }
     }
-
 
     #[allow(dead_code)]
     pub fn neighbours(self) -> Vec<HexPoint> {
@@ -242,5 +245,44 @@ impl HexVector {
     pub fn to_rotation(self) -> f32 {
         let v = self.to_vector();
         f32::atan2(v.y, v.x)
+    }
+}
+
+impl BranchPoint {
+    pub fn new(hex_point: HexPoint) -> BranchPoint {
+        BranchPoint {hex_point}
+    }
+
+    pub fn to_point(self) -> Point2 {
+        self.hex_point.to_point()
+    }
+
+    pub fn orientation(self) -> Orientation {
+        if (self.hex_point + HexVector::from_index(0)).would_be_cell_center() {
+            Orientation::Vert
+        } else if (self.hex_point + HexVector::from_index(5)).would_be_cell_center() {
+            Orientation::Diag
+        } else {
+            Orientation::AntiDiag
+        }
+    }
+}
+
+impl GiftPoint {
+    pub fn new(hex_point: HexPoint) -> GiftPoint {
+        GiftPoint {hex_point}
+    }
+
+    pub fn to_point(self) -> Point2 {
+        self.hex_point.to_point()
+    }
+}
+
+impl InBoundsPoint {
+    pub fn to_point(self) -> Point2 {
+        match self {
+            InBoundsPoint::BranchPoint(branch_point) => branch_point.to_point(),
+            InBoundsPoint::GiftPoint(gift_point)     => gift_point.to_point(),
+        }
     }
 }
