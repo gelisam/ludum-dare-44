@@ -43,19 +43,28 @@ impl Assets {
             font,
             hex: hex::load_assets(ctx)?,
             vert_branch_images: vec!(
-                Image::new(ctx, "/trunk vert 1.png")?,
-                Image::new(ctx, "/trunk vert 2.png")?,
+                Image::new(ctx, "/twig vert 1.png")?,
+                Image::new(ctx, "/twig vert 2.png")?,
+                Image::new(ctx, "/twig vert 3.png")?,
                 Image::new(ctx, "/branch vert 1.png")?,
                 Image::new(ctx, "/branch vert 2.png")?,
                 Image::new(ctx, "/branch vert 3.png")?,
+                Image::new(ctx, "/trunk vert 1.png")?,
+                Image::new(ctx, "/trunk vert 2.png")?,
             ),
             diag_branch_images: vec!(
+                Image::new(ctx, "/twig dia 1.png")?,
+                Image::new(ctx, "/twig dia 2.png")?,
+                Image::new(ctx, "/twig dia 3.png")?,
                 Image::new(ctx, "/branch dia 1.png")?,
                 Image::new(ctx, "/branch dia 2.png")?,
                 Image::new(ctx, "/trunk dia 1.png")?,
                 Image::new(ctx, "/trunk dia 2.png")?,
             ),
             anti_diag_branch_images: vec!(
+                Image::new(ctx, "/twig anti-dia 1.png")?,
+                Image::new(ctx, "/twig anti-dia 2.png")?,
+                Image::new(ctx, "/twig anti-dia 3.png")?,
                 Image::new(ctx, "/branch anti-dia 1.png")?,
                 Image::new(ctx, "/branch anti-dia 2.png")?,
                 Image::new(ctx, "/trunk anti-dia 1.png")?,
@@ -113,7 +122,7 @@ impl Globals {
         )?;
 
         let mut branches = HashMap::with_capacity(100);
-        branches.insert(hex::HexPoint::new(0, 1), 1);
+        branches.insert(hex::HexPoint::new(0, 1), 7);
 
         Ok(Globals {
             assets,
