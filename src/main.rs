@@ -40,27 +40,30 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
         font,
         hex: hex::load_assets(ctx)?,
         border_images: vec!(
+            Image::new(ctx, "/twig dia 1.png")?,
+            Image::new(ctx, "/twig anti-dia 1.png")?,
+            Image::new(ctx, "/twig vert 1.png")?,
             Image::new(ctx, "/branch dia 1.png")?,
-            Image::new(ctx, "/branch dia 2.png")?,
+            //Image::new(ctx, "/branch dia 2.png")?,
             Image::new(ctx, "/branch anti-dia 1.png")?,
-            Image::new(ctx, "/branch anti-dia 2.png")?,
+            //Image::new(ctx, "/branch anti-dia 2.png")?,
             Image::new(ctx, "/branch vert 1.png")?,
-            Image::new(ctx, "/branch vert 2.png")?,
-            Image::new(ctx, "/branch vert 3.png")?,
+            //Image::new(ctx, "/branch vert 2.png")?,
+            //Image::new(ctx, "/branch vert 3.png")?,
             Image::new(ctx, "/trunk dia 1.png")?,
-            Image::new(ctx, "/trunk dia 2.png")?,
+            //Image::new(ctx, "/trunk dia 2.png")?,
             Image::new(ctx, "/trunk anti-dia 1.png")?,
-            Image::new(ctx, "/trunk anti-dia 2.png")?,
+            //Image::new(ctx, "/trunk anti-dia 2.png")?,
             Image::new(ctx, "/trunk vert 1.png")?,
-            Image::new(ctx, "/trunk vert 2.png")?,
+            //Image::new(ctx, "/trunk vert 2.png")?,
         ),
         center_images: vec!(
             Image::new(ctx, "/leaves 1.png")?,
-            Image::new(ctx, "/leaves 2.png")?,
+            // Image::new(ctx, "/leaves 2.png")?,
             Image::new(ctx, "/flower 1.png")?,
-            Image::new(ctx, "/flower 2.png")?,
+            // Image::new(ctx, "/flower 2.png")?,
             Image::new(ctx, "/flowers 3.png")?,
-            Image::new(ctx, "/beehive.png")?,
+            // Image::new(ctx, "/beehive.png")?,
         ),
     })
 }
@@ -97,7 +100,7 @@ impl Globals {
         )?;
 
         let mut branches = HashMap::with_capacity(100);
-        branches.insert(hex::HexPoint::new(0, 1), 12);
+        branches.insert(hex::HexPoint::new(0, 1), 8);
 
         Ok(Globals {
             assets,
