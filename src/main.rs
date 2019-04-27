@@ -147,6 +147,7 @@ impl EventHandler for Globals {
         self.bees.update(ctx);
         self.birds.update(ctx);
 
+	ggez::timer::sleep(Duration::from_millis(50));
         Ok(())
     }
 
@@ -238,6 +239,7 @@ impl EventHandler for Globals {
             self.assets.dot.draw(ctx, hex_point.to_point(), 0.0)?;
         }
 
+	//println!("FPS: {}", ggez::timer::get_fps(ctx));
         present(ctx);
         timer::yield_now();
 
