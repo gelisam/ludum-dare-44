@@ -12,6 +12,7 @@ mod bg;
 mod center;
 mod channel;
 mod globals;
+mod hex;
 mod text;
 mod vector;
 
@@ -22,6 +23,7 @@ use globals::*;
 struct Assets {
     bg: bg::Assets,
     font: Font,
+    hex: hex::Assets,
 }
 
 fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
@@ -30,6 +32,7 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     Ok(Assets {
         bg: bg::load_assets(ctx)?,
         font,
+        hex: hex::load_assets(ctx)?,
     })
 }
 
@@ -84,6 +87,7 @@ impl event::EventHandler for Globals {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         bg::draw_bg(ctx, &self.assets.bg)?;
+        hex::draw_hex_grid(ctx, &self.assets.hex)?;
 
         let msg = format!("{:#?}", get_current_time(ctx) - self.start_time);
         let text = graphics::Text::new(
