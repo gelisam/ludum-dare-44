@@ -7,6 +7,7 @@ use ggez::{GameResult, Context};
 use ggez::event::*;
 use ggez::graphics::*;
 use ggez::timer;
+use std::collections::HashMap;
 
 mod bg;
 mod center;
@@ -26,6 +27,8 @@ struct Assets {
     dot: Mesh,
     font: Font,
     hex: hex::Assets,
+    border_images: Vec<Image>,
+    center_images: Vec<Image>,
 }
 
 fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
@@ -36,6 +39,25 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
         dot: Mesh::new_circle(ctx, DrawMode::Fill, Point2::new(0.0, 0.0), 10.0, 3.0)?,
         font,
         hex: hex::load_assets(ctx)?,
+        border_images: vec!(
+            Image::new(ctx, "/branch dia 1.png")?,
+            Image::new(ctx, "/branch dia 2.png")?,
+            Image::new(ctx, "/branch vert 1.png")?,
+            Image::new(ctx, "/branch vert 2.png")?,
+            Image::new(ctx, "/branch vert 3.png")?,
+            Image::new(ctx, "/trunk dia 1.png")?,
+            Image::new(ctx, "/trunk dia 2.png")?,
+            Image::new(ctx, "/trunk vert 1.png")?,
+            Image::new(ctx, "/trunk vert 2.png")?,
+        ),
+        center_images: vec!(
+            Image::new(ctx, "/leaves 1.png")?,
+            Image::new(ctx, "/leaves 2.png")?,
+            Image::new(ctx, "/flower 1.png")?,
+            Image::new(ctx, "/flower 2.png")?,
+            Image::new(ctx, "/flowers 3.png")?,
+            Image::new(ctx, "/beehive.png")?,
+        ),
     })
 }
 
@@ -48,6 +70,8 @@ struct Globals {
     bounty: sidebar::Sidebar,
     life: sidebar::Sidebar,
     hover: Option<hex::HexPoint>,
+    branches: HashMap<hex::HexPoint, usize>,
+    gifts: HashMap<hex::HexPoint, usize>,
 }
 
 impl Globals {
@@ -76,6 +100,8 @@ impl Globals {
             bounty,
             life,
             hover: None,
+            branches: HashMap::with_capacity(100),
+            gifts: HashMap::with_capacity(100),
         })
     }
 
@@ -110,6 +136,42 @@ impl EventHandler for Globals {
         }
     }
 
+    fn mouse_button_down_event(&mut self, _ctx: &mut Context, button: MouseButton, x: i32, y: i32) {
+        let hex_point = hex::HexPoint::from_point(Point2::new(x as f32, y as f32));
+
+        match button {
+            MouseButton::Left => {
+                if hex_point.is_cell_center() {
+                    match self.gifts.get(&hex_point).map (|x| *x) {
+                        None => {
+                            self.gifts.insert(hex_point, 0);
+                        },
+                        Some(i) => {
+                            self.gifts.insert(hex_point, (i + 1) % self.assets.center_images.len());
+                        },
+                    }
+                } else if hex_point.is_cell_border() {
+                    match self.branches.get(&hex_point).map (|x| *x) {
+                        None => {
+                            self.branches.insert(hex_point, 0);
+                        },
+                        Some(i) => {
+                            self.branches.insert(hex_point, (i + 1) % self.assets.border_images.len());
+                        },
+                    }
+                }
+            },
+            MouseButton::Right => {
+                if hex_point.is_cell_center() {
+                    self.gifts.remove(&hex_point);
+                } else if hex_point.is_cell_border() {
+                    self.branches.remove(&hex_point);
+                }
+            }
+            _ => {}
+        }
+    }
+
     fn mouse_motion_event(&mut self, _ctx: &mut Context, _state: MouseState, x: i32, y: i32, _xrel: i32, _yrel: i32) {
         let hex_point = hex::HexPoint::from_point(Point2::new(x as f32, y as f32));
         self.hover = if hex_point.is_in_bounds() {
@@ -128,6 +190,18 @@ impl EventHandler for Globals {
         hex::draw_hex_grid(ctx, &self.assets.hex)?;
         self.bounty.draw(ctx)?;
         self.life.draw(ctx)?;
+
+        set_color(ctx, Color::from_rgb(255, 255, 255))?;
+        for (hex_point, branch_index) in self.branches.iter() {
+            let point = hex_point.to_point();
+            let image = &self.assets.border_images[*branch_index];
+            center::draw_centered(ctx, image, Vector2::new(image.width() as f32, image.height() as f32), point, 0.0)?;
+        }
+        for (hex_point, gift_index) in self.gifts.iter() {
+            let point = hex_point.to_point();
+            let image = &self.assets.center_images[*gift_index];
+            center::draw_centered(ctx, image, Vector2::new(image.width() as f32, image.height() as f32), point, 0.0)?;
+        }
 
         if let Some(hex_point) = self.hover {
             set_color(ctx, Color::from_rgb(255, 128, 128))?;
