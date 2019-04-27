@@ -13,6 +13,7 @@ mod center;
 mod channel;
 mod globals;
 mod hex;
+mod sidebar;
 mod text;
 mod vector;
 
@@ -42,51 +43,40 @@ struct Globals {
     start_time: Duration,
     bees: channel::Channel,
     birds: channel::Channel,
+    bounty: sidebar::Sidebar,
+    life: sidebar::Sidebar,
 }
 
 impl Globals {
     fn new(ctx: &mut Context) -> GameResult<Globals> {
+        let assets = load_assets(ctx)?;
+        let bounty = sidebar::Sidebar::new(
+            ctx,
+            &assets.font,
+            "Bounty",
+            graphics::Color::from_rgb(181, 208, 212),
+            0.0
+        )?;
+        let life = sidebar::Sidebar::new(
+            ctx,
+            &assets.font,
+            "Life",
+            graphics::Color::from_rgb(242, 240, 186),
+            WINDOW_WIDTH as f32 - sidebar::SIDEBAR_WIDTH
+        )?;
+
         Ok(Globals {
-            assets: load_assets(ctx)?,
+            assets,
             start_time: get_current_time(ctx),
             bees: channel::Channel::new(ctx, "/bees.ogg")?,
             birds: channel::Channel::new(ctx, "/birds.ogg")?,
+            bounty,
+            life,
         })
     }
 
     fn reset(&mut self, ctx: &mut Context) {
         self.start_time = get_current_time(ctx);
-    }
-
-    fn draw_left_sidebar(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::set_color(ctx, graphics::Color::from_rgb(181, 208, 212))?;
-        graphics::rectangle(ctx, graphics::DrawMode::Fill, graphics::Rect::new(0.0, 0.0, 150.0, WINDOW_HEIGHT as f32))?;
-
-        graphics::set_color(ctx, graphics::Color::from_rgb(0, 0, 0))?;
-        let text = graphics::Text::new(ctx, "Bounty", &self.assets.font)?;
-        let center = graphics::Point2::new(
-            150.0 / 2.0,
-            WINDOW_HEIGHT as f32 - 50.0,
-        );
-        text::draw_centered_text(ctx, &text, center, 0.0)?;
-
-        graphics::set_color(ctx, graphics::Color::from_rgb(0, 0, 0))?;
-        Ok(())
-    }
-
-    fn draw_right_sidebar(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::set_color(ctx, graphics::Color::from_rgb(242, 240, 186))?;
-        graphics::rectangle(ctx, graphics::DrawMode::Fill, graphics::Rect::new(WINDOW_WIDTH as f32 - 150.0, 0.0, 150.0, WINDOW_HEIGHT as f32))?;
-
-        graphics::set_color(ctx, graphics::Color::from_rgb(0, 0, 0))?;
-        let text = graphics::Text::new(ctx, "Life", &self.assets.font)?;
-        let center = graphics::Point2::new(
-            WINDOW_WIDTH as f32 - 150.0 / 2.0,
-            WINDOW_HEIGHT as f32 - 50.0,
-        );
-        text::draw_centered_text(ctx, &text, center, 0.0)?;
-
-        Ok(())
     }
 }
 
@@ -122,8 +112,8 @@ impl event::EventHandler for Globals {
 
         bg::draw_bg(ctx, &self.assets.bg)?;
         hex::draw_hex_grid(ctx, &self.assets.hex)?;
-        self.draw_left_sidebar(ctx)?;
-        self.draw_right_sidebar(ctx)?;
+        self.bounty.draw(ctx)?;
+        self.life.draw(ctx)?;
 
         graphics::present(ctx);
         timer::yield_now();
