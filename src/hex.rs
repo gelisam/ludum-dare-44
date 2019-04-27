@@ -41,7 +41,7 @@ pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 }
 
 pub fn draw_hex_grid(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
-    graphics::set_color(ctx, Color::new(163.0/255.0, 186.0/255.0, 188.0/255.0, 1.0))?;
+    graphics::set_color(ctx, Color::from_rgb(163, 186, 188))?;
 
     for q in -4..=4 {
         for r in -10..=0 {
