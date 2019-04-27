@@ -170,46 +170,45 @@ impl EventHandler for Globals {
     }
 
     fn mouse_button_down_event(&mut self, _ctx: &mut Context, button: MouseButton, x: i32, y: i32) {
-        let hex_point = hex::HexPoint::from_point(Point2::new(x as f32, y as f32));
-
-        match button {
-            MouseButton::Left => {
-                match hex_point.is_in_bounds() {
-                    Some(hex::InBoundsPoint::BranchPoint(branch_point)) => {
-                        match self.branches.get(&branch_point).map (|x| *x) {
-                            None => {
-                                self.branches.insert(branch_point, 0);
-                            },
-                            Some(i) => {
-                                self.branches.insert(branch_point, (i + 1) % self.assets.branch_images(branch_point.orientation()).len());
-                            },
-                        }
-                    },
-                    Some(hex::InBoundsPoint::GiftPoint(gift_point)) => {
-                        match self.gifts.get(&gift_point).map (|x| *x) {
-                            None => {
-                                self.gifts.insert(gift_point, 0);
-                            },
-                            Some(i) => {
-                                self.gifts.insert(gift_point, (i + 1) % self.assets.gift_images.len());
-                            },
-                        }
-                    },
-                    None => {},
+        let point = Point2::new(x as f32, y as f32);
+        if let Some(in_bounds_point) = hex::HexPoint::from_point(point).is_in_bounds() {
+            match button {
+                MouseButton::Left => {
+                    match in_bounds_point {
+                        hex::InBoundsPoint::BranchPoint(branch_point) => {
+                            match self.branches.get(&branch_point).map (|x| *x) {
+                                None => {
+                                    self.branches.insert(branch_point, 0);
+                                },
+                                Some(i) => {
+                                    self.branches.insert(branch_point, (i + 1) % self.assets.branch_images(branch_point.orientation()).len());
+                                },
+                            }
+                        },
+                        hex::InBoundsPoint::GiftPoint(gift_point) => {
+                            match self.gifts.get(&gift_point).map (|x| *x) {
+                                None => {
+                                    self.gifts.insert(gift_point, 0);
+                                },
+                                Some(i) => {
+                                    self.gifts.insert(gift_point, (i + 1) % self.assets.gift_images.len());
+                                },
+                            }
+                        },
+                    }
+                },
+                MouseButton::Right => {
+                    match in_bounds_point {
+                        hex::InBoundsPoint::BranchPoint(branch_point) => {
+                            self.branches.remove(&branch_point);
+                        },
+                        hex::InBoundsPoint::GiftPoint(gift_point) => {
+                            self.gifts.remove(&gift_point);
+                        },
+                    }
                 }
-            },
-            MouseButton::Right => {
-                match hex_point.is_in_bounds() {
-                    Some(hex::InBoundsPoint::BranchPoint(branch_point)) => {
-                        self.branches.remove(&branch_point);
-                    },
-                    Some(hex::InBoundsPoint::GiftPoint(gift_point)) => {
-                        self.gifts.remove(&gift_point);
-                    },
-                    None => {},
-                }
+                _ => {}
             }
-            _ => {}
         }
     }
 
