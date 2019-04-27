@@ -200,14 +200,12 @@ impl EventHandler for Globals {
 
         set_color(ctx, Color::from_rgb(255, 255, 255))?;
         for (hex_point, branch_index) in self.branches.iter() {
-            let point = hex_point.to_point();
             let image = &self.assets.border_images[*branch_index];
-            center::draw_centered(ctx, image, Vector2::new(image.width() as f32, image.height() as f32), point, 0.0)?;
+            center::draw_centered_image(ctx, image, hex_point.to_point(), 0.0)?;
         }
         for (hex_point, gift_index) in self.gifts.iter() {
-            let point = hex_point.to_point();
             let image = &self.assets.center_images[*gift_index];
-            center::draw_centered(ctx, image, Vector2::new(image.width() as f32, image.height() as f32), point, 0.0)?;
+            center::draw_centered_image(ctx, image, hex_point.to_point(), 0.0)?;
         }
 
         if let Some(hex_point) = self.hover {
