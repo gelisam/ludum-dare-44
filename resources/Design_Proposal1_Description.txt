@@ -1,0 +1,31 @@
+
+DESIGN PROPOSAL:
+
+- Goal of the game is to reach maximum life. Compete with friends for fastest time
+- Bounty used to purchase improvements
+- Bounty replenishes over time, but ...
+
+- Bounty CANNOT BE HIGHER THAN LIFE.  Advanced upgrades require almost a full bar, impossible at beginning
+
+- Maximum life requires advances improvements and best creatures
+- Life bar is exponential scale, so basic improvements increase the bar a lot at first, but
+  advanced improvements are required later
+
+- Bounty improvements are:
+  - Add new branch
+  - Add leaves
+  - Add flowers (might require leaves on the same tile?)
+  - Add berries (might require pollinated flowers on the tile?)
+  - Add nuts (might require pollinated flowers and birds nearby?)
+  - Upgrade, increases branch size or output and increases life, required to upgrade trunk for more branches
+  - Prune.  First click removes leaves, second click removes branch entirely
+
+- COLOR CODING helps user understand the associations:
+  - Flowers invite bees (basic)
+  - Berries invite birds (intermediate)
+  - Nuts invite squirrels (advanced)
+
+- Click any bounty improvement, and hover mouse over tile to see cost, click to apply upgrade
+  Maybe applicable tiles highlight to guide the user
+
+- Life panel shows the number of improvements and creatures.  Upgraded tiles count for more
