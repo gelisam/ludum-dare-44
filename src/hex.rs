@@ -156,7 +156,7 @@ impl HexPoint {
     }
 
     pub fn is_in_bounds(self) -> bool {
-        self.r <= 0 && self.s() >= 0 && self.q >= -8 && self.q <= 8 && self.y() >= -34 && self.s() < 21
+        self.r <= 0 && self.s() >= 0 && self.q >= -8 && self.q <= 8 && self.y() + (if (self.q + 100) % 4 == 2 {1} else {0}) >= -33 && self.s() < 21
     }
 
     pub fn is_cell_center(self) -> bool {
