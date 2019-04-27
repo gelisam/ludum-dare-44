@@ -287,8 +287,8 @@ pub fn main() {
     ).unwrap();
 
     let globals = &mut Globals::new(ctx).unwrap();
-	globals.bees.source.play().unwrap();
-	globals.birds.source.play().unwrap();
+    globals.bees.source.play().unwrap();
+    globals.birds.source.play().unwrap();
 
     run(ctx, globals).unwrap();
 }
