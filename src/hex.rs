@@ -10,9 +10,13 @@ use globals::*;
 pub const HEX_RADIUS:         f32 = 16.0;
 pub const HEX_WIDTH:          f32 = HEX_RADIUS * 2.0;
 pub const HEX_HEIGHT:         f32 = HEX_RADIUS * SQRT_3;
+
 pub const VISIBLE_HEX_RADIUS: f32 = HEX_RADIUS * 2.0;
 pub const VISIBLE_HEX_WIDTH:  f32 = HEX_WIDTH  * 2.0;
 pub const VISIBLE_HEX_HEIGHT: f32 = HEX_HEIGHT * 2.0;
+
+pub const ORIGIN_X:           f32 = WINDOW_WIDTH as f32 / 2.0;
+pub const ORIGIN_Y:           f32 = WINDOW_HEIGHT as f32 - 70.0;
 
 
 #[derive(Debug)]
@@ -173,8 +177,8 @@ impl HexPoint {
 
     pub fn to_point(self) -> Point2 {
         Point2::new(
-            WINDOW_WIDTH as f32 / 2.0 + self.q as f32 * HEX_WIDTH * 3.0 / 4.0,
-            WINDOW_HEIGHT as f32 - 70.0 + (self.r as f32 + self.q as f32 / 2.0) * HEX_HEIGHT,
+            ORIGIN_X + self.q as f32 * HEX_WIDTH * 3.0 / 4.0,
+            ORIGIN_Y + (self.r as f32 + self.q as f32 / 2.0) * HEX_HEIGHT,
         )
     }
 }
