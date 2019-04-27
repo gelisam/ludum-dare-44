@@ -57,6 +57,37 @@ impl Globals {
     fn reset(&mut self, ctx: &mut Context) {
         self.start_time = get_current_time(ctx);
     }
+
+    fn draw_left_sidebar(&mut self, ctx: &mut Context) -> GameResult<()> {
+        graphics::set_color(ctx, graphics::Color::from_rgb(181, 208, 212))?;
+        graphics::rectangle(ctx, graphics::DrawMode::Fill, graphics::Rect::new(0.0, 0.0, 150.0, WINDOW_HEIGHT as f32))?;
+
+        graphics::set_color(ctx, graphics::Color::from_rgb(0, 0, 0))?;
+        let text = graphics::Text::new(ctx, "Bounty", &self.assets.font)?;
+        let center = graphics::Point2::new(
+            150.0 / 2.0,
+            WINDOW_HEIGHT as f32 - 50.0,
+        );
+        text::draw_centered_text(ctx, &text, center, 0.0)?;
+
+        graphics::set_color(ctx, graphics::Color::from_rgb(0, 0, 0))?;
+        Ok(())
+    }
+
+    fn draw_right_sidebar(&mut self, ctx: &mut Context) -> GameResult<()> {
+        graphics::set_color(ctx, graphics::Color::from_rgb(242, 240, 186))?;
+        graphics::rectangle(ctx, graphics::DrawMode::Fill, graphics::Rect::new(WINDOW_WIDTH as f32 - 150.0, 0.0, 150.0, WINDOW_HEIGHT as f32))?;
+
+        graphics::set_color(ctx, graphics::Color::from_rgb(0, 0, 0))?;
+        let text = graphics::Text::new(ctx, "Life", &self.assets.font)?;
+        let center = graphics::Point2::new(
+            WINDOW_WIDTH as f32 - 150.0 / 2.0,
+            WINDOW_HEIGHT as f32 - 50.0,
+        );
+        text::draw_centered_text(ctx, &text, center, 0.0)?;
+
+        Ok(())
+    }
 }
 
 impl event::EventHandler for Globals {
@@ -91,18 +122,8 @@ impl event::EventHandler for Globals {
 
         bg::draw_bg(ctx, &self.assets.bg)?;
         hex::draw_hex_grid(ctx, &self.assets.hex)?;
-
-        let msg = format!("{:#?}", get_current_time(ctx) - self.start_time);
-        let text = graphics::Text::new(
-            ctx,
-            &msg,
-            &self.assets.font
-        )?;
-        let center = graphics::Point2::new(
-            WINDOW_WIDTH as f32 / 2.0,
-            WINDOW_HEIGHT as f32 / 2.0,
-        );
-        text::draw_centered_text(ctx, &text, center, 0.0)?;
+        self.draw_left_sidebar(ctx)?;
+        self.draw_right_sidebar(ctx)?;
 
         graphics::present(ctx);
         timer::yield_now();
