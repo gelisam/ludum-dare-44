@@ -20,7 +20,6 @@ use globals::*;
 
 #[derive(Debug)]
 struct Assets {
-    ambient: audio::Source,
     bg: bg::Assets,
     font: Font,
 }
@@ -29,17 +28,65 @@ fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     let font = Font::default_font()?;
 
     Ok(Assets {
-        ambient: audio::Source::new(ctx, "/ambient.ogg")?,
         bg: bg::load_assets(ctx)?,
         font,
     })
 }
 
+#[derive(Debug)]
+struct Channel {
+    source: audio::Source,
+    start_time: Duration,
+    duration: Duration,
+    initial_volume: f32,
+    target_volume: f32,
+}
+
+impl Channel {
+    fn new(ctx: &mut Context, path: &'static str) -> GameResult<Channel> {
+        let mut source = audio::Source::new(ctx, path)?;
+        source.set_repeat(true);
+        source.set_volume(0.0);
+
+        Ok(Channel {
+            source,
+            start_time: get_current_time(ctx),
+            duration: timer::f64_to_duration(0.0),
+            initial_volume: 0.0,
+            target_volume: 1.0,
+        })
+    }
+
+    fn set_future_volume(&mut self, ctx: &mut Context, duration: Duration, volume: f32) {
+        self.start_time = get_current_time(ctx);
+        self.duration = duration;
+        self.initial_volume = self.source.volume();
+        self.target_volume = volume;
+    }
+
+    fn update(&mut self, ctx: &mut Context) {
+        let t0 = timer::duration_to_f64(self.start_time) as f32;
+        let t1 = timer::duration_to_f64(self.start_time + self.duration) as f32;
+        let dt = timer::duration_to_f64(self.duration) as f32;
+        let t = timer::duration_to_f64(get_current_time(ctx)) as f32;
+        let v0 = self.initial_volume;
+        let v1 = self.target_volume;
+        let dv = v1 - v0;
+        if t >= t1 {
+            self.source.set_volume(v1);
+        } else {
+            let v = v0 + (t - t0) * dv / dt;
+            self.source.set_volume(v);
+        }
+    }
+}
 
 #[derive(Debug)]
 struct Globals {
     assets: Assets,
     start_time: Duration,
+    bees: Channel,
+    birds: Channel,
 }
 
 impl Globals {
@@ -47,6 +94,8 @@ impl Globals {
         Ok(Globals {
             assets: load_assets(ctx)?,
             start_time: get_current_time(ctx),
+            bees: Channel::new(ctx, "/bees.ogg")?,
+            birds: Channel::new(ctx, "/birds.ogg")?,
         })
     }
 
@@ -56,12 +105,25 @@ impl Globals {
 }
 
 impl event::EventHandler for Globals {
-    fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
+    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+        self.bees.update(ctx);
+        self.birds.update(ctx);
+
         Ok(())
+    }
+
+    fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
+        match keycode {
+            Keycode::Z     => self.bees.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
+            Keycode::X     => self.birds.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
+            _              => (),
+        }
     }
 
     fn key_up_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
+            Keycode::Z     => self.bees.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
+            Keycode::X     => self.birds.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
             Keycode::R     => self.reset(ctx),
             _              => (),
         }
@@ -108,7 +170,8 @@ pub fn main() {
     ).unwrap();
 
     let globals = &mut Globals::new(ctx).unwrap();
-	globals.assets.ambient.play().unwrap();
+	globals.bees.source.play().unwrap();
+	globals.birds.source.play().unwrap();
 
     event::run(ctx, globals).unwrap();
 }
