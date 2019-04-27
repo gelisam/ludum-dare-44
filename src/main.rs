@@ -53,7 +53,7 @@ impl Channel {
             start_time: get_current_time(ctx),
             duration: timer::f64_to_duration(0.0),
             initial_volume: 0.0,
-            target_volume: 1.0,
+            target_volume: 0.0,
         })
     }
 
@@ -114,9 +114,10 @@ impl event::EventHandler for Globals {
 
     fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
-            Keycode::Z     => self.bees.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
-            Keycode::X     => self.birds.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
-            _              => (),
+            Keycode::Z      => self.bees.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
+            Keycode::X      => self.birds.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
+            Keycode::Escape => ctx.quit().unwrap(),
+            _               => (),
         }
     }
 
