@@ -110,6 +110,7 @@ impl Globals {
 
         self.branches.clear();
         let root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
+        let root_gift_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
         let root_cell = cell::BranchCell::new(
             &self.assets.cell,
             &mut rand::thread_rng(),
@@ -117,6 +118,7 @@ impl Globals {
             root_point
         );
         self.branches.insert(root_point, root_cell);
+        self.forbidden.insert(root_gift_point, true);
 
         self.gifts.clear();
         let origin_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
@@ -205,6 +207,7 @@ impl EventHandler for Globals {
                                                     let gift_cell = cell::GiftCell::new(branch_point);
                                                     self.branches.insert(branch_point, branch_cell);
                                                     gifts_.insert(empty_neighbour, gift_cell);
+                                                    self.forbidden.insert(full_gift_point, true);
                                                 } else {
                                                     println!("not enough Bounty");
                                                 }
