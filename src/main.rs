@@ -196,6 +196,8 @@ impl EventHandler for Globals {
                                             let gift_cell = cell::GiftCell::new(branch_point);
                                             self.branches.insert(branch_point, branch_cell);
                                             gifts_.insert(empty_neighbour, gift_cell);
+                                        } else {
+                                            println!("not enough Bounty");
                                         }
                                     } else if empty_neighbours.len() == 2 {
                                         println!("new branches must be attached to the tree");
@@ -212,6 +214,8 @@ impl EventHandler for Globals {
                                                     *bounty_amount_ -= 2.0;
                                                     *life_amount_ += 0.1;
                                                     branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 1);
+                                                } else {
+                                                    println!("not enough Bounty");
                                                 }
                                             },
                                             1 => {
@@ -220,6 +224,8 @@ impl EventHandler for Globals {
                                                     *bounty_amount_ -= 3.0;
                                                     *life_amount_ += 0.1;
                                                     branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 2);
+                                                } else {
+                                                    println!("not enough Bounty");
                                                 }
                                             },
                                             2 => {
@@ -228,9 +234,13 @@ impl EventHandler for Globals {
                                                     *bounty_amount_ -= 4.0;
                                                     *life_amount_ += 0.1;
                                                     branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 3);
+                                                } else {
+                                                    println!("not enough Bounty");
                                                 }
                                             },
-                                            _ => {},
+                                            _ => {
+                                                println!("this branch has already reached its maximum growth");
+                                            },
                                         }
                                     }
                                 },
