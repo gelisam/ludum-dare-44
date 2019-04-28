@@ -260,10 +260,10 @@ impl Globals {
             }
             if let Some(gift_cell) = self.gifts.remove(&gift_point) {
                 match gift_cell.gift {
-                    Some(Leaves)   => self.leaf_count     -= 1,
-                    Some(Beehive)  => self.beehive_count  -= 1,
-                    Some(Birdnest) => self.birdnest_count -= 1,
-                    Some(Squirrel) => self.squirrel_count -= 1,
+                    Some(cell::Gift::Leaves)   => self.leaf_count     -= 1,
+                    Some(cell::Gift::Beehive)  => self.beehive_count  -= 1,
+                    Some(cell::Gift::Birdnest) => self.birdnest_count -= 1,
+                    Some(cell::Gift::Squirrel) => self.squirrel_count -= 1,
                     _ => {},
                 };
             }
@@ -274,6 +274,16 @@ impl Globals {
     }
 
     fn remove_gift(&mut self, gift_point: hex::GiftPoint) {
+        if let Some(gift_cell) = self.gifts.remove(&gift_point) {
+            match gift_cell.gift {
+                Some(cell::Gift::Leaves)   => self.leaf_count     -= 1,
+                Some(cell::Gift::Beehive)  => self.beehive_count  -= 1,
+                Some(cell::Gift::Birdnest) => self.birdnest_count -= 1,
+                Some(cell::Gift::Squirrel) => self.squirrel_count -= 1,
+                _ => {},
+            };
+        }
+
         self.gifts
             .entry(gift_point)
             .and_modify(|g| g.gift = None);
