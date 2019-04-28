@@ -119,15 +119,133 @@ impl EventHandler for Globals {
         self.life.update(ctx, 0.0f32, self.life_amount+1.0);
 
         let now = get_current_time(ctx);
-        let mut new_turn = false;
-        while (now - self.turn_time) > self.turn_duration {
-            new_turn = true;
-            self.turn_time = self.turn_time + self.turn_duration;
-        }
-
-        if new_turn {
+        while (now - self.turn_time) > self.turn_duration { // while loop in case of large discrepancy
             let basic_amount = 0.1f32; // get this amount even if no life
             self.bounty_amount = (self.bounty_amount+self.life_amount+basic_amount).min(30.0);
+            self.turn_time = self.turn_time + self.turn_duration;
+
+            // update all gifts
+            let gifts_old = self.gifts.clone(); // deep copy of old state
+            for (gift_point, _) in gifts_old.iter() {
+                let mut adjacent_empty = 0u8;
+                let mut adjacent_leaves = 0u8;
+                let mut adjacent_flowers = 0u8;
+                let mut adjacent_berries = 0u8;
+                let mut adjacent_nuts = 0u8;
+                let mut adjacent_beehives = 0u8;
+                let mut adjacent_birdnests = 0u8;
+                let mut adjacent_branches_upgrade = 0u8;
+
+                for adjacent_point in gift_point.gift_neighbours() {
+                    if let Some(adjacent_cell) = gifts_old.get(&adjacent_point)
+                    {
+                        match adjacent_cell.gift {
+                            Some(cell::Gift::Leaves)    => adjacent_leaves += 1,
+                            Some(cell::Gift::Flowers)   => adjacent_flowers += 1,
+                            Some(cell::Gift::Berries)   => adjacent_berries += 1,
+                            Some(cell::Gift::Nuts)      => adjacent_nuts += 1,
+                            Some(cell::Gift::Beehive)   => adjacent_beehives += 1,
+                            Some(cell::Gift::Birdnest)  => adjacent_birdnests += 1,
+                            None                        => adjacent_empty += 1,
+                        }
+                    }
+                    else {
+                        adjacent_empty += 1;
+                    }
+                };
+
+                for adjacent_point in gift_point.branch_neighbours() {
+                    if let Some(adjacent_cell) = self.branches.get(&adjacent_point)
+                    {
+                        if adjacent_cell.branch_upgrade > 0 {
+                            adjacent_branches_upgrade += 1
+                        }
+                    }
+                };
+
+                if let Some(gift_cell) = self.gifts.get_mut(&gift_point)
+                {
+                    gift_cell.gift = match gift_cell.gift {
+                        None => {
+                            if adjacent_berries>=3 {
+                                Some(cell::Gift::Birdnest)
+                            }
+                            else if adjacent_flowers>=2 {
+                                Some(cell::Gift::Beehive)
+                            }
+                            else if adjacent_empty>=2 {
+                                Some(cell::Gift::Leaves)
+                            }
+                            else {
+                                None
+                            }
+                        }
+                        Some(cell::Gift::Leaves) => {
+                            if adjacent_empty==0 {
+                                None
+                            }
+                            else if adjacent_flowers>=2 {
+                                Some(cell::Gift::Beehive)
+                            }
+                            else if adjacent_leaves>=2 {
+                                Some(cell::Gift::Flowers)
+                            }
+                            else {
+                                Some(cell::Gift::Leaves)
+                            }
+                        }
+                        Some(cell::Gift::Flowers) => {
+                            if adjacent_leaves==0 {
+                                Some(cell::Gift::Leaves)
+                            }
+                            else if (adjacent_branches_upgrade>0) & (adjacent_flowers>0) & (adjacent_leaves>0) {
+                                Some(cell::Gift::Nuts)
+                            }
+                            else if (adjacent_beehives>0) & (adjacent_leaves>=2) {
+                                Some(cell::Gift::Berries)
+                            }
+                            else {
+                                Some(cell::Gift::Flowers)
+                            }
+                        }
+                        Some(cell::Gift::Berries) => {
+                            if (adjacent_beehives==0) | (adjacent_flowers==0) | (adjacent_leaves==0) {
+                                Some(cell::Gift::Flowers)
+                            }
+                            else {
+                                Some(cell::Gift::Berries)
+                            }
+                        }
+                        Some(cell::Gift::Nuts) => {
+                            if (adjacent_branches_upgrade==0) | (adjacent_flowers==0) | (adjacent_leaves==0) {
+                                Some(cell::Gift::Flowers)
+                            }
+                            else {
+                                Some(cell::Gift::Nuts)
+                            }
+                        }
+                        Some(cell::Gift::Beehive) => {
+                            if adjacent_flowers<3 {
+                                None
+                            }
+                            else {
+                                Some(cell::Gift::Beehive)
+                            }
+                        }
+                        Some(cell::Gift::Birdnest) => {
+                            if adjacent_berries<3 {
+                                None
+                            }
+                            else {
+                                Some(cell::Gift::Birdnest)
+                            }
+                        }
+                    }
+                }
+                else {
+                    println!("error: gift cell vanished during update"); // cryptic error bwahaha
+                }
+            }
         }
 
         ggez::timer::sleep(Duration::from_millis(5));
@@ -172,8 +290,18 @@ impl EventHandler for Globals {
                                                         println!("error: double empty parents");
                                                         return;
                                                     } else if self.parent.get(&point1) == None {
+                                                        self.gifts
+                                                            .entry(*point1)
+                                                            .and_modify(|g| g.next(&assets_.cell))
+                                                            .or_insert(cell::GiftCell::new());
+
                                                         self.parent.insert(*point1, *point2);
                                                     } else if self.parent.get(&point2) == None {
+                                                        self.gifts
+                                                            .entry(*point2)
+                                                            .and_modify(|g| g.next(&assets_.cell))
+                                                            .or_insert(cell::GiftCell::new());
+
                                                         self.parent.insert(*point2, *point1);
                                                     } else {
                                                         println!("error: both points have parents already");

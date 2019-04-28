@@ -15,6 +15,8 @@ pub struct Assets {
     flower_images: Vec<Image>,
     berry_images: Vec<Image>,
     nut_images: Vec<Image>,
+    beehive_images: Vec<Image>,
+    birdnest_images: Vec<Image>,
 }
 
 pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
@@ -79,6 +81,12 @@ pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
         nut_images: vec!(
             Image::new(ctx, "/beehive.png")?, // TODO: this is a beehive, not a nut!
         ),
+        beehive_images: vec!(
+            Image::new(ctx, "/beehive.png")?,
+        ),
+        birdnest_images: vec!(
+            Image::new(ctx, "/beehive.png")?, // TODO: this is a beehive, not a birdnest!
+        ),
     })
 }
 
@@ -93,10 +101,12 @@ impl Assets {
 
     fn gift_images(&self, gift: Gift) -> &Vec<Image> {
         match gift {
-            Gift::Leaves  => &self.leaf_images,
-            Gift::Flowers => &self.flower_images,
-            Gift::Berries => &self.berry_images,
-            Gift::Nuts    => &self.nut_images,
+            Gift::Leaves   => &self.leaf_images,
+            Gift::Flowers  => &self.flower_images,
+            Gift::Berries  => &self.berry_images,
+            Gift::Nuts     => &self.nut_images,
+            Gift::Beehive  => &self.beehive_images,
+            Gift::Birdnest => &self.birdnest_images,
         }
     }
 }
@@ -113,16 +123,18 @@ pub enum Gift {
     Flowers,
     Berries,
 	Nuts,
+    Beehive,
+    Birdnest,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct GiftCell {
-	gift: Option<Gift>,
+	pub gift: Option<Gift>,
     image_variant: usize,
-    parent: Option<BranchPoint>,
+    pub parent: Option<BranchPoint>,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct BranchCell {
 	pub branch_strain_current: usize,
     pub branch_upgrade: usize,
@@ -166,7 +178,7 @@ impl BranchCell {
 impl GiftCell {
     pub fn new() -> GiftCell {
         GiftCell {
-            gift: Some(Gift::Flowers),
+            gift: None,
             image_variant: 0,
             parent: None,
         }
@@ -181,10 +193,12 @@ impl GiftCell {
                 self.image_variant = 0;
                 self.gift = Some(
                     match gift {
-                        Gift::Leaves  => Gift::Flowers,
-                        Gift::Flowers => Gift::Berries,
-                        Gift::Berries => Gift::Nuts,
-                        Gift::Nuts    => Gift::Leaves,
+                        Gift::Leaves   => Gift::Flowers,
+                        Gift::Flowers  => Gift::Berries,
+                        Gift::Berries  => Gift::Nuts,
+                        Gift::Nuts     => Gift::Beehive,
+                        Gift::Beehive  => Gift::Birdnest,
+                        Gift::Birdnest => Gift::Leaves,
                     }
                 );
             }
@@ -205,6 +219,12 @@ impl GiftCell {
                 },
                 Gift::Nuts => {
                     &assets.nut_images[self.image_variant]
+                },
+                Gift::Beehive => {
+                    &assets.beehive_images[self.image_variant]
+                },
+                Gift::Birdnest => {
+                    &assets.birdnest_images[self.image_variant]
                 },
             };
             center::draw_centered_image(ctx, image, gift_point.to_point(), 0.0)?;
