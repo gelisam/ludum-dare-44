@@ -139,6 +139,20 @@ impl Globals {
         self.gifts.insert(origin_point, origin_cell);
     }
 
+    fn branch_parent_parent(&self, branch_point: hex::BranchPoint) -> Option<hex::BranchPoint> {
+        let branch_cell = self.branches.get(&branch_point)?;
+        let gift_point = branch_cell.parent?;
+        let gift_cell = self.gifts.get(&gift_point)?;
+        Some(gift_cell.parent)
+    }
+
+    fn gift_parent_parent(&self, gift_point: hex::GiftPoint) -> Option<hex::GiftPoint> {
+        let gift_cell = self.gifts.get(&gift_point)?;
+        let branch_point = gift_cell.parent;
+        let branch_cell = self.branches.get(&branch_point)?;
+        branch_cell.parent
+    }
+
     fn branch_children(&self, branch_point: hex::BranchPoint) -> Vec<hex::GiftPoint> {
         branch_point.gift_neighbours()
             .iter()
@@ -240,37 +254,33 @@ impl EventHandler for Globals {
                 MouseButton::Left => {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
-                            let bounty_amount_ = &mut self.bounty_amount;
-                            let life_amount_ = &mut self.life_amount;
-                            let gifts_ = &mut self.gifts;
                             match self.branches.get(&branch_point) {
                                 None => {
                                     let gift_neighbours = branch_point.gift_neighbours();
                                     let empty_neighbours: Vec<hex::GiftPoint> = gift_neighbours
                                         .iter()
                                         .map(|g| *g)
-                                        .filter(|g| gifts_.get(g).is_none())
+                                        .filter(|g| self.gifts.get(g).is_none())
                                         .collect();
                                     let full_neighbours: Vec<hex::GiftPoint> = gift_neighbours
                                         .iter()
                                         .map(|g| *g)
-                                        .filter(|g| gifts_.get(g).is_some())
+                                        .filter(|g| self.gifts.get(g).is_some())
                                         .collect();
                                     if empty_neighbours.len() == 1 && full_neighbours.len() == 1 {
                                         let empty_neighbour = empty_neighbours[0];
                                         let full_gift_point = full_neighbours[0];
-                                        match gifts_.get(&full_gift_point).unwrap().gift {
+                                        match self.gifts.get(&full_gift_point).unwrap().gift {
                                             None => {
                                                 let cost = life::BASE * 5.0;
-                                                if *bounty_amount_ >= cost {
+                                                if self.bounty_amount >= cost {
                                                     // place a new branch
                                                     self.assets.branch_place_sound.play().unwrap_or(());
-                                                    *bounty_amount_ -= cost;
-                                                    //*life_amount_ += 0.1;
+                                                    self.bounty_amount -= cost;
                                                     let branch_cell = cell::BranchCell::new(Some(full_gift_point));
                                                     let gift_cell = cell::GiftCell::new(branch_point);
                                                     self.branches.insert(branch_point, branch_cell);
-                                                    gifts_.insert(empty_neighbour, gift_cell);
+                                                    self.gifts.insert(empty_neighbour, gift_cell);
                                                     self.forbidden.insert(full_gift_point, true);
                                                 } else {
                                                     println!("not enough Bounty");
@@ -287,44 +297,50 @@ impl EventHandler for Globals {
                                     }
                                 },
                                 Some(_) => {
-                                    if let Some(branch_cell) = self.branches.get_mut(&branch_point) {
-                                        match branch_cell.branch_upgrade {
-                                            0 => {
-                                                // upgrade a branch to level 1
-                                                let cost = life::BASE * 25.0;
-                                                if *bounty_amount_ >= cost {
-                                                    *bounty_amount_ -= cost;
-                                                    //*life_amount_ += 0.1;
-                                                    branch_cell.branch_upgrade = 1;
+                                    if let Some(parent_point) = self.branch_parent_parent(branch_point) {
+                                        if let Some(&parent_cell) = self.branches.get(&parent_point) {
+                                            let bounty_amount_ = &mut self.bounty_amount;
+                                            if let Some(branch_cell) = self.branches.get_mut(&branch_point) {
+                                                if branch_cell.branch_upgrade < parent_cell.branch_upgrade {
+                                                    match branch_cell.branch_upgrade {
+                                                        0 => {
+                                                            // upgrade a branch to level 1
+                                                            let cost = life::BASE * 25.0;
+                                                            if *bounty_amount_ >= cost {
+                                                                *bounty_amount_ -= cost;
+                                                                branch_cell.branch_upgrade = 1;
+                                                            } else {
+                                                                println!("not enough Bounty");
+                                                            }
+                                                        },
+                                                        1 => {
+                                                            // upgrade a branch to level 2
+                                                            let cost = life::BASE * 125.0;
+                                                            if *bounty_amount_ >= cost {
+                                                                *bounty_amount_ -= cost;
+                                                                branch_cell.branch_upgrade = 2;
+                                                            } else {
+                                                                println!("not enough Bounty");
+                                                            }
+                                                        },
+                                                        2 => {
+                                                            // upgrade a branch to level 3
+                                                            let cost = life::BASE * 625.0;
+                                                            if *bounty_amount_ >= cost {
+                                                                *bounty_amount_ -= cost;
+                                                                branch_cell.branch_upgrade = 3;
+                                                            } else {
+                                                                println!("not enough Bounty");
+                                                            }
+                                                        },
+                                                        _ => {
+                                                            println!("this branch has already reached its maximum growth");
+                                                        },
+                                                    }
                                                 } else {
-                                                    println!("not enough Bounty");
+                                                    println!("you have to grow the parent branch first!");
                                                 }
-                                            },
-                                            1 => {
-                                                // upgrade a branch to level 2
-                                                let cost = life::BASE * 125.0;
-                                                if *bounty_amount_ >= cost {
-                                                    *bounty_amount_ -= cost;
-                                                    //*life_amount_ += 0.1;
-                                                    branch_cell.branch_upgrade = 2;
-                                                } else {
-                                                    println!("not enough Bounty");
-                                                }
-                                            },
-                                            2 => {
-                                                // upgrade a branch to level 3
-                                                let cost = life::BASE * 625.0;
-                                                if *bounty_amount_ >= cost {
-                                                    *bounty_amount_ -= cost;
-                                                    //*life_amount_ += 0.1;
-                                                    branch_cell.branch_upgrade = 3;
-                                                } else {
-                                                    println!("not enough Bounty");
-                                                }
-                                            },
-                                            _ => {
-                                                println!("this branch has already reached its maximum growth");
-                                            },
+                                            }
                                         }
                                     }
                                 },
