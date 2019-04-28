@@ -6,7 +6,7 @@ use counter::Counter;
 use cell;
 use hex;
 
-pub const BASE: f32 = 0.25;
+pub const BASE: f32 = 0.20;
 
 macro_rules !get {
     ($map:expr, $value:expr) => (*$map.get(&Some($value)).unwrap_or(&0));
@@ -22,6 +22,13 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
         if *forbidden.get(&gift_point).unwrap_or(&false) {
             continue
         }
+        /*let filtered_points = gift_point.gift_neighbours()
+            .iter()
+            .filter(|p| p.branch_neighbours()
+                         .iter()
+                         .filter(|bp| !branches.get(&bp).is_none())
+                         .collect()
+                    .len() == 1);*/
         let mut counts = gift_point.gift_neighbours()
             .iter()
             .map(|adj_point| match gifts_old.get(&adj_point){
@@ -46,18 +53,19 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
         {
             gift_cell.gift = match gift_cell.gift {
                 None => {
-                    if get![counts, Berries] >=2 {
-                        Some(Birdnest)
-                    }
-                    else if get![counts, Flowers] >=2 {
-                        Some(Beehive)
-                    }
-                    else if get![counts] >=2 {
-                        Some(Leaves)
+                    // This doesn't seem to count properly anymore?
+                    //} else if (adjacent_branches_upgrade>0) & (get![counts, Flowers]>0) & (get![counts, Leaves]>0) {
+                    if get![counts, Nuts] >= 2 {
+                        Some(Squirrel)
                     } else if (adjacent_branches_upgrade>0) & (get![counts, Flowers]>0) & (get![counts, Leaves]>0) {
                         Some(Nuts)
-                    }
-                    else {
+                    } else if get![counts, Berries] >=2 {
+                        Some(Birdnest)
+                    } else if get![counts, Flowers] >=2 {
+                        Some(Beehive)
+                    } else if get![counts] >=2 {
+                        Some(Leaves)
+                    } else {
                         None
                     }
                 }
