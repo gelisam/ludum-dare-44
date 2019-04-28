@@ -235,7 +235,7 @@ impl EventHandler for Globals {
                                         let full_gift_point = full_neighbours[0];
                                         match gifts_.get(&full_gift_point).unwrap().gift {
                                             None => {
-                                                let cost = life::base * 4.0;
+                                                let cost = life::BASE * 4.0;
                                                 if *bounty_amount_ >= cost {
                                                     // place a new branch
                                                     *bounty_amount_ -= cost;
@@ -264,7 +264,7 @@ impl EventHandler for Globals {
                                         match branch_cell.branch_upgrade {
                                             0 => {
                                                 // upgrade a branch to level 1
-                                                let cost = life::base * 10.0;
+                                                let cost = life::BASE * 10.0;
                                                 if *bounty_amount_ >= cost {
                                                     *bounty_amount_ -= cost;
                                                     //*life_amount_ += 0.1;
@@ -275,7 +275,7 @@ impl EventHandler for Globals {
                                             },
                                             1 => {
                                                 // upgrade a branch to level 2
-                                                let cost = life::base * 100.0;
+                                                let cost = life::BASE * 100.0;
                                                 if *bounty_amount_ >= cost {
                                                     *bounty_amount_ -= cost;
                                                     //*life_amount_ += 0.1;
@@ -286,7 +286,7 @@ impl EventHandler for Globals {
                                             },
                                             2 => {
                                                 // upgrade a branch to level 3
-                                                let cost = life::base * 1000.0;
+                                                let cost = life::BASE * 1000.0;
                                                 if *bounty_amount_ >= cost {
                                                     *bounty_amount_ -= cost;
                                                     //*life_amount_ += 0.1;
