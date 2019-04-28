@@ -264,7 +264,7 @@ impl EventHandler for Globals {
                                         match branch_cell.branch_upgrade {
                                             0 => {
                                                 // upgrade a branch to level 1
-                                                let cost = life::BASE * 10.0;
+                                                let cost = life::BASE * 20.0;
                                                 if *bounty_amount_ >= cost {
                                                     *bounty_amount_ -= cost;
                                                     //*life_amount_ += 0.1;
@@ -286,7 +286,7 @@ impl EventHandler for Globals {
                                             },
                                             2 => {
                                                 // upgrade a branch to level 3
-                                                let cost = life::BASE * 1000.0;
+                                                let cost = life::BASE * 500.0;
                                                 if *bounty_amount_ >= cost {
                                                     *bounty_amount_ -= cost;
                                                     //*life_amount_ += 0.1;
