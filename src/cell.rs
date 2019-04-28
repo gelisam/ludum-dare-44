@@ -1,5 +1,6 @@
 use ggez::{GameResult, Context};
 use ggez::graphics::Image;
+use rand::Rng;
 
 use center;
 use hex::*;
@@ -149,18 +150,15 @@ impl BranchCell {
         }
     }
 
-    pub fn next(&mut self, assets: &Assets, branch_point: BranchPoint) {
+    pub fn upgradable(&self) -> bool {
+        self.branch_upgrade+1 < 3
+    }
+
+    // will cause a crash unless self is upgradable
+    pub fn upgrade(&mut self, assets: &Assets, rng: &mut rand::ThreadRng, branch_point: BranchPoint) {
+        self.branch_upgrade += 1;
         let n = assets.branch_images(branch_point.orientation())[self.branch_upgrade].len();
-        if self.image_variant+1 < n {
-            self.image_variant += 1;
-        } else {
-            self.image_variant = 0;
-            if self.branch_upgrade+1 < 3 {
-                self.branch_upgrade += 1;
-            } else {
-                self.branch_upgrade = 0;
-            }
-        }
+        self.image_variant = rng.gen_range(0, n);
     }
 
     pub fn draw(&self, ctx: &mut Context, assets: &Assets, branch_point: BranchPoint) -> GameResult<()> {

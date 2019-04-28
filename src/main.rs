@@ -49,6 +49,8 @@ impl Assets {
 struct Globals {
     assets: Assets,
     start_time: Duration,
+    turn_time: Duration,
+    turn_duration: Duration,
     bees: channel::Channel,
     birds: channel::Channel,
     bounty: sidebar::Sidebar,
@@ -89,12 +91,14 @@ impl Globals {
         Ok(Globals {
             assets,
             start_time: get_current_time(ctx),
+            turn_time: get_current_time(ctx),
+            turn_duration: Duration::from_millis(2000),
             bees: channel::Channel::new(ctx, "/bees.ogg")?,
             birds: channel::Channel::new(ctx, "/birds.ogg")?,
             bounty,
             life,
             bounty_amount: 5.0f32,
-            life_amount: 1.0f32,
+            life_amount: 0.0f32,
             hover: None,
             branches,
             gifts: HashMap::with_capacity(100),
@@ -111,12 +115,22 @@ impl EventHandler for Globals {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         self.bees.update(ctx);
         self.birds.update(ctx);
-        self.bounty.update(ctx,self.bounty_amount);
-        self.life.update(ctx,self.life_amount);
+        self.bounty.update(ctx, self.bounty_amount, 0.0f32);
+        self.life.update(ctx, 0.0f32, self.life_amount+1.0);
 
-        self.bounty_amount += 0.02;
+        let now = get_current_time(ctx);
+        let mut new_turn = false;
+        while (now - self.turn_time) > self.turn_duration {
+            new_turn = true;
+            self.turn_time = self.turn_time + self.turn_duration;
+        }
 
-        ggez::timer::sleep(Duration::from_millis(50));
+        if new_turn {
+            let basic_amount = 0.1f32; // get this amount even if no life
+            self.bounty_amount = (self.bounty_amount+self.life_amount+basic_amount).min(30.0);
+        }
+
+        ggez::timer::sleep(Duration::from_millis(5));
         Ok(())
     }
 
@@ -144,6 +158,7 @@ impl EventHandler for Globals {
             return
         }
         self.bounty_amount = self.bounty_amount-1.0;
+        self.life_amount = self.life_amount+0.1;
         let point = Point2::new(x as f32, y as f32);
         if let Some(in_bounds_point) = hex::HexPoint::from_point(point).is_in_bounds() {
             match button {
@@ -171,7 +186,11 @@ impl EventHandler for Globals {
                             let assets_ = &mut self.assets;
                             self.branches
                                 .entry(branch_point)
-                                .and_modify(|b| b.next(&assets_.cell, branch_point))
+                                .and_modify(|b|
+                                    if b.upgradable() {
+                                        b.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point)
+                                    }
+                                )
                                 .or_insert(cell::BranchCell::new());
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
