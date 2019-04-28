@@ -183,6 +183,12 @@ impl EventHandler for Globals {
                                     if empty_neighbours.len() == 1 && full_neighbours.len() == 1 {
                                         let empty_neighbour = empty_neighbours[0];
                                         let full_neighbour = full_neighbours[0];
+                                        // println!("{:?}", gifts_.get(&full_neighbour).unwrap().gift);
+                                        if !gifts_.get(&full_neighbour).unwrap().gift.is_none() {
+                                            println!("cannot attach to non-empty branch");
+                                            return;
+                                        }
+
                                         if *bounty_amount_ >= 1.0 {
                                             // place a new branch
                                             *bounty_amount_ -= 1.0;
