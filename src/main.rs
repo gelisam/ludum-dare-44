@@ -366,7 +366,13 @@ impl EventHandler for Globals {
         for (&gift_point, gift_cell) in self.gifts.iter() {
             gift_cell.draw(ctx, &self.assets.cell, gift_point)?;
         }
-
+        set_color(ctx, Color::from_rgb(128, 255, 128))?;
+        // Need to skip non-tips. Check that children is [] when we get those!
+        for (&gift_point, &b) in self.forbidden.iter() {
+            if b {
+                self.assets.dot.draw(ctx, gift_point.to_point(), 0.0)?;
+            }
+        }
         if let Some(in_bounds_point) = self.hover {
             set_color(ctx, Color::from_rgb(255, 128, 128))?;
             self.assets.dot.draw(ctx, in_bounds_point.to_point(), 0.0)?;
