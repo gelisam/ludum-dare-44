@@ -111,7 +111,8 @@ impl Globals {
         self.branches.clear();
         let root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
         let root_gift_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
-        let root_cell = cell::BranchCell::new(None);
+        let mut root_cell = cell::BranchCell::new(None);
+        root_cell.branch_upgrade = 3;
         self.branches.insert(root_point, root_cell);
         self.forbidden.insert(root_gift_point, true);
 
