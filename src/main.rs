@@ -151,23 +151,23 @@ impl EventHandler for Globals {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
                             if self.branches.get(&branch_point).is_none() {
-                                    match branch_point.gift_neighbours().as_slice(){
-                                        [point1, point2] => {
-                                            if self.parent.get(&point1) == None && self.parent.get(&point2) == None {
-                                                println!("error: double empty parents");
-                                                return;
-                                            } else if self.parent.get(&point1) == None {
-                                                self.parent.insert(*point1, *point2);
-                                            } else if self.parent.get(&point2) == None {
-                                                self.parent.insert(*point2, *point1);
-                                            } else {
-                                                println!("error: both points have parents already");
-                                                return;
-                                            }
+                                match branch_point.gift_neighbours().as_slice(){
+                                    [point1, point2] => {
+                                        if self.parent.get(&point1) == None && self.parent.get(&point2) == None {
+                                            println!("error: double empty parents");
+                                            return;
+                                        } else if self.parent.get(&point1) == None {
+                                            self.parent.insert(*point1, *point2);
+                                        } else if self.parent.get(&point2) == None {
+                                            self.parent.insert(*point2, *point1);
+                                        } else {
+                                            println!("error: both points have parents already");
+                                            return;
                                         }
-                                        _                => {println!("error: vec had different length than 2");}
-                                    };
-                                }
+                                    }
+                                    _                => {println!("error: vec had different length than 2");}
+                                };
+                            }
                             let assets_ = &mut self.assets;
                             self.branches
                                 .entry(branch_point)
