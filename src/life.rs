@@ -8,6 +8,14 @@ use hex;
 
 pub const BASE: f32 = 0.20;
 
+pub struct Stats {
+    pub leaf_count: u8,
+    pub flower_count: u8,
+    pub beehive_count: u8,
+    pub birdnest_count: u8,
+    pub squirrel_count: u8,
+}
+
 macro_rules !get {
     ($map:expr, $value:expr) => (*$map.get(&Some($value)).unwrap_or(&0));
     ($map:expr) => (*$map.get(&None).unwrap_or(&0));
@@ -16,10 +24,7 @@ macro_rules !get {
 pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
                   branches: &HashMap<hex::BranchPoint, cell::BranchCell>,
                   forbidden: &HashMap<hex::GiftPoint, bool>,
-                  leaf_count: &mut u8,
-                  beehive_count: &mut u8,
-                  birdnest_count: &mut u8,
-                  squirrel_count: &mut u8,
+                  stats: &mut Stats,
                   ) {
     let gifts_old = gifts.clone(); // deep copy of old state
     for (gift_point, _) in gifts_old.iter() {
@@ -57,10 +62,11 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
         if let Some(gift_cell) = gifts.get_mut(&gift_point)
         {
             match gift_cell.gift {
-                Some(Leaves)   => *leaf_count     -= 1,
-                Some(Beehive)  => *beehive_count  -= 1,
-                Some(Birdnest) => *birdnest_count -= 1,
-                Some(Squirrel) => *squirrel_count -= 1,
+                Some(Leaves)   => stats.leaf_count     -= 1,
+                Some(Flowers)  => stats.flower_count   -= 1,
+                Some(Beehive)  => stats.beehive_count  -= 1,
+                Some(Birdnest) => stats.birdnest_count -= 1,
+                Some(Squirrel) => stats.squirrel_count -= 1,
                 _ => {},
             };
 
@@ -156,10 +162,11 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
             };
 
             match gift_cell.gift {
-                Some(Leaves)   => *leaf_count     += 1,
-                Some(Beehive)  => *beehive_count  += 1,
-                Some(Birdnest) => *birdnest_count += 1,
-                Some(Squirrel) => *squirrel_count += 1,
+                Some(Leaves)   => stats.leaf_count     += 1,
+                Some(Flowers)  => stats.flower_count   += 1,
+                Some(Beehive)  => stats.beehive_count  += 1,
+                Some(Birdnest) => stats.birdnest_count += 1,
+                Some(Squirrel) => stats.squirrel_count += 1,
                 _ => {},
             }
         }
@@ -172,9 +179,11 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
 pub fn life_production(gifts: &HashMap<hex::GiftPoint, cell::GiftCell>) -> f32{
     let total: f32 = gifts.iter()
         .map(|(_, gift)| match gift.gift {
-            Some(Leaves) => 1f32,
-            Some(Flowers) => 1f32,
-            Some(Beehive) => 4f32,
+            Some(Leaves)   => 1f32,
+            Some(Flowers)  => 1f32,
+            Some(Berries)  => 6f32,
+            Some(Nuts)     => 6f32,
+            Some(Beehive)  => 4f32,
             Some(Birdnest) => 0f32,
             Some(Squirrel) => 8f32,
             _ => 0f32,
