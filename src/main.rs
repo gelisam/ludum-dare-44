@@ -103,6 +103,7 @@ struct Globals {
     bounty_amount: f32,
     life_amount: f32,
     hover: Option<hex::InBoundsPoint>,
+    root_point: hex::BranchPoint,
     branches: HashMap<hex::BranchPoint, cell::BranchCell>,
     gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
     stats: Stats,
@@ -164,6 +165,7 @@ impl Globals {
             bounty_amount: 0.0,
             life_amount: 0.0,
             hover: None,
+            root_point: hex::BranchPoint::new(hex::HexPoint::new(0, 1)),
             branches: HashMap::with_capacity(100),
             gifts: HashMap::with_capacity(100),
             stats: Stats{
@@ -186,18 +188,18 @@ impl Globals {
         self.life_amount = 0.0;
 
         self.branches.clear();
-        let root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
+        self.root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
         let root_gift_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
         let mut root_cell = cell::BranchCell::new(None);
         root_cell.branch_upgrade = 3;
-        self.branches.insert(root_point, root_cell);
+        self.branches.insert(self.root_point, root_cell);
 
         self.forbidden.clear();
         self.forbidden.insert(root_gift_point, true);
 
         self.gifts.clear();
         let origin_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
-        let origin_cell = cell::GiftCell::new(root_point);
+        let origin_cell = cell::GiftCell::new(self.root_point);
         self.gifts.insert(origin_point, origin_cell);
     }
 
