@@ -6,7 +6,7 @@ use counter::Counter;
 use cell;
 use hex;
 
-pub const base: f32 = 0.25;
+pub const BASE: f32 = 0.25;
 
 macro_rules !get {
     ($map:expr, $value:expr) => (*$map.get(&Some($value)).unwrap_or(&0));
@@ -120,6 +120,14 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
                         Some(Birdnest)
                     }
                 }
+                Some(Squirrel) => {
+                    if get![counts, Nuts]<2 {
+                        None
+                    }
+                    else {
+                        Some(Squirrel)
+                    }
+                }
             }
         }
         else {
@@ -144,5 +152,5 @@ pub fn life_production(gifts: &HashMap<hex::GiftPoint, cell::GiftCell>) -> f32{
             Some(Birdnest) => 0.5f32,
             _ => 0.0f32})
         .sum();
-    return base * (1f32 + (1f32 + multiplier) * total);
+    return BASE * (1f32 + (1f32 + multiplier) * total);
 }

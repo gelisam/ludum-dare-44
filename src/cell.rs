@@ -15,6 +15,7 @@ pub struct Assets {
     nut_images: Vec<Image>,
     beehive_images: Vec<Image>,
     birdnest_images: Vec<Image>,
+    squirrel_images: Vec<Image>,
 }
 
 pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
@@ -45,6 +46,9 @@ pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
         birdnest_images: vec!(
             Image::new(ctx, "/beehive.png")?, // TODO: this is a beehive, not a birdnest!
         ),
+        squirrel_images: vec!(
+            Image::new(ctx, "/beehive.png")?, // TODO: this is a beehive, not a squirrel!
+        ),
     })
 }
 
@@ -57,6 +61,7 @@ impl Assets {
             Gift::Nuts     => &self.nut_images,
             Gift::Beehive  => &self.beehive_images,
             Gift::Birdnest => &self.birdnest_images,
+            Gift::Squirrel => &self.squirrel_images,
         }
     }
 }
@@ -75,6 +80,7 @@ pub enum Gift {
 	Nuts,
     Beehive,
     Birdnest,
+    Squirrel,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -100,6 +106,7 @@ impl Gift {
             Gift::Nuts     => "nut",
             Gift::Beehive  => "beehive",
             Gift::Birdnest => "bird nest",
+            Gift::Squirrel => "squirrel",
         }
     }
 
@@ -111,6 +118,7 @@ impl Gift {
             Gift::Nuts     => "nuts",
             Gift::Beehive  => "beehives",
             Gift::Birdnest => "bird nests",
+            Gift::Squirrel => "squirrels",
         }
     }
 }
