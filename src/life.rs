@@ -15,7 +15,12 @@ macro_rules !get {
 
 pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
                   branches: &HashMap<hex::BranchPoint, cell::BranchCell>,
-                  forbidden: &HashMap<hex::GiftPoint, bool>,) {
+                  forbidden: &HashMap<hex::GiftPoint, bool>,
+                  leaf_count: &mut u8,
+                  beehive_count: &mut u8,
+                  birdnest_count: &mut u8,
+                  squirrel_count: &mut u8,
+                  ) {
     let gifts_old = gifts.clone(); // deep copy of old state
     for (gift_point, _) in gifts_old.iter() {
         // Should filter!
@@ -51,6 +56,14 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
         // Should be gifts_old?
         if let Some(gift_cell) = gifts.get_mut(&gift_point)
         {
+            match gift_cell.gift {
+                Some(Leaves)   => *leaf_count     -= 1,
+                Some(Beehive)  => *beehive_count  -= 1,
+                Some(Birdnest) => *birdnest_count -= 1,
+                Some(Squirrel) => *squirrel_count -= 1,
+                _ => {},
+            };
+
             gift_cell.gift = match gift_cell.gift {
                 None => {
                     // This doesn't seem to count properly anymore?
@@ -140,6 +153,14 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
                         Some(Squirrel)
                     }
                 }
+            };
+
+            match gift_cell.gift {
+                Some(Leaves)   => *leaf_count     += 1,
+                Some(Beehive)  => *beehive_count  += 1,
+                Some(Birdnest) => *birdnest_count += 1,
+                Some(Squirrel) => *squirrel_count += 1,
+                _ => {},
             }
         }
         else {
