@@ -240,10 +240,11 @@ impl EventHandler for Globals {
                                         let full_gift_point = full_neighbours[0];
                                         match gifts_.get(&full_gift_point).unwrap().gift {
                                             None => {
-                                                if *bounty_amount_ >= 1.0 {
+                                                let cost = life::base * 4.0;
+                                                if *bounty_amount_ >= cost {
                                                     // place a new branch
-                                                    *bounty_amount_ -= 1.0;
-                                                    *life_amount_ += 0.1;
+                                                    *bounty_amount_ -= cost;
+                                                    //*life_amount_ += 0.1;
                                                     let branch_cell = cell::BranchCell::new(
                                                         &assets_.cell,
                                                         &mut rand::thread_rng(),
@@ -273,9 +274,10 @@ impl EventHandler for Globals {
                                         match branch_cell.branch_upgrade {
                                             0 => {
                                                 // upgrade a branch to level 1
-                                                if *bounty_amount_ >= 2.0 {
-                                                    *bounty_amount_ -= 2.0;
-                                                    *life_amount_ += 0.1;
+                                                let cost = life::base * 20.0;
+                                                if *bounty_amount_ >= cost {
+                                                    *bounty_amount_ -= cost;
+                                                    //*life_amount_ += 0.1;
                                                     branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 1);
                                                 } else {
                                                     println!("not enough Bounty");
@@ -283,9 +285,10 @@ impl EventHandler for Globals {
                                             },
                                             1 => {
                                                 // upgrade a branch to level 2
-                                                if *bounty_amount_ >= 3.0 {
-                                                    *bounty_amount_ -= 3.0;
-                                                    *life_amount_ += 0.1;
+                                                let cost = life::base * 100.0;
+                                                if *bounty_amount_ >= cost {
+                                                    *bounty_amount_ -= cost;
+                                                    //*life_amount_ += 0.1;
                                                     branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 2);
                                                 } else {
                                                     println!("not enough Bounty");

@@ -6,6 +6,8 @@ use counter::Counter;
 use cell;
 use hex;
 
+pub const base: f32 = 0.25;
+
 macro_rules !get {
     ($map:expr, $value:expr) => (*$map.get(&Some($value)).unwrap_or(&0));
     ($map:expr) => (*$map.get(&None).unwrap_or(&0));
@@ -127,7 +129,6 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
 }
 
 pub fn life_production(gifts: &HashMap<hex::GiftPoint, cell::GiftCell>) -> f32{
-    let base = 0.25f32;
     let total: f32 = gifts.iter()
         .map(|(_, gift)| match gift.gift {
             Some(Leaves) => 1f32,
