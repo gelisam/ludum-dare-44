@@ -8,3 +8,4 @@ authors = [ "Samuel Gelineau <gelisam@gmail.com>" ]
 ggez = "0.4.2"
 nalgebra = "0.14.1"
 rand = "0.4.2"
+counter = "0.4.3"

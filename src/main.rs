@@ -1,6 +1,7 @@
 extern crate core;
 extern crate ggez;
 extern crate rand;
+extern crate counter;
 
 use core::time::Duration;
 use ggez::{GameResult, Context};
@@ -8,6 +9,8 @@ use ggez::event::*;
 use ggez::graphics::*;
 use ggez::timer;
 use std::collections::HashMap;
+use counter::Counter;
+use cell::Gift::*;
 
 mod bg;
 mod cell;
@@ -21,6 +24,10 @@ mod vector;
 
 use globals::*;
 
+macro_rules !get {
+    ($map:expr, $value:expr) => (*$map.get(&Some($value)).unwrap_or(&0));
+    ($map:expr) => (*$map.get(&None).unwrap_or(&0));
+}
 
 #[derive(Debug)]
 struct Assets {
@@ -127,32 +134,16 @@ impl EventHandler for Globals {
             // update all gifts
             let gifts_old = self.gifts.clone(); // deep copy of old state
             for (gift_point, _) in gifts_old.iter() {
-                let mut adjacent_empty = 0u8;
-                let mut adjacent_leaves = 0u8;
-                let mut adjacent_flowers = 0u8;
-                let mut adjacent_berries = 0u8;
-                let mut adjacent_nuts = 0u8;
-                let mut adjacent_beehives = 0u8;
-                let mut adjacent_birdnests = 0u8;
+                let mut counts = gift_point.gift_neighbours()
+                    .iter()
+                    .map(|adj_point| match gifts_old.get(&adj_point){
+                        Some(gp) => gp.gift,
+                        _ => None})
+                    .collect::<Counter<_, u8>>();
+                // println!("{:?}", counts);
+                // println!("{:?}", *counts.get(&Some(cell::Gift::Berries)).unwrap_or(&0) >= 2);
+                // println!("{:?}", get![counts]);
                 let mut adjacent_branches_upgrade = 0u8;
-
-                for adjacent_point in gift_point.gift_neighbours() {
-                    if let Some(adjacent_cell) = gifts_old.get(&adjacent_point)
-                    {
-                        match adjacent_cell.gift {
-                            Some(cell::Gift::Leaves)    => adjacent_leaves += 1,
-                            Some(cell::Gift::Flowers)   => adjacent_flowers += 1,
-                            Some(cell::Gift::Berries)   => adjacent_berries += 1,
-                            Some(cell::Gift::Nuts)      => adjacent_nuts += 1,
-                            Some(cell::Gift::Beehive)   => adjacent_beehives += 1,
-                            Some(cell::Gift::Birdnest)  => adjacent_birdnests += 1,
-                            None                        => adjacent_empty += 1,
-                        }
-                    }
-                    else {
-                        adjacent_empty += 1;
-                    }
-                };
 
                 for adjacent_point in gift_point.branch_neighbours() {
                     if let Some(adjacent_cell) = self.branches.get(&adjacent_point)
@@ -162,18 +153,17 @@ impl EventHandler for Globals {
                         }
                     }
                 };
-
                 if let Some(gift_cell) = self.gifts.get_mut(&gift_point)
                 {
                     gift_cell.gift = match gift_cell.gift {
                         None => {
-                            if adjacent_berries>=2 {
+                            if get![counts, Flowers] >=2 {
                                 Some(cell::Gift::Birdnest)
                             }
-                            else if adjacent_flowers>=2 {
+                            else if get![counts, Flowers] >=2 {
                                 Some(cell::Gift::Beehive)
                             }
-                            else if adjacent_empty>=2 {
+                            else if get![counts] >=2 {
                                 Some(cell::Gift::Leaves)
                             }
                             else {
@@ -181,13 +171,13 @@ impl EventHandler for Globals {
                             }
                         }
                         Some(cell::Gift::Leaves) => {
-                            if adjacent_empty==0 {
+                            if get![counts] == 0 {
                                 None
                             }
-                            else if adjacent_flowers>=2 {
+                            else if get![counts, Flowers] >=2 {
                                 Some(cell::Gift::Beehive)
                             }
-                            else if adjacent_leaves>=2 {
+                            else if get![counts, Leaves]>=2 {
                                 Some(cell::Gift::Flowers)
                             }
                             else {
@@ -195,13 +185,13 @@ impl EventHandler for Globals {
                             }
                         }
                         Some(cell::Gift::Flowers) => {
-                            if adjacent_leaves==0 {
+                            if get![counts, Leaves] == 0 {
                                 None
                             }
-                            else if (adjacent_branches_upgrade>0) & (adjacent_flowers>0) & (adjacent_leaves>0) {
+                            else if (adjacent_branches_upgrade>0) & (get![counts, Flowers]>0) & (get![counts, Leaves]>0) {
                                 Some(cell::Gift::Nuts)
                             }
-                            else if (adjacent_beehives>0) & (adjacent_leaves>=2) {
+                            else if (get![counts, Beehive]>0) & (get![counts, Leaves]>=2) {
                                 Some(cell::Gift::Berries)
                             }
                             else {
@@ -209,7 +199,7 @@ impl EventHandler for Globals {
                             }
                         }
                         Some(cell::Gift::Berries) => {
-                            if (adjacent_beehives==0) | (adjacent_flowers==0) | (adjacent_leaves==0) {
+                            if (get![counts, Beehive]==0) | (get![counts, Flowers]==0) | (get![counts, Leaves]==0) {
                                 Some(cell::Gift::Flowers)
                             }
                             else {
@@ -217,7 +207,7 @@ impl EventHandler for Globals {
                             }
                         }
                         Some(cell::Gift::Nuts) => {
-                            if (adjacent_branches_upgrade==0) | (adjacent_flowers==0) | (adjacent_leaves==0) {
+                            if (adjacent_branches_upgrade==0) | (get![counts, Flowers]==0) | (get![counts, Leaves]==0) {
                                 Some(cell::Gift::Flowers)
                             }
                             else {
@@ -225,7 +215,7 @@ impl EventHandler for Globals {
                             }
                         }
                         Some(cell::Gift::Beehive) => {
-                            if adjacent_flowers == 0 {
+                            if get![counts, Flowers] == 0 {
                                 None
                             }
                             else {
@@ -233,7 +223,7 @@ impl EventHandler for Globals {
                             }
                         }
                         Some(cell::Gift::Birdnest) => {
-                            if adjacent_berries<2 {
+                            if get![counts, Berries]<2 {
                                 None
                             }
                             else {
