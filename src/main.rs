@@ -34,6 +34,7 @@ struct Assets {
     hex: hex::Assets,
     branch_place_sound: audio::Source,
     branch_break_sounds: Vec<audio::Source>,
+    moss: Image,
 }
 
 impl Assets {
@@ -53,6 +54,7 @@ impl Assets {
                 audio::Source::new(ctx, "/branch_break3.ogg")?,
                 audio::Source::new(ctx, "/branch_break4.ogg")?,
             ),
+            moss: Image::new(ctx, "/moss.png")?,
         })
     }
 }
@@ -385,7 +387,9 @@ impl EventHandler for Globals {
         // Need to skip non-tips. Check that children is [] when we get those!
         for (&gift_point, &b) in self.forbidden.iter() {
             if b {
-                self.assets.dot.draw(ctx, gift_point.to_point(), 0.0)?;
+                let image = &self.assets.moss;
+                center::draw_centered_image(ctx, image, gift_point.to_point(), 0.0)?;
+                //self.assets.dot.draw(ctx, gift_point.to_point(), 0.0)?;
             }
         }
         if let Some(in_bounds_point) = self.hover {
