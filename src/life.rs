@@ -54,6 +54,8 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
                     }
                     else if get![counts] >=2 {
                         Some(Leaves)
+                    } else if (adjacent_branches_upgrade>0) & (get![counts, Flowers]>0) & (get![counts, Leaves]>0) {
+                        Some(Nuts)
                     }
                     else {
                         None
@@ -89,7 +91,7 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
                     }
                 }
                 Some(Berries) => {
-                    if (get![counts, Beehive]==0) | (get![counts, Flowers]==0) | (get![counts, Leaves]==0) {
+                    if (get![counts, Beehive]==0) | (get![counts, Leaves]==0) {
                         Some(Flowers)
                     }
                     else {
