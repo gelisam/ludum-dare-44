@@ -215,33 +215,6 @@ impl Globals {
         branch_cell.parent
     }
 
-    fn branch_gparent(&self, branch_cell: cell::BranchCell) -> Option<cell::BranchCell> {
-        let gift_point = branch_cell.parent?;
-        let gift_cell = self.gifts.get(&gift_point)?;
-        let parent_branch_cell = self.branches.get(&gift_cell.parent)?;
-        Some(*parent_branch_cell)
-    }
-
-    fn gift_parent(&self, gift_point: hex::GiftPoint) -> Option<cell::BranchCell> {
-        let gift_cell = self.gifts.get(&gift_point)?;
-        let branch_point = gift_cell.parent;
-        let branch_cell = self.branches.get(&branch_point)?;
-        Some(*branch_cell)
-    }
-
-    fn dist2_rule(&self, gift_point: hex::GiftPoint, value: usize) -> bool {
-        let branch_parent = self.gift_parent(gift_point).unwrap();
-        if branch_parent.branch_upgrade <= value {
-            // println!("Zero upgrade parent!");
-            // Always not null because of root and its upgrade level being max
-            let gp = self.branch_gparent(branch_parent).unwrap();
-            if gp.branch_upgrade <= value {
-                // println!("{:?}", gp);
-                return false
-            }
-        }
-        return true
-    }
     fn branch_children(&self, branch_point: hex::BranchPoint) -> Vec<hex::GiftPoint> {
         branch_point.gift_neighbours()
             .iter()
@@ -396,10 +369,6 @@ impl EventHandler for Globals {
                                     if empty_neighbours.len() == 1 && full_neighbours.len() == 1 {
                                         let empty_neighbour = empty_neighbours[0];
                                         let full_gift_point = full_neighbours[0];
-                                        if !self.dist2_rule(full_gift_point, 0) {
-                                            println!("branches are too thin to hold more branches!");
-                                            return
-                                        }
                                         if !self.gifts.get(&full_gift_point).unwrap().gift.is_none() {
                                             self.remove_gift(full_gift_point);
                                         }
@@ -426,12 +395,6 @@ impl EventHandler for Globals {
                                 Some(_) => {
                                     if let Some(parent_point) = self.branch_parent_parent(branch_point) {
                                         if let Some(&parent_cell) = self.branches.get(&parent_point) {
-                                            if let Some(branch_cell) = self.branches.get(&branch_point) {
-                                                if !self.dist2_rule(branch_cell.parent.unwrap(), (branch_cell.branch_upgrade + 1).min(3)) {
-                                                    println!("branches are too thin to hold more branches! Try upgrading some earlier branches.");
-                                                    return
-                                                }
-                                            }
                                             if let Some(branch_cell) = self.branches.get_mut(&branch_point) {
                                                 let bounty_amount_ = &mut self.bounty_amount;
                                                 if branch_cell.branch_upgrade < parent_cell.branch_upgrade {
