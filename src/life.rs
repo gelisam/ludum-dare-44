@@ -12,7 +12,7 @@ macro_rules !get {
 }
 
 pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
-                  branches: &HashM1ap<hex::BranchPoint, cell::BranchCell>) {
+                  branches: &HashMap<hex::BranchPoint, cell::BranchCell>) {
     let gifts_old = gifts.clone(); // deep copy of old state
     for (gift_point, _) in gifts_old.iter() {
         let mut counts = gift_point.gift_neighbours()
@@ -39,77 +39,77 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
         {
             gift_cell.gift = match gift_cell.gift {
                 None => {
-                    if get![counts, Flowers] >=2 {
-                        Some(cell::Gift::Birdnest)
+                    if get![counts, Berries] >=2 {
+                        Some(Birdnest)
                     }
                     else if get![counts, Flowers] >=2 {
-                        Some(cell::Gift::Beehive)
+                        Some(Beehive)
                     }
                     else if get![counts] >=2 {
-                        Some(cell::Gift::Leaves)
+                        Some(Leaves)
                     }
                     else {
                         None
                     }
                 }
-                Some(cell::Gift::Leaves) => {
+                Some(Leaves) => {
                     if get![counts] == 0 {
                         None
                     }
                     else if get![counts, Flowers] >=2 {
-                        Some(cell::Gift::Beehive)
+                        Some(Beehive)
                     }
                     else if get![counts, Leaves]>=2 {
-                        Some(cell::Gift::Flowers)
+                        Some(Flowers)
                     }
                     else {
-                        Some(cell::Gift::Leaves)
+                        Some(Leaves)
                     }
                 }
-                Some(cell::Gift::Flowers) => {
+                Some(Flowers) => {
                     if get![counts, Leaves] == 0 {
                         None
                     }
                     else if (adjacent_branches_upgrade>0) & (get![counts, Flowers]>0) & (get![counts, Leaves]>0) {
-                        Some(cell::Gift::Nuts)
+                        Some(Nuts)
                     }
                     else if (get![counts, Beehive]>0) & (get![counts, Leaves]>=2) {
-                        Some(cell::Gift::Berries)
+                        Some(Berries)
                     }
                     else {
-                        Some(cell::Gift::Flowers)
+                        Some(Flowers)
                     }
                 }
-                Some(cell::Gift::Berries) => {
+                Some(Berries) => {
                     if (get![counts, Beehive]==0) | (get![counts, Flowers]==0) | (get![counts, Leaves]==0) {
-                        Some(cell::Gift::Flowers)
+                        Some(Flowers)
                     }
                     else {
-                        Some(cell::Gift::Berries)
+                        Some(Berries)
                     }
                 }
-                Some(cell::Gift::Nuts) => {
+                Some(Nuts) => {
                     if (adjacent_branches_upgrade==0) | (get![counts, Flowers]==0) | (get![counts, Leaves]==0) {
-                        Some(cell::Gift::Flowers)
+                        Some(Flowers)
                     }
                     else {
-                        Some(cell::Gift::Nuts)
+                        Some(Nuts)
                     }
                 }
-                Some(cell::Gift::Beehive) => {
+                Some(Beehive) => {
                     if get![counts, Flowers] == 0 {
                         None
                     }
                     else {
-                        Some(cell::Gift::Beehive)
+                        Some(Beehive)
                     }
                 }
-                Some(cell::Gift::Birdnest) => {
+                Some(Birdnest) => {
                     if get![counts, Berries]<2 {
                         None
                     }
                     else {
-                        Some(cell::Gift::Birdnest)
+                        Some(Birdnest)
                     }
                 }
             }
