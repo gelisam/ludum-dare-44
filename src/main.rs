@@ -167,7 +167,7 @@ impl EventHandler for Globals {
                 {
                     gift_cell.gift = match gift_cell.gift {
                         None => {
-                            if adjacent_berries>=3 {
+                            if adjacent_berries>=2 {
                                 Some(cell::Gift::Birdnest)
                             }
                             else if adjacent_flowers>=2 {
@@ -196,7 +196,7 @@ impl EventHandler for Globals {
                         }
                         Some(cell::Gift::Flowers) => {
                             if adjacent_leaves==0 {
-                                Some(cell::Gift::Leaves)
+                                None
                             }
                             else if (adjacent_branches_upgrade>0) & (adjacent_flowers>0) & (adjacent_leaves>0) {
                                 Some(cell::Gift::Nuts)
@@ -225,7 +225,7 @@ impl EventHandler for Globals {
                             }
                         }
                         Some(cell::Gift::Beehive) => {
-                            if adjacent_flowers<3 {
+                            if adjacent_flowers == 0 {
                                 None
                             }
                             else {
@@ -233,7 +233,7 @@ impl EventHandler for Globals {
                             }
                         }
                         Some(cell::Gift::Birdnest) => {
-                            if adjacent_berries<3 {
+                            if adjacent_berries<2 {
                                 None
                             }
                             else {
