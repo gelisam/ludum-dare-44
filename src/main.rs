@@ -43,12 +43,14 @@ type CellCheckFn = fn( &HashMap<hex::BranchPoint, cell::BranchCell>, &HashMap<he
 struct Achievement {
     pub achieved: bool,
     pub message: &'static str,
+    //pub text: Text,
     pub functor: CellCheckFn,
 }
 
 fn any_branches( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, cells: &HashMap<hex::GiftPoint, cell::GiftCell>,) -> bool
 {
-    branches.len()>0
+    //println!("any_branches {0}", branches.len());
+    branches.len()>1
 }
 
 
@@ -301,6 +303,14 @@ impl EventHandler for Globals {
             );
         }
 
+        for mut achievement in self.achievements.iter_mut() {
+            if !achievement.achieved & (achievement.functor)(&self.branches,&self.gifts) {
+                achievement.achieved = true;
+            }
+        }
+
+
+
         self.guitar_channel.enable(ctx, self.leaf_count > 0);
         self.clarinet_channel.enable(ctx, self.birdnest_count > 0);
         self.high_pithed_clarinet_channel.enable(ctx, self.beehive_count > 0);
@@ -522,6 +532,20 @@ impl EventHandler for Globals {
             //    },
             //}
         }
+
+        for achievement in self.achievements.iter() {
+            if !achievement.achieved {
+                set_color(ctx, Color::from_rgb(255, 255, 255))?;
+                let center = Point2::new(
+                    WINDOW_WIDTH as f32 / 2.0,
+                    WINDOW_HEIGHT as f32 - 20.0,
+                );
+                let text = Text::new(ctx,achievement.message, &self.assets.font)?;
+                text::draw_centered_text(ctx, &text, center, 0.0)?;
+                break;
+            }
+        }
+
 
         //if get_current_time(ctx) - self.start_time > Duration::from_millis(1000) {
         //    self.start_time = get_current_time(ctx);
