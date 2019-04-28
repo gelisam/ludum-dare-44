@@ -365,7 +365,7 @@ impl EventHandler for Globals {
 pub fn main() {
     let ctx = &mut Context::load_from_conf(
         GAME_NAME,
-        "Michaelson Britt, Samuel Gélineau, Zhentao Li, Kyla Squires, and Farren Wang",
+        "Michaelson Britt, Samuel Gélineau, Dylan Khor, Zhentao Li, Kyla Squires, and Farren Wang",
         ggez::conf::Conf {
             window_mode: ggez::conf::WindowMode {
                 width:  WINDOW_WIDTH,
