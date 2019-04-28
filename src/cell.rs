@@ -142,6 +142,30 @@ pub struct BranchCell {
     pub parent: Option<GiftPoint>,
 }
 
+impl Gift {
+    pub fn singular(self) -> &'static str {
+        match self {
+            Gift::Leaves   => "leaf",
+            Gift::Flowers  => "flower",
+            Gift::Berries  => "berry",
+            Gift::Nuts     => "nut",
+            Gift::Beehive  => "beehive",
+            Gift::Birdnest => "bird nest",
+        }
+    }
+
+    pub fn plural(self) -> &'static str {
+        match self {
+            Gift::Leaves   => "leaves",
+            Gift::Flowers  => "flowers",
+            Gift::Berries  => "berries",
+            Gift::Nuts     => "nuts",
+            Gift::Beehive  => "beehives",
+            Gift::Birdnest => "bird nests",
+        }
+    }
+}
+
 impl BranchCell {
     pub fn new(
         assets: &Assets,
