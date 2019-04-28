@@ -61,9 +61,10 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
                     if get![counts] == 0 {
                         None
                     }
-                    else if get![counts, Flowers] >=2 {
-                        Some(Beehive)
-                    }
+                    // More GoL fun but more unpredictable.
+                    //else if get![counts, Flowers] >=2 {
+                    //    Some(Beehive)
+                    //}
                     else if get![counts, Leaves]>=2 {
                         Some(Flowers)
                     }
