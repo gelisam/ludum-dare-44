@@ -249,7 +249,7 @@ impl EventHandler for Globals {
                                                 let cost = life::BASE * 4.0;
                                                 if *bounty_amount_ >= cost {
                                                     // place a new branch
-                                                    self.assets.branch_place_sound.play();
+                                                    self.assets.branch_place_sound.play().unwrap_or(());
                                                     *bounty_amount_ -= cost;
                                                     //*life_amount_ += 0.1;
                                                     let branch_cell = cell::BranchCell::new(Some(full_gift_point));
@@ -338,7 +338,7 @@ impl EventHandler for Globals {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
                             if self.branches.get(&branch_point).is_some() {
-                                self.assets.branch_break_sounds.choose(&mut rand::thread_rng()).unwrap().play();
+                                self.assets.branch_break_sounds.choose(&mut rand::thread_rng()).unwrap().play().unwrap_or(());
                                 self.prune_branch(branch_point);
                             }
                         },
