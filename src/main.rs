@@ -293,6 +293,7 @@ impl EventHandler for Globals {
                                 .and_modify(|g| g.gift = None);
                             self.forbidden
                                 .entry(gift_point)
+                                .and_modify(|b| *b ^= true)
                                 .or_insert(true);
                         },
                     }
