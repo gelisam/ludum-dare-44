@@ -357,10 +357,11 @@ impl EventHandler for Globals {
         self.bounty.draw(ctx)?;
         self.life.draw(ctx)?;
 
-        set_color(ctx, Color::from_rgb(255, 255, 255))?;
+        set_color(ctx, Color::from_rgb(0, 0, 0))?; // fix white artifacts around the branches
         for (&branch_point, branch_cell) in self.branches.iter() {
             branch_cell.draw(ctx, &self.assets.cell, branch_point)?;
         }
+        set_color(ctx, Color::from_rgb(255, 255, 255))?;
         for (&gift_point, gift_cell) in self.gifts.iter() {
             gift_cell.draw(ctx, &self.assets.cell, gift_point)?;
         }
