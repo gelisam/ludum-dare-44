@@ -13,6 +13,7 @@ pub struct Channel {
     pub duration: Duration,
     pub initial_volume: f32,
     pub target_volume: f32,
+    playing: bool,
 }
 
 impl Channel {
@@ -27,7 +28,18 @@ impl Channel {
             duration: timer::f64_to_duration(0.0),
             initial_volume: 0.0,
             target_volume: 0.0,
+            playing: false,
         })
+    }
+
+    pub fn enable(&mut self, ctx: &mut Context, should_be_playing: bool) {
+        if self.playing && !should_be_playing {
+            self.playing = false;
+            self.set_future_volume(ctx, Duration::from_millis(1000), 0.0);
+        } else if !self.playing && should_be_playing {
+            self.playing = true;
+            self.set_future_volume(ctx, Duration::from_millis(1000), 1.0);
+        }
     }
 
     pub fn set_future_volume(&mut self, ctx: &mut Context, duration: Duration, volume: f32) {

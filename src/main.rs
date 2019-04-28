@@ -76,6 +76,10 @@ struct Globals {
     hover: Option<hex::InBoundsPoint>,
     branches: HashMap<hex::BranchPoint, cell::BranchCell>,
     gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
+    leaf_count: u8,
+    beehive_count: u8,
+    birdnest_count: u8,
+    squirrel_count: u8,
     forbidden: HashMap<hex::GiftPoint, bool>,
 }
 
@@ -113,6 +117,10 @@ impl Globals {
             hover: None,
             branches: HashMap::with_capacity(100),
             gifts: HashMap::with_capacity(100),
+            leaf_count: 0,
+            beehive_count: 0,
+            birdnest_count: 0,
+            squirrel_count: 0,
             forbidden: HashMap::with_capacity(100),
         };
         globals.reset(ctx);
@@ -230,8 +238,16 @@ impl EventHandler for Globals {
             self.bounty_amount = (self.bounty_amount + self.life_amount).min(30.0);
             self.turn_time = self.turn_time + self.turn_duration;
 
-            life::life_cycle(&mut self.gifts, &self.branches, &self.forbidden);
+            life::life_cycle(
+                &mut self.gifts, &self.branches, &self.forbidden,
+                &mut self.leaf_count, &mut self.beehive_count, &mut self.birdnest_count, &mut self.squirrel_count
+            );
         }
+
+        self.guitar_channel.enable(ctx, self.leaf_count > 0);
+        self.clarinet_channel.enable(ctx, self.birdnest_count > 0);
+        self.high_pithed_clarinet_channel.enable(ctx, self.beehive_count > 0);
+        self.dreamy_bells_channel.enable(ctx, self.squirrel_count > 0);
 
         ggez::timer::sleep(Duration::from_millis(50));
         Ok(())
@@ -239,10 +255,6 @@ impl EventHandler for Globals {
 
     fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
-            Keycode::Z      => self.guitar_channel.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
-            Keycode::X      => self.clarinet_channel.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
-            Keycode::C      => self.high_pithed_clarinet_channel.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
-            Keycode::V      => self.dreamy_bells_channel.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
             Keycode::Escape => ctx.quit().unwrap(),
             _               => (),
         }
@@ -250,10 +262,6 @@ impl EventHandler for Globals {
 
     fn key_up_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
-            Keycode::Z      => self.guitar_channel.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
-            Keycode::X      => self.clarinet_channel.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
-            Keycode::C      => self.high_pithed_clarinet_channel.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
-            Keycode::V      => self.dreamy_bells_channel.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
             Keycode::R     => self.reset(ctx),
             _              => (),
         }
