@@ -258,7 +258,15 @@ impl Globals {
             for branch_point in self.gift_children(gift_point) {
                 self.prune_branch(branch_point);
             }
-            self.gifts.remove(&gift_point);
+            if let Some(gift_cell) = self.gifts.remove(&gift_point) {
+                match gift_cell.gift {
+                    Some(Leaves)   => self.leaf_count     -= 1,
+                    Some(Beehive)  => self.beehive_count  -= 1,
+                    Some(Birdnest) => self.birdnest_count -= 1,
+                    Some(Squirrel) => self.squirrel_count -= 1,
+                    _ => {},
+                };
+            }
         }
         if let Some(_) = self.forbidden.get(&gift_point) {
             self.forbidden.remove(&gift_point);
