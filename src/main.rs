@@ -81,22 +81,7 @@ impl Globals {
             WINDOW_WIDTH as f32 - sidebar::SIDEBAR_WIDTH
         )?;
 
-        let mut branches = HashMap::with_capacity(100);
-        let root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
-        let root_cell = cell::BranchCell::new(
-            &assets.cell,
-            &mut rand::thread_rng(),
-            None,
-            root_point
-        );
-        branches.insert(root_point, root_cell);
-
-        let mut gifts = HashMap::with_capacity(100);
-        let origin_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
-        let origin_cell = cell::GiftCell::new(root_point);
-        gifts.insert(origin_point, origin_cell);
-
-        Ok(Globals {
+        let mut globals = Globals {
             assets,
             start_time: get_current_time(ctx),
             turn_time: get_current_time(ctx),
@@ -105,16 +90,36 @@ impl Globals {
             birds: channel::Channel::new(ctx, "/birds.ogg")?,
             bounty,
             life,
-            bounty_amount: 5.0f32,
-            life_amount: 0.0f32,
+            bounty_amount: 0.0,
+            life_amount: 0.0,
             hover: None,
-            branches,
-            gifts,
-        })
+            branches: HashMap::with_capacity(100),
+            gifts: HashMap::with_capacity(100),
+        };
+        globals.reset(ctx);
+        Ok(globals)
     }
 
     fn reset(&mut self, ctx: &mut Context) {
         self.start_time = get_current_time(ctx);
+        self.turn_time = get_current_time(ctx);
+        self.bounty_amount = 5.0;
+        self.life_amount = 0.0;
+
+        self.branches.clear();
+        let root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
+        let root_cell = cell::BranchCell::new(
+            &self.assets.cell,
+            &mut rand::thread_rng(),
+            None,
+            root_point
+        );
+        self.branches.insert(root_point, root_cell);
+
+        self.gifts.clear();
+        let origin_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
+        let origin_cell = cell::GiftCell::new(root_point);
+        self.gifts.insert(origin_point, origin_cell);
     }
 }
 
@@ -202,6 +207,8 @@ impl EventHandler for Globals {
                                             let gift_cell = cell::GiftCell::new(branch_point);
                                             self.branches.insert(branch_point, branch_cell);
                                             gifts_.insert(empty_neighbour, gift_cell);
+                                        } else {
+                                            println!("not enough Bounty");
                                         }
                                     } else if empty_neighbours.len() == 2 {
                                         println!("new branches must be attached to the tree");
@@ -218,6 +225,8 @@ impl EventHandler for Globals {
                                                     *bounty_amount_ -= 2.0;
                                                     *life_amount_ += 0.1;
                                                     branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 1);
+                                                } else {
+                                                    println!("not enough Bounty");
                                                 }
                                             },
                                             1 => {
@@ -226,6 +235,8 @@ impl EventHandler for Globals {
                                                     *bounty_amount_ -= 3.0;
                                                     *life_amount_ += 0.1;
                                                     branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 2);
+                                                } else {
+                                                    println!("not enough Bounty");
                                                 }
                                             },
                                             2 => {
@@ -234,9 +245,13 @@ impl EventHandler for Globals {
                                                     *bounty_amount_ -= 4.0;
                                                     *life_amount_ += 0.1;
                                                     branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 3);
+                                                } else {
+                                                    println!("not enough Bounty");
                                                 }
                                             },
-                                            _ => {},
+                                            _ => {
+                                                println!("this branch has already reached its maximum growth");
+                                            },
                                         }
                                     }
                                 },
