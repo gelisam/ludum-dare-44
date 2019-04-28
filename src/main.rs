@@ -5,9 +5,11 @@ extern crate counter;
 
 use core::time::Duration;
 use ggez::{GameResult, Context};
+use ggez::audio;
 use ggez::event::*;
 use ggez::graphics::*;
 use ggez::timer;
+use rand::seq::SliceRandom;
 use std::collections::HashMap;
 
 mod bg;
@@ -30,6 +32,8 @@ struct Assets {
     dot: Mesh,
     font: Font,
     hex: hex::Assets,
+    branch_place_sound: audio::Source,
+    branch_break_sounds: Vec<audio::Source>,
 }
 
 impl Assets {
@@ -42,6 +46,13 @@ impl Assets {
             dot: Mesh::new_circle(ctx, DrawMode::Fill, Point2::new(0.0, 0.0), 10.0, 3.0)?,
             font,
             hex: hex::load_assets(ctx)?,
+            branch_place_sound: audio::Source::new(ctx, "/branch_place.ogg")?,
+            branch_break_sounds: vec!(
+                audio::Source::new(ctx, "/branch_break.ogg")?,
+                audio::Source::new(ctx, "/branch_break2.ogg")?,
+                audio::Source::new(ctx, "/branch_break3.ogg")?,
+                audio::Source::new(ctx, "/branch_break4.ogg")?,
+            ),
         })
     }
 }
@@ -238,6 +249,7 @@ impl EventHandler for Globals {
                                                 let cost = life::BASE * 4.0;
                                                 if *bounty_amount_ >= cost {
                                                     // place a new branch
+                                                    self.assets.branch_place_sound.play();
                                                     *bounty_amount_ -= cost;
                                                     //*life_amount_ += 0.1;
                                                     let branch_cell = cell::BranchCell::new(Some(full_gift_point));
@@ -325,7 +337,10 @@ impl EventHandler for Globals {
                 MouseButton::Right => {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
-                            self.prune_branch(branch_point);
+                            if self.branches.get(&branch_point).is_some() {
+                                self.assets.branch_break_sounds.choose(&mut rand::thread_rng()).unwrap().play();
+                                self.prune_branch(branch_point);
+                            }
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
                             self.gifts
