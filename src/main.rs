@@ -93,6 +93,10 @@ struct Globals {
     hover: Option<hex::InBoundsPoint>,
     branches: HashMap<hex::BranchPoint, cell::BranchCell>,
     gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
+    leaf_count: u8,
+    beehive_count: u8,
+    birdnest_count: u8,
+    squirrel_count: u8,
     forbidden: HashMap<hex::GiftPoint, bool>,
 }
 
@@ -143,6 +147,10 @@ impl Globals {
             hover: None,
             branches: HashMap::with_capacity(100),
             gifts: HashMap::with_capacity(100),
+            leaf_count: 0,
+            beehive_count: 0,
+            birdnest_count: 0,
+            squirrel_count: 0,
             forbidden: HashMap::with_capacity(100),
         };
         globals.reset(ctx);
@@ -169,6 +177,47 @@ impl Globals {
         self.gifts.insert(origin_point, origin_cell);
     }
 
+    fn branch_parent_parent(&self, branch_point: hex::BranchPoint) -> Option<hex::BranchPoint> {
+        let branch_cell = self.branches.get(&branch_point)?;
+        let gift_point = branch_cell.parent?;
+        let gift_cell = self.gifts.get(&gift_point)?;
+        Some(gift_cell.parent)
+    }
+
+    fn gift_parent_parent(&self, gift_point: hex::GiftPoint) -> Option<hex::GiftPoint> {
+        let gift_cell = self.gifts.get(&gift_point)?;
+        let branch_point = gift_cell.parent;
+        let branch_cell = self.branches.get(&branch_point)?;
+        branch_cell.parent
+    }
+
+    fn branch_gparent(&self, branch_cell: cell::BranchCell) -> Option<cell::BranchCell> {
+        let gift_point = branch_cell.parent?;
+        let gift_cell = self.gifts.get(&gift_point)?;
+        let parent_branch_cell = self.branches.get(&gift_cell.parent)?;
+        Some(*parent_branch_cell)
+    }
+
+    fn gift_parent(&self, gift_point: hex::GiftPoint) -> Option<cell::BranchCell> {
+        let gift_cell = self.gifts.get(&gift_point)?;
+        let branch_point = gift_cell.parent;
+        let branch_cell = self.branches.get(&branch_point)?;
+        Some(*branch_cell)
+    }
+
+    fn dist2_rule(&self, gift_point: hex::GiftPoint, value: usize) -> bool {
+        let branch_parent = self.gift_parent(gift_point).unwrap();
+        if branch_parent.branch_upgrade <= value {
+            // println!("Zero upgrade parent!");
+            // Always not null because of root and its upgrade level being max
+            let gp = self.branch_gparent(branch_parent).unwrap();
+            if gp.branch_upgrade <= value {
+                // println!("{:?}", gp);
+                return false
+            }
+        }
+        return true
+    }
     fn branch_children(&self, branch_point: hex::BranchPoint) -> Vec<hex::GiftPoint> {
         branch_point.gift_neighbours()
             .iter()
@@ -215,6 +264,18 @@ impl Globals {
             self.forbidden.remove(&gift_point);
         }
     }
+
+    fn remove_gift(&mut self, gift_point: hex::GiftPoint) {
+        self.gifts
+            .entry(gift_point)
+            .and_modify(|g| g.gift = None);
+        if self.gift_children(gift_point).len() == 0 {
+            self.forbidden
+                .entry(gift_point)
+                .and_modify(|b| *b ^= true)
+                .or_insert(true);
+        }
+    }
 }
 
 impl EventHandler for Globals {
@@ -234,8 +295,16 @@ impl EventHandler for Globals {
             self.bounty_amount = (self.bounty_amount + self.life_amount).min(36.0);
             self.turn_time = self.turn_time + self.turn_duration;
 
-            life::life_cycle(&mut self.gifts, &self.branches, &self.forbidden);
+            life::life_cycle(
+                &mut self.gifts, &self.branches, &self.forbidden,
+                &mut self.leaf_count, &mut self.beehive_count, &mut self.birdnest_count, &mut self.squirrel_count
+            );
         }
+
+        self.guitar_channel.enable(ctx, self.leaf_count > 0);
+        self.clarinet_channel.enable(ctx, self.birdnest_count > 0);
+        self.high_pithed_clarinet_channel.enable(ctx, self.beehive_count > 0);
+        self.dreamy_bells_channel.enable(ctx, self.squirrel_count > 0);
 
         ggez::timer::sleep(Duration::from_millis(50));
         Ok(())
@@ -243,10 +312,6 @@ impl EventHandler for Globals {
 
     fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
-            Keycode::Z      => self.guitar_channel.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
-            Keycode::X      => self.clarinet_channel.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
-            Keycode::C      => self.high_pithed_clarinet_channel.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
-            Keycode::V      => self.dreamy_bells_channel.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
             Keycode::Escape => ctx.quit().unwrap(),
             _               => (),
         }
@@ -254,10 +319,6 @@ impl EventHandler for Globals {
 
     fn key_up_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
-            Keycode::Z      => self.guitar_channel.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
-            Keycode::X      => self.clarinet_channel.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
-            Keycode::C      => self.high_pithed_clarinet_channel.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
-            Keycode::V      => self.dreamy_bells_channel.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
             Keycode::R     => self.reset(ctx),
             _              => (),
         }
@@ -270,45 +331,42 @@ impl EventHandler for Globals {
                 MouseButton::Left => {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
-                            let bounty_amount_ = &mut self.bounty_amount;
-                            let life_amount_ = &mut self.life_amount;
-                            let gifts_ = &mut self.gifts;
                             match self.branches.get(&branch_point) {
                                 None => {
                                     let gift_neighbours = branch_point.gift_neighbours();
                                     let empty_neighbours: Vec<hex::GiftPoint> = gift_neighbours
                                         .iter()
                                         .map(|g| *g)
-                                        .filter(|g| gifts_.get(g).is_none())
+                                        .filter(|g| self.gifts.get(g).is_none())
                                         .collect();
                                     let full_neighbours: Vec<hex::GiftPoint> = gift_neighbours
                                         .iter()
                                         .map(|g| *g)
-                                        .filter(|g| gifts_.get(g).is_some())
+                                        .filter(|g| self.gifts.get(g).is_some())
                                         .collect();
                                     if empty_neighbours.len() == 1 && full_neighbours.len() == 1 {
                                         let empty_neighbour = empty_neighbours[0];
                                         let full_gift_point = full_neighbours[0];
-                                        match gifts_.get(&full_gift_point).unwrap().gift {
-                                            None => {
-                                                let cost = life::BASE * 5.0;
-                                                if *bounty_amount_ >= cost {
-                                                    // place a new branch
-                                                    self.assets.branch_place_sound.play().unwrap_or(());
-                                                    *bounty_amount_ -= cost;
-                                                    //*life_amount_ += 0.1;
-                                                    let branch_cell = cell::BranchCell::new(Some(full_gift_point));
-                                                    let gift_cell = cell::GiftCell::new(branch_point);
-                                                    self.branches.insert(branch_point, branch_cell);
-                                                    gifts_.insert(empty_neighbour, gift_cell);
-                                                    self.forbidden.insert(full_gift_point, true);
-                                                } else {
-                                                    println!("not enough Bounty");
-                                                }
-                                            },
-                                            Some(gift) => {
-                                                println!("release the {:} before attaching a new branch", gift.singular());
-                                            },
+                                        if !self.dist2_rule(full_gift_point, 0) {
+                                            println!("branches are too thin to hold more branches!");
+                                            return
+                                        }
+                                        if !self.gifts.get(&full_gift_point).unwrap().gift.is_none() {
+                                            self.remove_gift(full_gift_point);
+                                        }
+
+                                        let cost = life::BASE * 5.0;
+                                        if self.bounty_amount >= cost {
+                                            // place a new branch
+                                            self.assets.branch_place_sound.play().unwrap_or(());
+                                            self.bounty_amount -= cost;
+                                            let branch_cell = cell::BranchCell::new(Some(full_gift_point));
+                                            let gift_cell = cell::GiftCell::new(branch_point);
+                                            self.branches.insert(branch_point, branch_cell);
+                                            self.gifts.insert(empty_neighbour, gift_cell);
+                                            self.forbidden.insert(full_gift_point, true);
+                                        } else {
+                                            println!("not enough Bounty");
                                         }
                                     } else if empty_neighbours.len() == 2 {
                                         println!("new branches must be attached to the tree");
@@ -317,44 +375,56 @@ impl EventHandler for Globals {
                                     }
                                 },
                                 Some(_) => {
-                                    if let Some(branch_cell) = self.branches.get_mut(&branch_point) {
-                                        match branch_cell.branch_upgrade {
-                                            0 => {
-                                                // upgrade a branch to level 1
-                                                let cost = life::BASE * 25.0;
-                                                if *bounty_amount_ >= cost {
-                                                    *bounty_amount_ -= cost;
-                                                    //*life_amount_ += 0.1;
-                                                    branch_cell.branch_upgrade = 1;
-                                                } else {
-                                                    println!("not enough Bounty");
+                                    if let Some(parent_point) = self.branch_parent_parent(branch_point) {
+                                        if let Some(&parent_cell) = self.branches.get(&parent_point) {
+                                            if let Some(branch_cell) = self.branches.get(&branch_point) {
+                                                if !self.dist2_rule(branch_cell.parent.unwrap(), (branch_cell.branch_upgrade + 1).min(3)) {
+                                                    println!("branches are too thin to hold more branches! Try upgrading some earlier branches.");
+                                                    return
                                                 }
-                                            },
-                                            1 => {
-                                                // upgrade a branch to level 2
-                                                let cost = life::BASE * 125.0;
-                                                if *bounty_amount_ >= cost {
-                                                    *bounty_amount_ -= cost;
-                                                    //*life_amount_ += 0.1;
-                                                    branch_cell.branch_upgrade = 2;
+                                            }
+                                            if let Some(branch_cell) = self.branches.get_mut(&branch_point) {
+                                                let bounty_amount_ = &mut self.bounty_amount;
+                                                if branch_cell.branch_upgrade < parent_cell.branch_upgrade {
+                                                    match branch_cell.branch_upgrade {
+                                                        0 => {
+                                                            // upgrade a branch to level 1
+                                                            let cost = life::BASE * 25.0;
+                                                            if *bounty_amount_ >= cost {
+                                                                *bounty_amount_ -= cost;
+                                                                branch_cell.branch_upgrade = 1;
+                                                            } else {
+                                                                println!("not enough Bounty");
+                                                            }
+                                                        },
+                                                        1 => {
+                                                            // upgrade a branch to level 2
+                                                            let cost = life::BASE * 125.0;
+                                                            if *bounty_amount_ >= cost {
+                                                                *bounty_amount_ -= cost;
+                                                                branch_cell.branch_upgrade = 2;
+                                                            } else {
+                                                                println!("not enough Bounty");
+                                                            }
+                                                        },
+                                                        2 => {
+                                                            // upgrade a branch to level 3
+                                                            let cost = life::BASE * 625.0;
+                                                            if *bounty_amount_ >= cost {
+                                                                *bounty_amount_ -= cost;
+                                                                branch_cell.branch_upgrade = 3;
+                                                            } else {
+                                                                println!("not enough Bounty");
+                                                            }
+                                                        },
+                                                        _ => {
+                                                            println!("this branch has already reached its maximum growth");
+                                                        },
+                                                    }
                                                 } else {
-                                                    println!("not enough Bounty");
+                                                    println!("you have to grow the parent branch first!");
                                                 }
-                                            },
-                                            2 => {
-                                                // upgrade a branch to level 3
-                                                let cost = life::BASE * 625.0;
-                                                if *bounty_amount_ >= cost {
-                                                    *bounty_amount_ -= cost;
-                                                    //*life_amount_ += 0.1;
-                                                    branch_cell.branch_upgrade = 3;
-                                                } else {
-                                                    println!("not enough Bounty");
-                                                }
-                                            },
-                                            _ => {
-                                                println!("this branch has already reached its maximum growth");
-                                            },
+                                            }
                                         }
                                     }
                                 },
@@ -388,15 +458,7 @@ impl EventHandler for Globals {
                             }
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
-                            self.gifts
-                                .entry(gift_point)
-                                .and_modify(|g| g.gift = None);
-                            if self.gift_children(gift_point).len() == 0 {
-                                self.forbidden
-                                    .entry(gift_point)
-                                    .and_modify(|b| *b ^= true)
-                                    .or_insert(true);
-                            }
+                            self.remove_gift(gift_point);
                         },
                     }
                 }
