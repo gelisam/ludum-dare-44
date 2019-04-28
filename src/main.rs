@@ -282,28 +282,21 @@ impl EventHandler for Globals {
                                     if empty_neighbours.len() == 1 && full_neighbours.len() == 1 {
                                         let empty_neighbour = empty_neighbours[0];
                                         let full_gift_point = full_neighbours[0];
-                                        /*if !self.gifts.get(&full_gift_point).unwrap().gift.is_none() {
+                                        if !self.gifts.get(&full_gift_point).unwrap().gift.is_none() {
                                             self.remove_gift(full_gift_point);
-                                        }*/
-                                        match self.gifts.get(&full_gift_point).unwrap().gift {
-                                            None => {
-                                                let cost = life::BASE * 5.0;
-                                                if self.bounty_amount >= cost {
-                                                    // place a new branch
-                                                    self.assets.branch_place_sound.play().unwrap_or(());
-                                                    self.bounty_amount -= cost;
-                                                    let branch_cell = cell::BranchCell::new(Some(full_gift_point));
-                                                    let gift_cell = cell::GiftCell::new(branch_point);
-                                                    self.branches.insert(branch_point, branch_cell);
-                                                    self.gifts.insert(empty_neighbour, gift_cell);
-                                                    self.forbidden.insert(full_gift_point, true);
-                                                } else {
-                                                    println!("not enough Bounty");
-                                                }
-                                            },
-                                            Some(gift) => {
-                                                println!("release the {:} before attaching a new branch", gift.singular());
-                                            },
+                                        }
+                                        let cost = life::BASE * 5.0;
+                                        if self.bounty_amount >= cost {
+                                            // place a new branch
+                                            self.assets.branch_place_sound.play().unwrap_or(());
+                                            self.bounty_amount -= cost;
+                                            let branch_cell = cell::BranchCell::new(Some(full_gift_point));
+                                            let gift_cell = cell::GiftCell::new(branch_point);
+                                            self.branches.insert(branch_point, branch_cell);
+                                            self.gifts.insert(empty_neighbour, gift_cell);
+                                            self.forbidden.insert(full_gift_point, true);
+                                        } else {
+                                            println!("not enough Bounty");
                                         }
                                     } else if empty_neighbours.len() == 2 {
                                         println!("new branches must be attached to the tree");
