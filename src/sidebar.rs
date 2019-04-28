@@ -56,7 +56,7 @@ impl Sidebar {
 
         let num_bounty_dots = self.bounty_amount.floor() as usize;
         let num_life_dots = ((self.life_amount + self.bounty_amount) as usize) - num_bounty_dots;
-        let num_dots_max = 30;
+        let num_dots_max = 34;
 
         let mut meter_cur = meter_bottom.clone();
 

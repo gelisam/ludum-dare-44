@@ -37,6 +37,22 @@ struct Assets {
     moss: Image,
 }
 
+type CellCheckFn = fn( &HashMap<hex::BranchPoint, cell::BranchCell>, &HashMap<hex::GiftPoint, cell::GiftCell>,) -> bool;
+
+//#[derive(Debug)]
+struct Achievement {
+    pub achieved: bool,
+    pub message: &'static str,
+    pub functor: CellCheckFn,
+}
+
+fn any_branches( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, cells: &HashMap<hex::GiftPoint, cell::GiftCell>,) -> bool
+{
+    branches.len()>0
+}
+
+
+
 impl Assets {
     fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
         let font = Font::default_font()?;
@@ -59,9 +75,10 @@ impl Assets {
     }
 }
 
-#[derive(Debug)]
+//#[derive(Debug)]
 struct Globals {
     assets: Assets,
+    achievements: Vec<Achievement>,
     start_time: Duration,
     turn_time: Duration,
     turn_duration: Duration,
@@ -85,20 +102,33 @@ impl Globals {
         let bounty = sidebar::Sidebar::new(
             ctx,
             &assets.font,
-            "Bounty",
+            "Life", //"Bounty", // Design decision that Bounty should be called Life in UI
             Color::from_rgb(181, 208, 212),
             0.0
         )?;
         let life = sidebar::Sidebar::new(
             ctx,
             &assets.font,
-            "Life",
+            "Bounty", //"Life", // Design decision that Life should be called Bounty in UI
             Color::from_rgb(242, 240, 186),
             WINDOW_WIDTH as f32 - sidebar::SIDEBAR_WIDTH
         )?;
 
         let mut globals = Globals {
             assets,
+            achievements: vec!(
+                Achievement {
+                    achieved: false,
+                    message: "TIP: Click around the tree trunk to add a branch - Leaves grow on ends of branches",
+                    functor: any_branches,
+                },
+                //String("TIP: Click a branch to grow it thicker and allow a bigger tree"),
+                //String("TIP: Flowers grow on ends of branches when two leaves are nearby"),
+                //String("TIP: Beehives appears on ends of branches when two flowers are nearby"),
+                //String("TIP: Berries grow on ends of branches when a beehive and two leaves are nearby"),
+                //String("TIP: Birds appear on ends of branches when two berries are nearby"),
+                //String("TIP: Nuts grow only on the ends of thick branches near flowers and leaves"),
+            ),
             start_time: get_current_time(ctx),
             turn_time: get_current_time(ctx),
             turn_duration: Duration::from_millis(2000),
@@ -201,7 +231,7 @@ impl EventHandler for Globals {
             // let basic_amount = 0.1f32; // get this amount even if no life
             // self.bounty_amount = (self.bounty_amount+self.life_amount+basic_amount).min(30.0);
             self.life_amount = life::life_production(&self.gifts);
-            self.bounty_amount = (self.bounty_amount + self.life_amount).min(30.0);
+            self.bounty_amount = (self.bounty_amount + self.life_amount).min(36.0);
             self.turn_time = self.turn_time + self.turn_duration;
 
             life::life_cycle(&mut self.gifts, &self.branches, &self.forbidden);
