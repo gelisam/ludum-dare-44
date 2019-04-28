@@ -31,21 +31,22 @@ pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
             Image::new(ctx, "/leaves.png")?,
         ),
         flower_images: vec!(
-            Image::new(ctx, "/flower1.png")?,
-            Image::new(ctx, "/flower2.png")?,
-            Image::new(ctx, "/flower3.png")?,
+            Image::new(ctx, "/flowers.png")?,
+            //Image::new(ctx, "/flower1.png")?,
+            //Image::new(ctx, "/flower2.png")?,
+            //Image::new(ctx, "/flower3.png")?,
         ),
         berry_images: vec!(
-            Image::new(ctx, "/flowers 3.png")?, // TODO: this is a flower, not a berry!
+            Image::new(ctx, "/berry bunch.png")?, // TODO: this is a flower, not a berry!
         ),
         nut_images: vec!(
-            Image::new(ctx, "/nuts.png")?, // TODO: this is a beehive, not a nut!
+            Image::new(ctx, "/nut bunch.png")?,
         ),
         beehive_images: vec!(
             Image::new(ctx, "/beehive.png")?,
         ),
         birdnest_images: vec!(
-            Image::new(ctx, "/bird.png")?,
+            Image::new(ctx, "/nest.png")?,
         ),
         squirrel_images: vec!(
             Image::new(ctx, "/squirrel.png")?,
