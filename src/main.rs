@@ -163,7 +163,11 @@ impl EventHandler for Globals {
                             let assets_ = &mut self.assets;
                             self.branches
                                 .entry(branch_point)
-                                .and_modify(|b| b.next(&assets_.cell, branch_point))
+                                .and_modify(|b|
+                                    if b.upgradable() {
+                                        b.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point)
+                                    }
+                                )
                                 .or_insert(cell::BranchCell::new());
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
