@@ -61,7 +61,6 @@ struct Globals {
     hover: Option<hex::InBoundsPoint>,
     branches: HashMap<hex::BranchPoint, cell::BranchCell>,
     gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
-    parent: HashMap<hex::GiftPoint, hex::GiftPoint>,
 }
 
 impl Globals {
@@ -83,11 +82,19 @@ impl Globals {
         )?;
 
         let mut branches = HashMap::with_capacity(100);
-        let root = cell::BranchCell::new();
-        branches.insert(hex::BranchPoint::new(hex::HexPoint::new(0, 1)), root);
-        let mut parent = HashMap::with_capacity(100);
-        parent.insert(hex::GiftPoint::new(hex::HexPoint::new(0, 0)),
-                      hex::GiftPoint::new(hex::HexPoint::new(0, 0)));
+        let root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
+        let root_cell = cell::BranchCell::new(
+            &assets.cell,
+            &mut rand::thread_rng(),
+            None,
+            root_point
+        );
+        branches.insert(root_point, root_cell);
+
+        let mut gifts = HashMap::with_capacity(100);
+        let origin_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
+        let origin_cell = cell::GiftCell::new(root_point);
+        gifts.insert(origin_point, origin_cell);
 
         Ok(Globals {
             assets,
@@ -102,8 +109,7 @@ impl Globals {
             life_amount: 0.0f32,
             hover: None,
             branches,
-            gifts: HashMap::with_capacity(100),
-            parent: parent,
+            gifts,
         })
     }
 
@@ -157,47 +163,44 @@ impl EventHandler for Globals {
                 MouseButton::Left => {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
+                            let assets_ = &mut self.assets;
                             let bounty_amount_ = &mut self.bounty_amount;
                             let life_amount_ = &mut self.life_amount;
-                            let assets_ = &mut self.assets;
+                            let gifts_ = &mut self.gifts;
                             match self.branches.get(&branch_point) {
                                 None => {
-                                    if *bounty_amount_ >= 1.0 {
-                                        if self.branches.get(&branch_point).is_none() {
-                                            match branch_point.gift_neighbours().as_slice(){
-                                                [point1, point2] => {
-                                                    if self.parent.get(&point1) == None && self.parent.get(&point2) == None {
-                                                        println!("error: double empty parents");
-                                                        return;
-                                                    } else if self.parent.get(&point1) != None && self.parent.get(&point2) != None {
-                                                        println!("error: both points have parents already");
-                                                        return;
-                                                    };
-                                                    let point1_ = if self.parent.get(&point1) == None { point1 } else { point2 };
-                                                    let point2_ = if self.parent.get(&point1) == None { point2 } else { point1 };
-                                                    // println!("{:?}", self.gifts.get(&point2_));
-                                                    // println!("{:?}", &self.parent.get(&point1_));
-
-                                                    if !self.gifts.get(&point2_).is_none() {
-                                                        println!("error: cannot attach to non-empty branch");
-                                                        return;
-                                                    }
-
-                                                    self.gifts
-                                                        .entry(*point1_)
-                                                        .and_modify(|g| g.next(&assets_.cell))
-                                                        .or_insert(cell::GiftCell::new());
-
-                                                    self.parent.insert(*point1_, *point2_);
-                                                },
-                                                _                => {println!("error: vec had different length than 2");}
-                                            };
+                                    let gift_neighbours = branch_point.gift_neighbours();
+                                    let empty_neighbours: Vec<hex::GiftPoint> = gift_neighbours
+                                        .iter()
+                                        .map(|g| *g)
+                                        .filter(|g| gifts_.get(g).is_none())
+                                        .collect();
+                                    let full_neighbours: Vec<hex::GiftPoint> = gift_neighbours
+                                        .iter()
+                                        .map(|g| *g)
+                                        .filter(|g| gifts_.get(g).is_some())
+                                        .collect();
+                                    if empty_neighbours.len() == 1 && full_neighbours.len() == 1 {
+                                        let empty_neighbour = empty_neighbours[0];
+                                        let full_neighbour = full_neighbours[0];
+                                        if *bounty_amount_ >= 1.0 {
+                                            // place a new branch
+                                            *bounty_amount_ -= 1.0;
+                                            *life_amount_ += 0.1;
+                                            let branch_cell = cell::BranchCell::new(
+                                                &assets_.cell,
+                                                &mut rand::thread_rng(),
+                                                Some(full_neighbour),
+                                                branch_point
+                                            );
+                                            let gift_cell = cell::GiftCell::new(branch_point);
+                                            self.branches.insert(branch_point, branch_cell);
+                                            gifts_.insert(empty_neighbour, gift_cell);
                                         }
-
-                                        // place a new branch
-                                        *bounty_amount_ -= 1.0;
-                                        *life_amount_ += 0.1;
-                                        self.branches.insert(branch_point, cell::BranchCell::new());
+                                    } else if empty_neighbours.len() == 2 {
+                                        println!("new branches must be attached to the tree");
+                                    } else if full_neighbours.len() == 2 {
+                                        println!("branches cannot form a cycle");
                                     }
                                 },
                                 Some(_) => {
@@ -234,11 +237,36 @@ impl EventHandler for Globals {
                             }
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
-                            let assets_ = &mut self.assets;
-                            self.gifts
-                                .entry(gift_point)
-                                .and_modify(|g| g.next(&assets_.cell))
-                                .or_insert(cell::GiftCell::new());
+                            match self.gifts.get(&gift_point) {
+                                None => {
+                                    println!("you cannot place a branch on a cell, only in-between two cells");
+                                },
+                                Some(gift_cell) => {
+                                    match gift_cell.gift {
+                                        None => {
+                                            println!("you cannot place leaves, you have to let them grow");
+                                        },
+                                        Some(cell::Gift::Leaves) => {
+                                            println!("right-click to release the leaf");
+                                        },
+                                        Some(cell::Gift::Flowers) => {
+                                            println!("right-click to release the flower");
+                                        },
+                                        Some(cell::Gift::Berries) => {
+                                            println!("right-click to release the berry");
+                                        },
+                                        Some(cell::Gift::Nuts) => {
+                                            println!("right-click to release the nut");
+                                        },
+                                        Some(cell::Gift::Beehive) => {
+                                            println!("right-click to release the beehive");
+                                        },
+                                        Some(cell::Gift::Birdnest) => {
+                                            println!("right-click to release the bird nest");
+                                        },
+                                    }
+                                },
+                            }
                         },
                     }
                 },
@@ -248,7 +276,9 @@ impl EventHandler for Globals {
                             self.branches.remove(&branch_point);
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
-                            self.gifts.remove(&gift_point);
+                            self.gifts
+                                .entry(gift_point)
+                                .and_modify(|g| g.gift = None);
                         },
                     }
                 }

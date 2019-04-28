@@ -131,7 +131,7 @@ pub enum Gift {
 pub struct GiftCell {
 	pub gift: Option<Gift>,
     image_variant: usize,
-    pub parent: Option<BranchPoint>,
+    pub parent: BranchPoint,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -143,13 +143,21 @@ pub struct BranchCell {
 }
 
 impl BranchCell {
-    pub fn new() -> BranchCell {
-        BranchCell {
+    pub fn new(
+        assets: &Assets,
+        rng: &mut rand::ThreadRng,
+        parent: Option<GiftPoint>,
+        branch_point: BranchPoint,
+    ) -> BranchCell {
+        let mut branch_cell = BranchCell {
             branch_strain_current: 0,
             branch_upgrade: 0,
             image_variant: 0,
-            parent: None,
-        }
+            parent,
+        };
+        branch_cell.upgrade(assets, rng, branch_point, 0);
+
+        branch_cell
     }
 
     fn branch_strain_maximum(&self) -> IntOrInfinite {
@@ -176,32 +184,11 @@ impl BranchCell {
 }
 
 impl GiftCell {
-    pub fn new() -> GiftCell {
+    pub fn new(parent: BranchPoint) -> GiftCell {
         GiftCell {
             gift: None,
             image_variant: 0,
-            parent: None,
-        }
-    }
-
-    pub fn next(&mut self, assets: &Assets) {
-        if let Some(gift) = self.gift {
-            let n = assets.gift_images(gift).len();
-            if self.image_variant+1 < n {
-                self.image_variant += 1;
-            } else {
-                self.image_variant = 0;
-                self.gift = Some(
-                    match gift {
-                        Gift::Leaves   => Gift::Flowers,
-                        Gift::Flowers  => Gift::Berries,
-                        Gift::Berries  => Gift::Nuts,
-                        Gift::Nuts     => Gift::Beehive,
-                        Gift::Beehive  => Gift::Birdnest,
-                        Gift::Birdnest => Gift::Leaves,
-                    }
-                );
-            }
+            parent,
         }
     }
 
