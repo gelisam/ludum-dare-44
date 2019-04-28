@@ -6,7 +6,7 @@ use globals::*;
 use text;
 
 
-pub const SIDEBAR_WIDTH: f32 = 150.0;
+pub const SIDEBAR_WIDTH: f32 = 70.0;
 
 #[derive(Debug)]
 pub struct Sidebar {
@@ -46,9 +46,9 @@ impl Sidebar {
 
         let meter_bounty_color = Color::from_rgb(15, 117, 188);
         let meter_life_color = Color::from_rgb(247, 148, 30);
-        let meter_offset_x = 30.0f32;
+        let meter_offset_x = 36.0f32;
         let meter_spacing_y = 14.0f32;
-        let meter_radius = 8.0f32;
+        let meter_radius = 9.0f32;
         let meter_bottom = Point2::new(
             self.x + meter_offset_x,
             WINDOW_HEIGHT as f32 - 100.0,
