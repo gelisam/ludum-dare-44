@@ -396,7 +396,8 @@ impl EventHandler for Globals {
         set_color(ctx, Color::from_rgb(128, 255, 128))?;
         // Need to skip non-tips. Check that children is [] when we get those!
         for (&gift_point, &b) in self.forbidden.iter() {
-            if b {
+            //println!("{:?}", self.gift_children(gift_point).len());
+            if b && self.gift_children(gift_point).len() == 0 {
                 let image = &self.assets.moss;
                 center::draw_centered_image(ctx, image, gift_point.to_point(), 0.0)?;
                 //self.assets.dot.draw(ctx, gift_point.to_point(), 0.0)?;
