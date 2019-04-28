@@ -24,6 +24,7 @@ mod vector;
 mod life;
 
 use globals::*;
+use life::Stats;
 
 #[derive(Debug)]
 struct Assets {
@@ -37,7 +38,7 @@ struct Assets {
     moss: Image,
 }
 
-type CellCheckFn = fn( &HashMap<hex::BranchPoint, cell::BranchCell>, &HashMap<hex::GiftPoint, cell::GiftCell>,) -> bool;
+type CellCheckFn = fn( &HashMap<hex::BranchPoint, cell::BranchCell>, &Stats,) -> bool;
 
 //#[derive(Debug)]
 struct Achievement {
@@ -47,12 +48,20 @@ struct Achievement {
     pub functor: CellCheckFn,
 }
 
-fn any_branches( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, cells: &HashMap<hex::GiftPoint, cell::GiftCell>,) -> bool
+fn any_branches( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
-    //println!("any_branches {0}", branches.len());
     branches.len()>1
 }
 
+fn any_flowers( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.flower_count>1
+}
+
+struct Alert {
+    pub message: &'static str,
+    pub duration: Duration,
+}
 
 
 impl Assets {
@@ -81,6 +90,7 @@ impl Assets {
 struct Globals {
     assets: Assets,
     achievements: Vec<Achievement>,
+    alerts: Vec<Alert>,
     start_time: Duration,
     turn_time: Duration,
     turn_duration: Duration,
@@ -95,10 +105,7 @@ struct Globals {
     hover: Option<hex::InBoundsPoint>,
     branches: HashMap<hex::BranchPoint, cell::BranchCell>,
     gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
-    leaf_count: u8,
-    beehive_count: u8,
-    birdnest_count: u8,
-    squirrel_count: u8,
+    stats: Stats,
     forbidden: HashMap<hex::GiftPoint, bool>,
 }
 
@@ -128,12 +135,22 @@ impl Globals {
                     message: "TIP: Click around the tree trunk to add a branch - Leaves grow on ends of branches",
                     functor: any_branches,
                 },
+                Achievement {
+                    achieved: false,
+                    message: "TIP: Flowers grow on ends of branches with two leaves nearby - These build Bounty",
+                    functor: any_flowers,
+                },
                 //String("TIP: Click a branch to grow it thicker and allow a bigger tree"),
-                //String("TIP: Flowers grow on ends of branches when two leaves are nearby"),
-                //String("TIP: Beehives appears on ends of branches when two flowers are nearby"),
-                //String("TIP: Berries grow on ends of branches when a beehive and two leaves are nearby"),
-                //String("TIP: Birds appear on ends of branches when two berries are nearby"),
+                //String("TIP: Beehives appear when two flowers are nearby - More Bounty than flowers"),
+                //String("TIP: Berries grow when a beehive and two leaves are nearby - More Bounty then Beehive"),
+                //String("TIP: Birds appear when two berries are nearby - Large multiplier to Bounty"),
                 //String("TIP: Nuts grow only on the ends of thick branches near flowers and leaves"),
+            ),
+            alerts: vec!(
+                Alert {
+                    message: "NOTE: Not enough Life for this action - build Bounty for faster Life",
+                    duration: Duration::from_millis(0),
+                },
             ),
             start_time: get_current_time(ctx),
             turn_time: get_current_time(ctx),
@@ -149,10 +166,13 @@ impl Globals {
             hover: None,
             branches: HashMap::with_capacity(100),
             gifts: HashMap::with_capacity(100),
-            leaf_count: 0,
-            beehive_count: 0,
-            birdnest_count: 0,
-            squirrel_count: 0,
+            stats: Stats{
+                leaf_count: 0,
+                flower_count: 0,
+                beehive_count: 0,
+                birdnest_count: 0,
+                squirrel_count: 0,
+            },
             forbidden: HashMap::with_capacity(100),
         };
         globals.reset(ctx);
@@ -264,10 +284,11 @@ impl Globals {
             }
             if let Some(gift_cell) = self.gifts.remove(&gift_point) {
                 match gift_cell.gift {
-                    Some(cell::Gift::Leaves)   => self.leaf_count     -= 1,
-                    Some(cell::Gift::Beehive)  => self.beehive_count  -= 1,
-                    Some(cell::Gift::Birdnest) => self.birdnest_count -= 1,
-                    Some(cell::Gift::Squirrel) => self.squirrel_count -= 1,
+                    Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
+                    Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
+                    Some(cell::Gift::Beehive)  => self.stats.beehive_count  -= 1,
+                    Some(cell::Gift::Birdnest) => self.stats.birdnest_count -= 1,
+                    Some(cell::Gift::Squirrel) => self.stats.squirrel_count -= 1,
                     _ => {},
                 };
             }
@@ -280,10 +301,11 @@ impl Globals {
     fn remove_gift(&mut self, gift_point: hex::GiftPoint) {
         if let Some(gift_cell) = self.gifts.remove(&gift_point) {
             match gift_cell.gift {
-                Some(cell::Gift::Leaves)   => self.leaf_count     -= 1,
-                Some(cell::Gift::Beehive)  => self.beehive_count  -= 1,
-                Some(cell::Gift::Birdnest) => self.birdnest_count -= 1,
-                Some(cell::Gift::Squirrel) => self.squirrel_count -= 1,
+                Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
+                Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
+                Some(cell::Gift::Beehive)  => self.stats.beehive_count  -= 1,
+                Some(cell::Gift::Birdnest) => self.stats.birdnest_count -= 1,
+                Some(cell::Gift::Squirrel) => self.stats.squirrel_count -= 1,
                 _ => {},
             };
         }
@@ -318,23 +340,20 @@ impl EventHandler for Globals {
             self.turn_time = self.turn_time + self.turn_duration;
 
             life::life_cycle(
-                &mut self.gifts, &self.branches, &self.forbidden,
-                &mut self.leaf_count, &mut self.beehive_count, &mut self.birdnest_count, &mut self.squirrel_count
+                &mut self.gifts, &self.branches, &self.forbidden, &mut self.stats
             );
         }
 
         for mut achievement in self.achievements.iter_mut() {
-            if !achievement.achieved & (achievement.functor)(&self.branches,&self.gifts) {
+            if !achievement.achieved & (achievement.functor)(&self.branches,&self.stats) {
                 achievement.achieved = true;
             }
         }
 
-
-
-        self.guitar_channel.enable(ctx, self.leaf_count > 0);
-        self.clarinet_channel.enable(ctx, self.birdnest_count > 0);
-        self.high_pithed_clarinet_channel.enable(ctx, self.beehive_count > 0);
-        self.dreamy_bells_channel.enable(ctx, self.squirrel_count > 0);
+        self.guitar_channel.enable(ctx, self.stats.leaf_count > 0);
+        self.clarinet_channel.enable(ctx, self.stats.birdnest_count > 0);
+        self.high_pithed_clarinet_channel.enable(ctx, self.stats.beehive_count > 0);
+        self.dreamy_bells_channel.enable(ctx, self.stats.squirrel_count > 0);
 
         ggez::timer::sleep(Duration::from_millis(50));
         Ok(())
