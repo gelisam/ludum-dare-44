@@ -5,7 +5,7 @@ version = "0.0.1"
 authors = [ "Samuel Gelineau <gelisam@gmail.com>" ]
 
 [dependencies]
-ggez = "0.4.2"
+ggez = "0.4.4"
 nalgebra = "0.14.1"
 rand = "0.6.5"
 counter = "0.4.3"

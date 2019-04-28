@@ -65,8 +65,10 @@ struct Globals {
     start_time: Duration,
     turn_time: Duration,
     turn_duration: Duration,
-    bees: channel::Channel,
-    birds: channel::Channel,
+    guitar_channel: channel::Channel,
+    clarinet_channel: channel::Channel,
+    high_pithed_clarinet_channel: channel::Channel,
+    dreamy_bells_channel: channel::Channel,
     bounty: sidebar::Sidebar,
     life: sidebar::Sidebar,
     bounty_amount: f32,
@@ -100,8 +102,10 @@ impl Globals {
             start_time: get_current_time(ctx),
             turn_time: get_current_time(ctx),
             turn_duration: Duration::from_millis(2000),
-            bees: channel::Channel::new(ctx, "/bees.ogg")?,
-            birds: channel::Channel::new(ctx, "/birds.ogg")?,
+            guitar_channel: channel::Channel::new(ctx, "/guitar.ogg")?,
+            clarinet_channel: channel::Channel::new(ctx, "/clarinet.ogg")?,
+            high_pithed_clarinet_channel: channel::Channel::new(ctx, "/high-pitched clarinet.ogg")?,
+            dreamy_bells_channel: channel::Channel::new(ctx, "/dreamy-bells.ogg")?,
             bounty,
             life,
             bounty_amount: 0.0,
@@ -182,8 +186,10 @@ impl Globals {
 
 impl EventHandler for Globals {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        self.bees.update(ctx);
-        self.birds.update(ctx);
+        self.guitar_channel.update(ctx);
+        self.clarinet_channel.update(ctx);
+        self.high_pithed_clarinet_channel.update(ctx);
+        self.dreamy_bells_channel.update(ctx);
         self.bounty.update(ctx, self.bounty_amount, 0.0f32);
         self.life.update(ctx, 0.0f32, self.life_amount+1.0);
 
@@ -204,8 +210,10 @@ impl EventHandler for Globals {
 
     fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
-            Keycode::Z      => self.bees.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
-            Keycode::X      => self.birds.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
+            Keycode::Z      => self.guitar_channel.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
+            Keycode::X      => self.clarinet_channel.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
+            Keycode::C      => self.high_pithed_clarinet_channel.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
+            Keycode::V      => self.dreamy_bells_channel.set_future_volume(ctx, Duration::from_millis(1000), 1.0),
             Keycode::Escape => ctx.quit().unwrap(),
             _               => (),
         }
@@ -213,8 +221,10 @@ impl EventHandler for Globals {
 
     fn key_up_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
-            Keycode::Z     => self.bees.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
-            Keycode::X     => self.birds.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
+            Keycode::Z      => self.guitar_channel.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
+            Keycode::X      => self.clarinet_channel.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
+            Keycode::C      => self.high_pithed_clarinet_channel.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
+            Keycode::V      => self.dreamy_bells_channel.set_future_volume(ctx, Duration::from_millis(1000), 0.0),
             Keycode::R     => self.reset(ctx),
             _              => (),
         }
@@ -415,7 +425,10 @@ impl EventHandler for Globals {
             //}
         }
 
-        //println!("FPS: {}", ggez::timer::get_fps(ctx));
+        //if get_current_time(ctx) - self.start_time > Duration::from_millis(1000) {
+        //    self.start_time = get_current_time(ctx);
+        //    println!("FPS: {}", ggez::timer::get_fps(ctx));
+        //}
         present(ctx);
         timer::yield_now();
 
@@ -442,8 +455,10 @@ pub fn main() {
     ).unwrap();
 
     let globals = &mut Globals::new(ctx).unwrap();
-    globals.bees.source.play().unwrap();
-    globals.birds.source.play().unwrap();
+    globals.guitar_channel.source.play().unwrap_or(());
+    globals.clarinet_channel.source.play().unwrap_or(());
+    globals.high_pithed_clarinet_channel.source.play().unwrap_or(());
+    globals.guitar_channel.source.play().unwrap_or(());
 
     run(ctx, globals).unwrap();
 }
