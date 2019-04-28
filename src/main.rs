@@ -348,7 +348,7 @@ impl EventHandler for Globals {
                                     if let Some(parent_point) = self.branch_parent_parent(branch_point) {
                                         if let Some(&parent_cell) = self.branches.get(&parent_point) {
                                             if let Some(branch_cell) = self.branches.get(&branch_point) {
-                                                if !self.dist2_rule(branch_cell.parent.unwrap(), branch_cell.branch_upgrade + 1) {
+                                                if !self.dist2_rule(branch_cell.parent.unwrap(), (branch_cell.branch_upgrade + 1).min(3)) {
                                                     println!("branches are too thin to hold more branches! Try upgrading some earlier branches.");
                                                     return
                                                 }
