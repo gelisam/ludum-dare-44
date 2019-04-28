@@ -98,6 +98,8 @@ struct Globals {
     birds: channel::Channel,
     bounty: sidebar::Sidebar,
     life: sidebar::Sidebar,
+    bounty_amount: f32,
+    life_amount: f32,
     hover: Option<hex::InBoundsPoint>,
     branches: HashMap<hex::BranchPoint, usize>,
     gifts: HashMap<hex::GiftPoint, usize>,
@@ -131,6 +133,8 @@ impl Globals {
             birds: channel::Channel::new(ctx, "/birds.ogg")?,
             bounty,
             life,
+            bounty_amount: 5.0f32,
+            life_amount: 1.0f32,
             hover: None,
             branches,
             gifts: HashMap::with_capacity(100),
@@ -146,6 +150,10 @@ impl EventHandler for Globals {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         self.bees.update(ctx);
         self.birds.update(ctx);
+        self.bounty.update(ctx,self.bounty_amount);
+        self.life.update(ctx,self.life_amount);
+
+        self.bounty_amount += 0.02;
 
         ggez::timer::sleep(Duration::from_millis(50));
         Ok(())
@@ -170,6 +178,11 @@ impl EventHandler for Globals {
     }
 
     fn mouse_button_down_event(&mut self, _ctx: &mut Context, button: MouseButton, x: i32, y: i32) {
+        if self.bounty_amount<1.0
+        {
+            return
+        }
+        self.bounty_amount = self.bounty_amount-1.0;
         let point = Point2::new(x as f32, y as f32);
         if let Some(in_bounds_point) = hex::HexPoint::from_point(point).is_in_bounds() {
             match button {
