@@ -189,28 +189,29 @@ impl EventHandler for Globals {
                                         .collect();
                                     if empty_neighbours.len() == 1 && full_neighbours.len() == 1 {
                                         let empty_neighbour = empty_neighbours[0];
-                                        let full_neighbour = full_neighbours[0];
-                                        // println!("{:?}", gifts_.get(&full_neighbour).unwrap().gift);
-                                        if !gifts_.get(&full_neighbour).unwrap().gift.is_none() {
-                                            println!("cannot attach to non-empty branch");
-                                            return;
-                                        }
-
-                                        if *bounty_amount_ >= 1.0 {
-                                            // place a new branch
-                                            *bounty_amount_ -= 1.0;
-                                            *life_amount_ += 0.1;
-                                            let branch_cell = cell::BranchCell::new(
-                                                &assets_.cell,
-                                                &mut rand::thread_rng(),
-                                                Some(full_neighbour),
-                                                branch_point
-                                            );
-                                            let gift_cell = cell::GiftCell::new(branch_point);
-                                            self.branches.insert(branch_point, branch_cell);
-                                            gifts_.insert(empty_neighbour, gift_cell);
-                                        } else {
-                                            println!("not enough Bounty");
+                                        let full_gift_point = full_neighbours[0];
+                                        match gifts_.get(&full_gift_point).unwrap().gift {
+                                            None => {
+                                                if *bounty_amount_ >= 1.0 {
+                                                    // place a new branch
+                                                    *bounty_amount_ -= 1.0;
+                                                    *life_amount_ += 0.1;
+                                                    let branch_cell = cell::BranchCell::new(
+                                                        &assets_.cell,
+                                                        &mut rand::thread_rng(),
+                                                        Some(full_gift_point),
+                                                        branch_point
+                                                    );
+                                                    let gift_cell = cell::GiftCell::new(branch_point);
+                                                    self.branches.insert(branch_point, branch_cell);
+                                                    gifts_.insert(empty_neighbour, gift_cell);
+                                                } else {
+                                                    println!("not enough Bounty");
+                                                }
+                                            },
+                                            Some(gift) => {
+                                                println!("release the {:} before attaching a new branch", gift.singular());
+                                            },
                                         }
                                     } else if empty_neighbours.len() == 2 {
                                         println!("new branches must be attached to the tree");
@@ -269,23 +270,8 @@ impl EventHandler for Globals {
                                         None => {
                                             println!("you cannot place leaves, you have to let them grow");
                                         },
-                                        Some(cell::Gift::Leaves) => {
-                                            println!("right-click to release the leaf");
-                                        },
-                                        Some(cell::Gift::Flowers) => {
-                                            println!("right-click to release the flower");
-                                        },
-                                        Some(cell::Gift::Berries) => {
-                                            println!("right-click to release the berry");
-                                        },
-                                        Some(cell::Gift::Nuts) => {
-                                            println!("right-click to release the nut");
-                                        },
-                                        Some(cell::Gift::Beehive) => {
-                                            println!("right-click to release the beehive");
-                                        },
-                                        Some(cell::Gift::Birdnest) => {
-                                            println!("right-click to release the bird nest");
+                                        Some(gift) => {
+                                            println!("right-click to release the {:}", gift.singular());
                                         },
                                     }
                                 },
