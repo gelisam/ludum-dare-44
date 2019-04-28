@@ -369,9 +369,7 @@ impl EventHandler for Globals {
                                     if empty_neighbours.len() == 1 && full_neighbours.len() == 1 {
                                         let empty_neighbour = empty_neighbours[0];
                                         let full_gift_point = full_neighbours[0];
-                                        if !self.gifts.get(&full_gift_point).unwrap().gift.is_none() {
-                                            self.remove_gift(full_gift_point);
-                                        }
+                                        let full_gift_cell = *self.gifts.get(&full_gift_point).unwrap();
 
                                         let cost = life::BASE * 5.0;
                                         if self.bounty_amount >= cost {
@@ -383,6 +381,9 @@ impl EventHandler for Globals {
                                             self.branches.insert(branch_point, branch_cell);
                                             self.gifts.insert(empty_neighbour, gift_cell);
                                             self.forbidden.insert(full_gift_point, true);
+                                            if full_gift_cell.gift.is_some() {
+                                                self.remove_gift(full_gift_point);
+                                            }
                                         } else {
                                             println!("not enough Bounty");
                                         }
