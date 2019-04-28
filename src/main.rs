@@ -181,6 +181,9 @@ impl Globals {
             }
             self.gifts.remove(&gift_point);
         }
+        if let Some(_) = self.forbidden.get(&gift_point) {
+            self.forbidden.remove(&gift_point);
+        }
     }
 }
 
@@ -358,10 +361,12 @@ impl EventHandler for Globals {
                             self.gifts
                                 .entry(gift_point)
                                 .and_modify(|g| g.gift = None);
-                            self.forbidden
-                                .entry(gift_point)
-                                .and_modify(|b| *b ^= true)
-                                .or_insert(true);
+                            if self.gift_children(gift_point).len() == 0 {
+                                self.forbidden
+                                    .entry(gift_point)
+                                    .and_modify(|b| *b ^= true)
+                                    .or_insert(true);
+                            }
                         },
                     }
                 }
