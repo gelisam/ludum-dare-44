@@ -111,12 +111,7 @@ impl Globals {
         self.branches.clear();
         let root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
         let root_gift_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
-        let root_cell = cell::BranchCell::new(
-            &self.assets.cell,
-            &mut rand::thread_rng(),
-            None,
-            root_point
-        );
+        let root_cell = cell::BranchCell::new(None);
         self.branches.insert(root_point, root_cell);
         self.forbidden.insert(root_gift_point, true);
 
@@ -153,7 +148,7 @@ impl Globals {
     }
 
     fn prune_branch(&mut self, branch_point: hex::BranchPoint) {
-        if let Some(&branch_cell) = self.branches.get(&branch_point) {
+        if let Some(_) = self.branches.get(&branch_point) {
             for gift_point in self.branch_children(branch_point) {
                 self.prune_gift(gift_point);
             }
@@ -162,7 +157,7 @@ impl Globals {
     }
 
     fn prune_gift(&mut self, gift_point: hex::GiftPoint) {
-        if let Some(&gift_cell) = self.gifts.get(&gift_point) {
+        if let Some(_) = self.gifts.get(&gift_point) {
             for branch_point in self.gift_children(gift_point) {
                 self.prune_branch(branch_point);
             }
@@ -218,7 +213,6 @@ impl EventHandler for Globals {
                 MouseButton::Left => {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
-                            let assets_ = &mut self.assets;
                             let bounty_amount_ = &mut self.bounty_amount;
                             let life_amount_ = &mut self.life_amount;
                             let gifts_ = &mut self.gifts;
@@ -245,12 +239,7 @@ impl EventHandler for Globals {
                                                     // place a new branch
                                                     *bounty_amount_ -= cost;
                                                     //*life_amount_ += 0.1;
-                                                    let branch_cell = cell::BranchCell::new(
-                                                        &assets_.cell,
-                                                        &mut rand::thread_rng(),
-                                                        Some(full_gift_point),
-                                                        branch_point
-                                                    );
+                                                    let branch_cell = cell::BranchCell::new(Some(full_gift_point));
                                                     let gift_cell = cell::GiftCell::new(branch_point);
                                                     self.branches.insert(branch_point, branch_cell);
                                                     gifts_.insert(empty_neighbour, gift_cell);
@@ -274,11 +263,11 @@ impl EventHandler for Globals {
                                         match branch_cell.branch_upgrade {
                                             0 => {
                                                 // upgrade a branch to level 1
-                                                let cost = life::base * 20.0;
+                                                let cost = life::base * 10.0;
                                                 if *bounty_amount_ >= cost {
                                                     *bounty_amount_ -= cost;
                                                     //*life_amount_ += 0.1;
-                                                    branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 1);
+                                                    branch_cell.branch_upgrade = 1;
                                                 } else {
                                                     println!("not enough Bounty");
                                                 }
@@ -289,17 +278,18 @@ impl EventHandler for Globals {
                                                 if *bounty_amount_ >= cost {
                                                     *bounty_amount_ -= cost;
                                                     //*life_amount_ += 0.1;
-                                                    branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 2);
+                                                    branch_cell.branch_upgrade = 2;
                                                 } else {
                                                     println!("not enough Bounty");
                                                 }
                                             },
                                             2 => {
                                                 // upgrade a branch to level 3
-                                                if *bounty_amount_ >= 4.0 {
-                                                    *bounty_amount_ -= 4.0;
-                                                    *life_amount_ += 0.1;
-                                                    branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 3);
+                                                let cost = life::base * 1000.0;
+                                                if *bounty_amount_ >= cost {
+                                                    *bounty_amount_ -= cost;
+                                                    //*life_amount_ += 0.1;
+                                                    branch_cell.branch_upgrade = 3;
                                                 } else {
                                                     println!("not enough Bounty");
                                                 }
