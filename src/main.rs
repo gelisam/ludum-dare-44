@@ -299,7 +299,7 @@ impl Globals {
     }
 
     fn remove_gift(&mut self, gift_point: hex::GiftPoint) {
-        if let Some(gift_cell) = self.gifts.remove(&gift_point) {
+        if let Some(gift_cell) = self.gifts.get(&gift_point) {
             match gift_cell.gift {
                 Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
                 Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
