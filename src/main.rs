@@ -9,8 +9,6 @@ use ggez::event::*;
 use ggez::graphics::*;
 use ggez::timer;
 use std::collections::HashMap;
-use counter::Counter;
-use cell::Gift::*;
 
 mod bg;
 mod cell;
@@ -24,11 +22,6 @@ mod vector;
 mod life;
 
 use globals::*;
-
-macro_rules !get {
-    ($map:expr, $value:expr) => (*$map.get(&Some($value)).unwrap_or(&0));
-    ($map:expr) => (*$map.get(&None).unwrap_or(&0));
-}
 
 #[derive(Debug)]
 struct Assets {
@@ -176,25 +169,27 @@ impl EventHandler for Globals {
                                                     if self.parent.get(&point1) == None && self.parent.get(&point2) == None {
                                                         println!("error: double empty parents");
                                                         return;
-                                                    } else if self.parent.get(&point1) == None {
-                                                        self.gifts
-                                                            .entry(*point1)
-                                                            .and_modify(|g| g.next(&assets_.cell))
-                                                            .or_insert(cell::GiftCell::new());
-
-                                                        self.parent.insert(*point1, *point2);
-                                                    } else if self.parent.get(&point2) == None {
-                                                        self.gifts
-                                                            .entry(*point2)
-                                                            .and_modify(|g| g.next(&assets_.cell))
-                                                            .or_insert(cell::GiftCell::new());
-
-                                                        self.parent.insert(*point2, *point1);
-                                                    } else {
+                                                    } else if self.parent.get(&point1) != None && self.parent.get(&point2) != None {
                                                         println!("error: both points have parents already");
                                                         return;
+                                                    };
+                                                    let point1_ = if self.parent.get(&point1) == None { point1 } else { point2 };
+                                                    let point2_ = if self.parent.get(&point1) == None { point2 } else { point1 };
+                                                    // println!("{:?}", self.gifts.get(&point2_));
+                                                    // println!("{:?}", &self.parent.get(&point1_));
+
+                                                    if !self.gifts.get(&point2_).is_none() {
+                                                        println!("error: cannot attach to non-empty branch");
+                                                        return;
                                                     }
-                                                }
+
+                                                    self.gifts
+                                                        .entry(*point1_)
+                                                        .and_modify(|g| g.next(&assets_.cell))
+                                                        .or_insert(cell::GiftCell::new());
+
+                                                    self.parent.insert(*point1_, *point2_);
+                                                },
                                                 _                => {println!("error: vec had different length than 2");}
                                             };
                                         }
