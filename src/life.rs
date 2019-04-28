@@ -139,5 +139,10 @@ pub fn life_production(gifts: &HashMap<hex::GiftPoint, cell::GiftCell>) -> f32{
             _ => 0f32,
         })
         .sum();
-    return base * (1f32 + total);
+    let multiplier: f32 = gifts.iter()
+        .map(|(_, gift)| match gift.gift {
+            Some(Birdnest) => 0.5f32,
+            _ => 0.0f32})
+        .sum();
+    return base * (1f32 + (1f32 + multiplier) * total);
 }
