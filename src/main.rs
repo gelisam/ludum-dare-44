@@ -171,6 +171,8 @@ impl Globals {
         let mut root_cell = cell::BranchCell::new(None);
         root_cell.branch_upgrade = 3;
         self.branches.insert(root_point, root_cell);
+
+        self.forbidden.clear();
         self.forbidden.insert(root_gift_point, true);
 
         self.gifts.clear();
