@@ -47,7 +47,7 @@ pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 
 pub fn draw_hex_grid(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
     graphics::set_color(ctx, Color::from_rgb(163, 186, 188))?;
-    for q in -8..=8 {
+    for q in -10..=10 {
         for r in -20..=0 {
             if let Some(InBoundsPoint::GiftPoint(gift_point)) = HexPoint::new(q, r).is_in_bounds() {
                 assets.hex.draw(ctx, gift_point.to_point(), 0.0)?;
@@ -170,7 +170,7 @@ impl HexPoint {
     }
 
     pub fn is_in_bounds(self) -> Option<InBoundsPoint> {
-        if self.r <= 0 && self.s() >= 0 && self.q >= -8 && self.q <= 8 && self.y() + (if (self.q + 100) % 4 == 2 {1} else {0}) >= -33 && self.s() < 21 {
+        if self.r <= 0 && self.s() >= 0 && self.q >= -10 && self.q <= 10 && self.y() + (if (self.q + 100) % 4 == 2 {1} else {0}) >= -33 && self.s() < 21 {
             if self.would_be_cell_center() {
                 Some(InBoundsPoint::GiftPoint(GiftPoint::new(self)))
             } else {
