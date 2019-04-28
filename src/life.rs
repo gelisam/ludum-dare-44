@@ -125,3 +125,18 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
         }
     }
 }
+
+pub fn life_production(gifts: &HashMap<hex::GiftPoint, cell::GiftCell>) -> f32{
+    let base = 0.25f32;
+    let total: f32 = gifts.iter()
+        .map(|(_, gift)| match gift.gift {
+            Some(Leaves) => 1f32,
+            Some(Flowers) => 1f32,
+            Some(Beehive) => 4f32,
+            Some(Birdnest) => 0f32,
+            Some(Squirrel) => 8f32,
+            _ => 0f32,
+        })
+        .sum();
+    return base * (1f32 + total);
+}

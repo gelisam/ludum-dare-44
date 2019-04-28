@@ -136,8 +136,10 @@ impl EventHandler for Globals {
 
         let now = get_current_time(ctx);
         while (now - self.turn_time) > self.turn_duration { // while loop in case of large discrepancy
-            let basic_amount = 0.1f32; // get this amount even if no life
-            self.bounty_amount = (self.bounty_amount+self.life_amount+basic_amount).min(30.0);
+            // let basic_amount = 0.1f32; // get this amount even if no life
+            // self.bounty_amount = (self.bounty_amount+self.life_amount+basic_amount).min(30.0);
+            self.life_amount = life::life_production(&self.gifts);
+            self.bounty_amount = (self.bounty_amount + self.life_amount).min(30.0);
             self.turn_time = self.turn_time + self.turn_duration;
 
             life::life_cycle(&mut self.gifts, &self.branches, &self.forbidden);
