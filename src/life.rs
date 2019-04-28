@@ -12,9 +12,14 @@ macro_rules !get {
 }
 
 pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
-                  branches: &HashMap<hex::BranchPoint, cell::BranchCell>) {
+                  branches: &HashMap<hex::BranchPoint, cell::BranchCell>,
+                  forbidden: &HashMap<hex::GiftPoint, bool>,) {
     let gifts_old = gifts.clone(); // deep copy of old state
     for (gift_point, _) in gifts_old.iter() {
+        // Should filter!
+        if *forbidden.get(&gift_point).unwrap_or(&false) {
+            continue
+        }
         let mut counts = gift_point.gift_neighbours()
             .iter()
             .map(|adj_point| match gifts_old.get(&adj_point){

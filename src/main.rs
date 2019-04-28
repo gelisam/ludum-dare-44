@@ -61,6 +61,7 @@ struct Globals {
     hover: Option<hex::InBoundsPoint>,
     branches: HashMap<hex::BranchPoint, cell::BranchCell>,
     gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
+    forbidden: HashMap<hex::GiftPoint, bool>,
 }
 
 impl Globals {
@@ -95,6 +96,7 @@ impl Globals {
             hover: None,
             branches: HashMap::with_capacity(100),
             gifts: HashMap::with_capacity(100),
+            forbidden: HashMap::with_capacity(100),
         };
         globals.reset(ctx);
         Ok(globals)
@@ -136,7 +138,7 @@ impl EventHandler for Globals {
             self.bounty_amount = (self.bounty_amount+self.life_amount+basic_amount).min(30.0);
             self.turn_time = self.turn_time + self.turn_duration;
 
-            life::life_cycle(&mut self.gifts, &self.branches);
+            life::life_cycle(&mut self.gifts, &self.branches, &self.forbidden);
         }
 
         ggez::timer::sleep(Duration::from_millis(50));
@@ -300,6 +302,9 @@ impl EventHandler for Globals {
                             self.gifts
                                 .entry(gift_point)
                                 .and_modify(|g| g.gift = None);
+                            self.forbidden
+                                .entry(gift_point)
+                                .or_insert(true);
                         },
                     }
                 }
