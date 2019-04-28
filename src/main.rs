@@ -103,6 +103,7 @@ struct Globals {
     hover: Option<hex::InBoundsPoint>,
     branches: HashMap<hex::BranchPoint, usize>,
     gifts: HashMap<hex::GiftPoint, usize>,
+    parent: HashMap<hex::GiftPoint, hex::GiftPoint>,
 }
 
 impl Globals {
@@ -125,6 +126,9 @@ impl Globals {
 
         let mut branches = HashMap::with_capacity(100);
         branches.insert(hex::BranchPoint::new(hex::HexPoint::new(0, 1)), 7);
+        let mut parent = HashMap::with_capacity(100);
+        parent.insert(hex::GiftPoint::new(hex::HexPoint::new(0, 0)),
+                      hex::GiftPoint::new(hex::HexPoint::new(0, 0)));
 
         Ok(Globals {
             assets,
@@ -138,6 +142,7 @@ impl Globals {
             hover: None,
             branches,
             gifts: HashMap::with_capacity(100),
+            parent: parent,
         })
     }
 
@@ -191,6 +196,22 @@ impl EventHandler for Globals {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
                             match self.branches.get(&branch_point).map (|x| *x) {
                                 None => {
+                                    match branch_point.gift_neighbours().as_slice(){
+                                        [point1, point2] => {
+                                            if self.parent.get(&point1) == None && self.parent.get(&point2) == None {
+                                                println!("error: double empty parents");
+                                                return;
+                                            } else if self.parent.get(&point1) == None {
+                                                self.parent.insert(*point1, *point2);
+                                            } else if self.parent.get(&point2) == None {
+                                                self.parent.insert(*point2, *point1);
+                                            } else {
+                                                println!("error: both points have parents already");
+                                                return;
+                                            }
+                                        }
+                                        _                => {println!("error: vec had different length than 2");}
+                                    };
                                     self.branches.insert(branch_point, 0);
                                 },
                                 Some(i) => {
