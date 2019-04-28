@@ -124,10 +124,10 @@ pub struct GiftCell {
 
 #[derive(Debug)]
 pub struct BranchCell {
-	branch_strain_current: usize,
-    branch_upgrade: usize,
+	pub branch_strain_current: usize,
+    pub branch_upgrade: usize,
     image_variant: usize,
-    parent: Option<GiftPoint>,
+    pub parent: Option<GiftPoint>,
 }
 
 impl BranchCell {
@@ -150,13 +150,9 @@ impl BranchCell {
         }
     }
 
-    pub fn upgradable(&self) -> bool {
-        self.branch_upgrade+1 < 3
-    }
-
-    // will cause a crash unless self is upgradable
-    pub fn upgrade(&mut self, assets: &Assets, rng: &mut rand::ThreadRng, branch_point: BranchPoint) {
-        self.branch_upgrade += 1;
+    // will crash if branch_upgrade is 3 or more
+    pub fn upgrade(&mut self, assets: &Assets, rng: &mut rand::ThreadRng, branch_point: BranchPoint, branch_upgrade: usize) {
+        self.branch_upgrade = branch_upgrade;
         let n = assets.branch_images(branch_point.orientation())[self.branch_upgrade].len();
         self.image_variant = rng.gen_range(0, n);
     }

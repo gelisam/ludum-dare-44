@@ -153,45 +153,75 @@ impl EventHandler for Globals {
     }
 
     fn mouse_button_down_event(&mut self, _ctx: &mut Context, button: MouseButton, x: i32, y: i32) {
-        if self.bounty_amount<1.0
-        {
-            return
-        }
-        self.bounty_amount = self.bounty_amount-1.0;
-        self.life_amount = self.life_amount+0.1;
         let point = Point2::new(x as f32, y as f32);
         if let Some(in_bounds_point) = hex::HexPoint::from_point(point).is_in_bounds() {
             match button {
                 MouseButton::Left => {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
-                            if self.branches.get(&branch_point).is_none() {
-                                match branch_point.gift_neighbours().as_slice(){
-                                    [point1, point2] => {
-                                        if self.parent.get(&point1) == None && self.parent.get(&point2) == None {
-                                            println!("error: double empty parents");
-                                            return;
-                                        } else if self.parent.get(&point1) == None {
-                                            self.parent.insert(*point1, *point2);
-                                        } else if self.parent.get(&point2) == None {
-                                            self.parent.insert(*point2, *point1);
-                                        } else {
-                                            println!("error: both points have parents already");
-                                            return;
+                            let bounty_amount_ = &mut self.bounty_amount;
+                            let life_amount_ = &mut self.life_amount;
+                            let assets_ = &mut self.assets;
+                            match self.branches.get(&branch_point) {
+                                None => {
+                                    if *bounty_amount_ >= 1.0 {
+                                        if self.branches.get(&branch_point).is_none() {
+                                            match branch_point.gift_neighbours().as_slice(){
+                                                [point1, point2] => {
+                                                    if self.parent.get(&point1) == None && self.parent.get(&point2) == None {
+                                                        println!("error: double empty parents");
+                                                        return;
+                                                    } else if self.parent.get(&point1) == None {
+                                                        self.parent.insert(*point1, *point2);
+                                                    } else if self.parent.get(&point2) == None {
+                                                        self.parent.insert(*point2, *point1);
+                                                    } else {
+                                                        println!("error: both points have parents already");
+                                                        return;
+                                                    }
+                                                }
+                                                _                => {println!("error: vec had different length than 2");}
+                                            };
+                                        }
+
+                                        // place a new branch
+                                        *bounty_amount_ -= 1.0;
+                                        *life_amount_ += 0.1;
+                                        self.branches.insert(branch_point, cell::BranchCell::new());
+                                    }
+                                },
+                                Some(_) => {
+                                    if let Some(branch_cell) = self.branches.get_mut(&branch_point) {
+                                        match branch_cell.branch_upgrade {
+                                            0 => {
+                                                // upgrade a branch to level 1
+                                                if *bounty_amount_ >= 2.0 {
+                                                    *bounty_amount_ -= 2.0;
+                                                    *life_amount_ += 0.1;
+                                                    branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 1);
+                                                }
+                                            },
+                                            1 => {
+                                                // upgrade a branch to level 2
+                                                if *bounty_amount_ >= 3.0 {
+                                                    *bounty_amount_ -= 3.0;
+                                                    *life_amount_ += 0.1;
+                                                    branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 2);
+                                                }
+                                            },
+                                            2 => {
+                                                // upgrade a branch to level 3
+                                                if *bounty_amount_ >= 4.0 {
+                                                    *bounty_amount_ -= 4.0;
+                                                    *life_amount_ += 0.1;
+                                                    branch_cell.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point, 3);
+                                                }
+                                            },
+                                            _ => {},
                                         }
                                     }
-                                    _                => {println!("error: vec had different length than 2");}
-                                };
+                                },
                             }
-                            let assets_ = &mut self.assets;
-                            self.branches
-                                .entry(branch_point)
-                                .and_modify(|b|
-                                    if b.upgradable() {
-                                        b.upgrade(&assets_.cell, &mut rand::thread_rng(), branch_point)
-                                    }
-                                )
-                                .or_insert(cell::BranchCell::new());
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
                             let assets_ = &mut self.assets;
