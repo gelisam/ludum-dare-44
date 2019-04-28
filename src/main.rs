@@ -125,6 +125,50 @@ impl Globals {
         let origin_cell = cell::GiftCell::new(root_point);
         self.gifts.insert(origin_point, origin_cell);
     }
+
+    fn branch_children(&self, branch_point: hex::BranchPoint) -> Vec<hex::GiftPoint> {
+        branch_point.gift_neighbours()
+            .iter()
+            .map(|g| *g)
+            .filter(|g|
+                match self.gifts.get(g) {
+                    None => false,
+                    Some(gift_cell) => gift_cell.parent == branch_point,
+                }
+            )
+            .collect()
+    }
+
+    fn gift_children(&self, gift_point: hex::GiftPoint) -> Vec<hex::BranchPoint> {
+        gift_point.branch_neighbours()
+            .iter()
+            .map(|b| *b)
+            .filter(|b|
+                match self.branches.get(b) {
+                    None => false,
+                    Some(branch_cell) => branch_cell.parent == Some(gift_point),
+                }
+            )
+            .collect()
+    }
+
+    fn prune_branch(&mut self, branch_point: hex::BranchPoint) {
+        if let Some(&branch_cell) = self.branches.get(&branch_point) {
+            for gift_point in self.branch_children(branch_point) {
+                self.prune_gift(gift_point);
+            }
+            self.branches.remove(&branch_point);
+        }
+    }
+
+    fn prune_gift(&mut self, gift_point: hex::GiftPoint) {
+        if let Some(&gift_cell) = self.gifts.get(&gift_point) {
+            for branch_point in self.gift_children(gift_point) {
+                self.prune_branch(branch_point);
+            }
+            self.gifts.remove(&gift_point);
+        }
+    }
 }
 
 impl EventHandler for Globals {
@@ -287,7 +331,7 @@ impl EventHandler for Globals {
                 MouseButton::Right => {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
-                            self.branches.remove(&branch_point);
+                            self.prune_branch(branch_point);
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
                             self.gifts
