@@ -23,6 +23,7 @@ pub struct Stats {
     pub branch_length5_count: usize,
     pub branches_max: usize,
     pub bounty_max: usize,
+    pub d_pressed: bool,
 }
 
 macro_rules !get {

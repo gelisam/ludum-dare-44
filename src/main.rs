@@ -110,14 +110,24 @@ fn any_nuts( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &St
     stats.nut_count>0
 }
 
+fn any_squirrels( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.squirrel_count>0
+}
+
 fn any_birds( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
     stats.birdnest_count>0
 }
 
-fn any_bounty_lv3( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+fn any_bounty_lv5( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
-    stats.bounty_max>=3
+    stats.bounty_max>=50
+}
+
+fn any_d_presses( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.d_pressed
 }
 
 
@@ -263,18 +273,28 @@ impl Globals {
                 },
                 Achievement {
                     achieved: false,
+                    message: "Leaves, flowers and other life build Bounty - try getting to Bounty 5",
+                    functor: any_bounty_lv5,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "Congrats! Here's a cheat code: hold 'D' to create branches for free :)",
+                    functor: any_d_presses,
+                },
+                Achievement {
+                    achieved: false,
                     message: "Nuts grow only on the ends of thick branches near flowers and leaves",
                     functor: any_nuts,
                 },
                 Achievement {
                     achieved: false,
-                    message: "Birds appear when two berries are nearby - Large multiplier to Bounty",
-                    functor: any_birds,
+                    message: "Squirrel appear when two nuts are nearby - they give a lot of Bounty",
+                    functor: any_squirrels,
                 },
                 Achievement {
                     achieved: false,
-                    message: "Leaves, flowers and other life build Bounty - try getting to Bounty 5",
-                    functor: any_bounty_lv3,
+                    message: "Birds appear when two berries are nearby - Large multiplier to Bounty",
+                    functor: any_birds,
                 },
             ),
             alerts: vec!(
@@ -340,6 +360,7 @@ impl Globals {
                 branch_length5_count: 0,
                 branches_max: 0,
                 bounty_max: 0,
+                d_pressed: false,
             },
             forbidden: HashMap::with_capacity(100),
             cost_multiplier: 1.0,
@@ -561,7 +582,10 @@ impl EventHandler for Globals {
 
     fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
-            Keycode::D     => self.cost_multiplier = 0.0,
+            Keycode::D     => {
+                self.cost_multiplier = 0.0;
+                self.stats.d_pressed = true;
+            },
             Keycode::Escape => ctx.quit().unwrap(),
             _               => (),
         }
@@ -569,7 +593,10 @@ impl EventHandler for Globals {
 
     fn key_up_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
-            Keycode::D     => self.cost_multiplier = 1.0,
+            Keycode::D     => {
+                self.cost_multiplier = 1.0;
+                self.stats.d_pressed = false;
+            },
             Keycode::R     => self.reset(ctx),
             _              => (),
         }
