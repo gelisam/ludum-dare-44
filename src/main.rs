@@ -58,6 +58,11 @@ fn fewer_branches( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stat
     (stats.branch_lv1_count+stats.branch_lv2_count) < stats.branches_max
 }
 
+fn any_branch_length3( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.branch_length3_count > 0
+}
+
 fn two_leaves( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
     stats.leaf_count >= 2
@@ -199,11 +204,11 @@ impl Globals {
                     message: "TIP: Right-click a branch to prune - right-click between two cells",
                     functor: fewer_branches,
                 },
-                //Achievement {
-                //    achieved: false,
-                //    message: "TIP: Try making a longer branch",
-                //    functor: any_branch_length2,
-                //},
+                Achievement {
+                    achieved: false,
+                    message: "TIP: Try making a longer branch",
+                    functor: any_branch_length3,
+                },
                 Achievement {
                     achieved: false,
                     message: "TIP: Leaves and Flowers grow on ends of branches - try getting two leaves",
@@ -292,6 +297,7 @@ impl Globals {
                 moss_count: 0,
                 branch_lv1_count: 0,
                 branch_lv2_count: 0,
+                branch_length3_count: 0,
                 branches_max: 0,
                 bounty_max: 0,
             },
@@ -553,6 +559,10 @@ impl EventHandler for Globals {
                                         let full_gift_point = full_neighbours[0];
                                         let full_gift_cell = *self.gifts.get(&full_gift_point).unwrap();
                                         let grandparent_cell = self.branch_nth_parent_branch_cell_or_root(full_gift_cell.parent, 2);
+
+                                        if self.branch_nth_parent_branch_cell(full_gift_cell.parent, 2).is_some() {
+                                            self.stats.branch_length3_count += 1;
+                                        }
 
                                         if grandparent_cell.branch_upgrade > 0 {
                                             let cost = self.cost_multiplier * life::BASE * 5.0;

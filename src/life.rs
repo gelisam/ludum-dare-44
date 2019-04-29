@@ -19,6 +19,7 @@ pub struct Stats {
     pub moss_count: usize,
     pub branch_lv1_count: usize,
     pub branch_lv2_count: usize, // count of branches level 2 or higher
+    pub branch_length3_count: usize,
     pub branches_max: usize,
     pub bounty_max: usize,
 }
