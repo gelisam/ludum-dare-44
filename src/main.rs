@@ -208,72 +208,72 @@ impl Globals {
             achievements: vec!(
                 Achievement {
                     achieved: false,
-                    message: "TIP: Click near the tree trunk to add a branch - click between two cells",
+                    message: "Click near the tree trunk to add a branch - click between two cells",
                     functor: any_branches,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Right-click a branch to prune - right-click between two cells",
+                    message: "Right-click a branch to prune - right-click between two cells",
                     functor: fewer_branches,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Try making a longer branch",
+                    message: "Try making a longer branch",
                     functor: any_branch_length3,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Leaves and Flowers grow on ends of branches - try getting two leaves",
+                    message: "Leaves and Flowers grow on ends of branches - try getting two leaves",
                     functor: two_leaves,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Right-click leaves to replace with moss - try deleting all foliage",
+                    message: "Right-click leaves to replace with moss - try deleting all foliage",
                     functor: no_foliage,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Right-click moss to allow growth again - try deleting a moss",
+                    message: "Right-click moss to allow growth again - try deleting a moss",
                     functor: any_foliage,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Flowers reqiure two leaves nearby - they die if no leaves",
+                    message: "Flowers reqiure two leaves nearby - they die if no leaves",
                     functor: any_flowers,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Click a branch to grow it thicker and allow a bigger tree",
+                    message: "Click a branch to grow it thicker and allow a bigger tree",
                     functor: any_branch_lv2,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Try building a very long branch",
+                    message: "Try building a very long branch",
                     functor: any_branch_length5,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Beehives appear when two flowers are nearby - more Bounty than flowers",
+                    message: "Beehives appear when two flowers are nearby - more Bounty than flowers",
                     functor: any_beehives,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Berries grow when a beehive and two leaves are nearby - More Bounty then Beehive",
+                    message: "Berries grow when a beehive and two leaves are nearby - More Bounty then Beehive",
                     functor: any_berries,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Nuts grow only on the ends of thick branches near flowers and leaves",
+                    message: "Nuts grow only on the ends of thick branches near flowers and leaves",
                     functor: any_nuts,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Birds appear when two berries are nearby - Large multiplier to Bounty",
+                    message: "Birds appear when two berries are nearby - Large multiplier to Bounty",
                     functor: any_birds,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Leaves, flowers and other life build Bounty - try getting to Bounty 5",
+                    message: "Leaves, flowers and other life build Bounty - try getting to Bounty 5",
                     functor: any_bounty_lv3,
                 },
             ),
@@ -817,13 +817,23 @@ impl EventHandler for Globals {
         else {
             for achievement in self.achievements.iter() {
                 if !achievement.achieved {
-                    set_color(ctx, Color::from_rgb(255, 255, 255))?;
                     let center = Point2::new(
                         WINDOW_WIDTH as f32 / 2.0,
                         WINDOW_HEIGHT as f32 - 20.0,
                     );
-                    let text = Text::new(ctx,achievement.message, &self.assets.font)?;
-                    text::draw_centered_text(ctx, &text, center, 0.0)?;
+
+                    {
+                        set_color(ctx, Color::from_rgb(247, 148, 30))?;
+                        let text = Text::new(ctx, "CHALLENGE", &self.assets.font)?;
+                        text::draw_centered_text(ctx, &text, center + Vector2::new(-200.0, -15.0), 0.0)?;
+                    }
+
+                    {
+                        set_color(ctx, Color::from_rgb(255, 255, 255))?;
+                        let text = Text::new(ctx,achievement.message, &self.assets.font)?;
+                        text::draw_centered_text(ctx, &text, center + Vector2::new(0.0, 5.0), 0.0)?;
+                    }
+
                     break;
                 }
             }
