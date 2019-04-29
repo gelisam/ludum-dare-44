@@ -37,7 +37,7 @@ pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
             //Image::new(ctx, "/flower3.png")?,
         ),
         berry_images: vec!(
-            Image::new(ctx, "/berry bunch.png")?, // TODO: this is a flower, not a berry!
+            Image::new(ctx, "/berry bunch.png")?,
         ),
         nut_images: vec!(
             Image::new(ctx, "/nut bunch.png")?,
