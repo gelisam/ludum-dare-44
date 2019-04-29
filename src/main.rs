@@ -245,7 +245,7 @@ impl Globals {
                 },
                 Achievement {
                     achieved: false,
-                    message: "Right-click leaves to replace with moss - try deleting some leaves",
+                    message: "Right-click on foliage to replace with moss - try deleting some foliage",
                     functor: no_foliage,
                 },
                 Achievement {
@@ -280,7 +280,7 @@ impl Globals {
                 },
                 Achievement {
                     achieved: false,
-                    message: "Rarer life provide more Bounty. Berries grow when a beehive and two leaves are near",
+                    message: "Rarer life provide more Bounty. Berries grow when a beehive and two leaves are near.",
                     functor: any_berries,
                 },
                 /*Achievement {
