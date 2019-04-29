@@ -116,7 +116,10 @@ struct Alert {
 
 pub enum AlertMessage {
     NotEnoughBounty,
-    BranchesTooStrained,
+    BranchTooStrained,
+    CantUpgrade,
+    ClickForBranch,
+    ClickForMoss,
 }
 
 
@@ -256,12 +259,29 @@ impl Globals {
                 },
             ),
             alerts: vec!(
+                // AlertMessage::NotEnoughBounty
                 Alert {
                     message: "NOTE: Not enough Life for this action - build Bounty for faster Life",
                     until_time: Duration::from_millis(0),
                 },
+                // AlertMessage::BranchTooStrained
                 Alert {
-                    message: "NOTE: The branch or supporting ones must be thicker - click to make thicker",
+                    message: "NOTE: The previous branch must be thicker - click to make thicker",
+                    until_time: Duration::from_millis(0),
+                },
+                // AlertMessage::CantUpgrade
+                Alert {
+                    message: "NOTE: Can't make a branch thicker unless all supporting branches are at least as thick",
+                    until_time: Duration::from_millis(0),
+                },
+                // AlertMessage::ClickForBranch
+                Alert {
+                    message: "NOTE: Click between two cells from a branch to create another branch",
+                    until_time: Duration::from_millis(0),
+                },
+                // AlertMessage::ClickForMoss
+                Alert {
+                    message: "NOTE: Right-click foliage to replace with moss - right-click again to remove",
                     until_time: Duration::from_millis(0),
                 },
             ),
@@ -450,7 +470,10 @@ impl Globals {
     {
         let i: usize = match alert_message {
             AlertMessage::NotEnoughBounty => 0,
-            AlertMessage::BranchesTooStrained => 1,
+            AlertMessage::BranchTooStrained => 1,
+            AlertMessage::CantUpgrade => 2,
+            AlertMessage::ClickForBranch => 3,
+            AlertMessage::ClickForMoss => 4,
         };
         self.alert_current = Some(i);
         self.alerts[i].until_time = get_current_time(ctx) + Duration::from_millis(2000);
@@ -528,12 +551,12 @@ impl EventHandler for Globals {
 
     fn mouse_button_down_event(&mut self, ctx: &mut Context, button: MouseButton, x: i32, y: i32) {
         let point = Point2::new(x as f32, y as f32);
+        let mut alert_option: Option<AlertMessage> = None;
         if let Some(in_bounds_point) = hex::HexPoint::from_point(point).is_in_bounds() {
             match button {
                 MouseButton::Left => {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
-                            let mut alert_option: Option<AlertMessage> = None;
 
                             match self.branches.get(&branch_point) {
                                 None => {
@@ -574,11 +597,12 @@ impl EventHandler for Globals {
                                                 //println!("not enough Bounty");
                                             }
                                         } else {
-                                            alert_option = Some(AlertMessage::BranchesTooStrained);
+                                            alert_option = Some(AlertMessage::BranchTooStrained);
                                             //println!("branches are too thin to hold more branches!");
                                         }
                                     } else if empty_neighbours.len() == 2 {
-                                        println!("new branches must be attached to the tree");
+                                        alert_option = Some(AlertMessage::ClickForBranch);
+                                        //println!("new branches must be attached to the tree");
                                     } else if full_neighbours.len() == 2 {
                                         println!("branches cannot form a cycle");
                                     }
@@ -630,29 +654,28 @@ impl EventHandler for Globals {
                                                     },
                                                 }
                                             } else {
-                                                alert_option = Some(AlertMessage::BranchesTooStrained);
+                                                alert_option = Some(AlertMessage::BranchTooStrained);
                                                 //println!("branches are too thin to hold more branches!");
                                             }
                                         } else {
-                                            alert_option = Some(AlertMessage::BranchesTooStrained);
+                                            alert_option = Some(AlertMessage::CantUpgrade);
                                             //println!("you have to grow the parent branch first!");
                                         }
                                     }
                                 },
                             }
-                            if let Some(alert_message) = alert_option {
-                                self.display_alert(ctx,alert_message);
-                            }
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
                             match self.gifts.get(&gift_point) {
                                 None => {
-                                    println!("you cannot place a branch on a cell, only in-between two cells");
+                                    alert_option = Some(AlertMessage::ClickForBranch);
+                                    //println!("you cannot place a branch on a cell, only in-between two cells");
                                 },
                                 Some(gift_cell) => {
                                     match gift_cell.gift {
                                         None => {
-                                            println!("you cannot place leaves, you have to let them grow");
+                                            alert_option = Some(AlertMessage::ClickForMoss);
+                                            //println!("you cannot place leaves, you have to let them grow");
                                         },
                                         Some(gift) => {
                                             println!("right-click to release the {:}", gift.singular());
@@ -678,6 +701,9 @@ impl EventHandler for Globals {
                 }
                 _ => {}
             }
+        }
+        if let Some(alert_message) = alert_option {
+            self.display_alert(ctx,alert_message);
         }
     }
 
