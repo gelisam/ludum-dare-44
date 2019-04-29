@@ -288,10 +288,15 @@ impl Globals {
             start_time: get_current_time(ctx),
             turn_time: get_current_time(ctx),
             turn_duration: Duration::from_millis(2000),
-            guitar_channel: channel::Channel::new(ctx, "/guitar.ogg")?,
+            // Pick one set and comment out the other.
+            /*guitar_channel: channel::Channel::new(ctx, "/guitar.ogg")?,
             clarinet_channel: channel::Channel::new(ctx, "/clarinet.ogg")?,
             high_pithed_clarinet_channel: channel::Channel::new(ctx, "/high-pitched clarinet.ogg")?,
-            dreamy_bells_channel: channel::Channel::new(ctx, "/dreamy-bells.ogg")?,
+            dreamy_bells_channel: channel::Channel::new(ctx, "/dreamy-bells.ogg")?,*/
+            guitar_channel: channel::Channel::new(ctx, "/guitar.ogg")?,
+            clarinet_channel: channel::Channel::new(ctx, "/birds.ogg")?,
+            high_pithed_clarinet_channel: channel::Channel::new(ctx, "/high-pitched clarinet.ogg")?,
+            dreamy_bells_channel: channel::Channel::new(ctx, "/glock-squirrel.ogg")?,
             bounty,
             life,
             bounty_amount: 0.0,
