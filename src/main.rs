@@ -34,7 +34,9 @@ struct Assets {
     font: Font,
     hex: hex::Assets,
     branch_place_sound: audio::Source,
+    branch_upgrade_sound: audio::Source,
     branch_break_sounds: Vec<audio::Source>,
+    gift_release_sound: audio::Source,
     moss: Image,
 }
 
@@ -56,6 +58,16 @@ fn any_branches( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats:
 fn fewer_branches( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
     (stats.branch_lv1_count+stats.branch_lv2_count) < stats.branches_max
+}
+
+fn any_branch_length3( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.branch_length3_count > 0
+}
+
+fn any_branch_length5( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.branch_length5_count > 0
 }
 
 fn two_leaves( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
@@ -134,12 +146,14 @@ impl Assets {
             font,
             hex: hex::load_assets(ctx)?,
             branch_place_sound: audio::Source::new(ctx, "/branch_place.ogg")?,
+            branch_upgrade_sound: audio::Source::new(ctx, "/branch_upgrade.ogg")?,
             branch_break_sounds: vec!(
                 audio::Source::new(ctx, "/branch_break.ogg")?,
                 audio::Source::new(ctx, "/branch_break2.ogg")?,
                 audio::Source::new(ctx, "/branch_break3.ogg")?,
                 audio::Source::new(ctx, "/branch_break4.ogg")?,
             ),
+            gift_release_sound: audio::Source::new(ctx, "/branch_item_remove.ogg")?,
             moss: Image::new(ctx, "/moss.png")?,
         })
     }
@@ -202,11 +216,11 @@ impl Globals {
                     message: "TIP: Right-click a branch to prune - right-click between two cells",
                     functor: fewer_branches,
                 },
-                //Achievement {
-                //    achieved: false,
-                //    message: "TIP: Try making a longer branch",
-                //    functor: any_branch_length2,
-                //},
+                Achievement {
+                    achieved: false,
+                    message: "TIP: Try making a longer branch",
+                    functor: any_branch_length3,
+                },
                 Achievement {
                     achieved: false,
                     message: "TIP: Leaves and Flowers grow on ends of branches - try getting two leaves",
@@ -231,6 +245,11 @@ impl Globals {
                     achieved: false,
                     message: "TIP: Click a branch to grow it thicker and allow a bigger tree",
                     functor: any_branch_lv2,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "TIP: Try building a very long branch",
+                    functor: any_branch_length5,
                 },
                 Achievement {
                     achieved: false,
@@ -289,10 +308,15 @@ impl Globals {
             start_time: get_current_time(ctx),
             turn_time: get_current_time(ctx),
             turn_duration: Duration::from_millis(2000),
-            guitar_channel: channel::Channel::new(ctx, "/guitar.ogg")?,
+            // Pick one set and comment out the other.
+            /*guitar_channel: channel::Channel::new(ctx, "/guitar.ogg")?,
             clarinet_channel: channel::Channel::new(ctx, "/clarinet.ogg")?,
             high_pithed_clarinet_channel: channel::Channel::new(ctx, "/high-pitched clarinet.ogg")?,
-            dreamy_bells_channel: channel::Channel::new(ctx, "/dreamy-bells.ogg")?,
+            dreamy_bells_channel: channel::Channel::new(ctx, "/dreamy-bells.ogg")?,*/
+            guitar_channel: channel::Channel::new(ctx, "/guitar.ogg")?,
+            clarinet_channel: channel::Channel::new(ctx, "/birds.ogg")?,
+            high_pithed_clarinet_channel: channel::Channel::new(ctx, "/high-pitched clarinet.ogg")?,
+            dreamy_bells_channel: channel::Channel::new(ctx, "/glock-squirrel.ogg")?,
             bounty,
             life,
             bounty_amount: 0.0,
@@ -312,6 +336,8 @@ impl Globals {
                 moss_count: 0,
                 branch_lv1_count: 0,
                 branch_lv2_count: 0,
+                branch_length3_count: 0,
+                branch_length5_count: 0,
                 branches_max: 0,
                 bounty_max: 0,
             },
@@ -592,6 +618,13 @@ impl EventHandler for Globals {
                                                 if full_gift_cell.gift.is_some() {
                                                     self.remove_gift(full_gift_point);
                                                 }
+
+                                                if self.branch_nth_parent_branch_cell(full_gift_cell.parent, 2).is_some() {
+                                                    self.stats.branch_length3_count += 1;
+                                                }
+                                                if self.branch_nth_parent_branch_cell(full_gift_cell.parent, 4).is_some() {
+                                                    self.stats.branch_length5_count += 1;
+                                                }
                                             } else {
                                                 alert_option = Some(AlertMessage::NotEnoughBounty);
                                                 //println!("not enough Bounty");
@@ -616,9 +649,10 @@ impl EventHandler for Globals {
                                             if branch_cell.branch_upgrade+1 < grandparent_cell.branch_upgrade {
                                                 match branch_cell.branch_upgrade {
                                                     0 => {
-                                                        // upgrade a branch to level 1
                                                         let cost = self.cost_multiplier * life::BASE * 25.0;
                                                         if *bounty_amount_ >= cost {
+                                                            // upgrade a branch to level 1
+                                                            self.assets.branch_upgrade_sound.play().unwrap_or(());
                                                             *bounty_amount_ -= cost;
                                                             branch_cell.branch_upgrade = 1;
                                                             self.stats.branch_lv2_count += 1;
@@ -628,9 +662,10 @@ impl EventHandler for Globals {
                                                         }
                                                     },
                                                     1 => {
-                                                        // upgrade a branch to level 2
                                                         let cost = self.cost_multiplier * life::BASE * 125.0;
                                                         if *bounty_amount_ >= cost {
+                                                            // upgrade a branch to level 2
+                                                            self.assets.branch_upgrade_sound.play().unwrap_or(());
                                                             *bounty_amount_ -= cost;
                                                             branch_cell.branch_upgrade = 2;
                                                         } else {
@@ -639,9 +674,10 @@ impl EventHandler for Globals {
                                                         }
                                                     },
                                                     2 => {
-                                                        // upgrade a branch to level 3
                                                         let cost = self.cost_multiplier * life::BASE * 625.0;
                                                         if *bounty_amount_ >= cost {
+                                                            // upgrade a branch to level 3
+                                                            self.assets.branch_upgrade_sound.play().unwrap_or(());
                                                             *bounty_amount_ -= cost;
                                                             branch_cell.branch_upgrade = 3;
                                                         } else {
@@ -695,6 +731,7 @@ impl EventHandler for Globals {
                             }
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
+                            self.assets.gift_release_sound.play().unwrap_or(());
                             self.remove_gift(gift_point);
                         },
                     }
