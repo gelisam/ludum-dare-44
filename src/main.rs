@@ -552,10 +552,10 @@ impl EventHandler for Globals {
                                         let empty_neighbour = empty_neighbours[0];
                                         let full_gift_point = full_neighbours[0];
                                         let full_gift_cell = *self.gifts.get(&full_gift_point).unwrap();
-                                        let grandparent_cell = self.branch_nth_parent_branch_cell_or_root(branch_point, 1);
+                                        let grandparent_cell = self.branch_nth_parent_branch_cell_or_root(full_gift_cell.parent, 2);
 
                                         if grandparent_cell.branch_upgrade > 0 {
-                                        let cost = self.cost_multiplier * life::BASE * 5.0;
+                                            let cost = self.cost_multiplier * life::BASE * 5.0;
                                             if self.bounty_amount >= cost {
                                                 // place a new branch
                                                 self.assets.branch_place_sound.play().unwrap_or(());
@@ -585,11 +585,11 @@ impl EventHandler for Globals {
                                 },
                                 Some(_) => {
                                     let parent_cell = self.branch_nth_parent_branch_cell_or_root(branch_point, 1);
-                                    let grandparent_cell = self.branch_nth_parent_branch_cell_or_root(branch_point, 1);
+                                    let grandparent_cell = self.branch_nth_parent_branch_cell_or_root(branch_point, 3);
                                     if let Some(branch_cell) = self.branches.get_mut(&branch_point) {
                                         let bounty_amount_ = &mut self.bounty_amount;
                                         if branch_cell.branch_upgrade < parent_cell.branch_upgrade {
-                                            if branch_cell.branch_upgrade < grandparent_cell.branch_upgrade {
+                                            if branch_cell.branch_upgrade+1 < grandparent_cell.branch_upgrade {
                                                 match branch_cell.branch_upgrade {
                                                     0 => {
                                                         // upgrade a branch to level 1
