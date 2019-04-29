@@ -20,11 +20,12 @@ pub struct Sidebar {
 pub fn amount_to_dots(amount: f32) -> f32 {
     if amount < THRESHOLD1 {
         amount
-    } else if amount < THRESHOLD2 {
-        THRESHOLD1 + (amount - THRESHOLD1) / 2.0
     } else {
-        THRESHOLD1 + (THRESHOLD2 - THRESHOLD1) / 2.0 + (amount - THRESHOLD2) / 4.0
+        THRESHOLD1 + (amount - THRESHOLD1).sqrt()
     }
+    /*} else {
+        THRESHOLD1 + (THRESHOLD2 - THRESHOLD1) / 2.0 + (amount - THRESHOLD2) / 4.0
+    }*/
 }
 
 impl Sidebar {
@@ -65,7 +66,10 @@ impl Sidebar {
         );
 
         let num_bounty_dots = amount_to_dots(self.bounty_amount.floor()) as usize;
-        let num_life_dots = (amount_to_dots(self.life_amount + self.bounty_amount) as usize) - num_bounty_dots;
+        //let num_life_dots = (amount_to_dots(self.life_amount + self.bounty_amount) as usize) - num_bounty_dots;
+        let num_life_dots = if self.bounty_amount > 0.0 {0} else
+        {self.life_amount.floor() as usize};
+        // let num_life_dots = (amount_to_dots(self.life_amount + self.bounty_amount) as usize) - num_bounty_dots;
         let num_dots_max = 34;
 
         let mut meter_cur = meter_bottom.clone();

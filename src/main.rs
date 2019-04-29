@@ -65,9 +65,9 @@ fn any_branch_length3( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, 
     stats.branch_length3_count > 0
 }
 
-fn any_branch_length5( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+fn any_branch_length4( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
-    stats.branch_length5_count > 0
+    stats.branch_length4_count > 0
 }
 
 fn two_leaves( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
@@ -77,12 +77,14 @@ fn two_leaves( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &
 
 fn no_foliage( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
-    (stats.leaf_count == 0) & (stats.flower_count == 0)
+    stats.moss_added
+    //(stats.leaf_count == 0) & (stats.flower_count == 0)
 }
 
 fn any_foliage( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
-    (stats.leaf_count > 0) | (stats.flower_count>0)
+    stats.moss_removed
+    //(stats.leaf_count > 0) | (stats.flower_count>0)
 }
 
 fn any_flowers( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
@@ -123,6 +125,11 @@ fn any_birds( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &S
 fn any_bounty_lv7( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
     stats.life_max>=6
+}
+
+fn any_bounty_lv4( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.life_max>=3
 }
 
 fn any_d_presses( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
@@ -226,19 +233,19 @@ impl Globals {
                     message: "Right-click a branch to prune - right-click between two cells",
                     functor: fewer_branches,
                 },
-                Achievement {
+                /*Achievement {
                     achieved: false,
                     message: "Try making a longer branch",
                     functor: any_branch_length3,
-                },
+                },*/
                 Achievement {
                     achieved: false,
-                    message: "Leaves and Flowers grow on ends of branches - try getting two leaves",
+                    message: "Leaves and flowers grow on ends of branches - try getting two leaves",
                     functor: two_leaves,
                 },
                 Achievement {
                     achieved: false,
-                    message: "Right-click leaves to replace with moss - try deleting all foliage",
+                    message: "Right-click leaves to replace with moss - try deleting some leaves",
                     functor: no_foliage,
                 },
                 Achievement {
@@ -259,7 +266,7 @@ impl Globals {
                 Achievement {
                     achieved: false,
                     message: "Try building a very long branch",
-                    functor: any_branch_length5,
+                    functor: any_branch_length4,
                 },
                 Achievement {
                     achieved: false,
@@ -268,14 +275,19 @@ impl Globals {
                 },
                 Achievement {
                     achieved: false,
-                    message: "Berries grow when a beehive and two leaves are nearby - More Bounty then Beehive",
-                    functor: any_berries,
+                    message: "Leaves, flowers and other life build Bounty - try getting to Bounty 4",
+                    functor: any_bounty_lv4,
                 },
                 Achievement {
                     achieved: false,
-                    message: "Leaves, flowers and other life build Bounty - try getting to Bounty 7",
-                    functor: any_bounty_lv7,
+                    message: "Rarer life provide more Bounty. Berries grow when a beehive and two leaves are near",
+                    functor: any_berries,
                 },
+                /*Achievement {
+                    achieved: false,
+                    message: "Leaves, flowers and other life build Bounty - try getting to Bounty 4",
+                    functor: any_bounty_lv4,
+                },*/
                 Achievement {
                     achieved: false,
                     message: "Congrats! Here's a cheat code: hold 'D' to create branches for free :)",
@@ -288,19 +300,19 @@ impl Globals {
                 },
                 Achievement {
                     achieved: false,
-                    message: "Squirrel appear when two nuts are nearby - they give a lot of Bounty",
+                    message: "Squirrel appear when two nuts are nearby",
                     functor: any_squirrels,
                 },
                 Achievement {
                     achieved: false,
-                    message: "Birds appear when two berries are nearby - Large multiplier to Bounty",
+                    message: "Birds appear when two berries are nearby",
                     functor: any_birds,
                 },
             ),
             alerts: vec!(
                 // AlertMessage::NotEnoughBounty
                 Alert {
-                    message: "NOTE: Not enough Life for this action - build Bounty for faster Life",
+                    message: "NOTE: Not enough Life for this action - build Bounty to gain Life faster",
                     until_time: Duration::from_millis(0),
                 },
                 // AlertMessage::BranchTooStrained
@@ -357,10 +369,13 @@ impl Globals {
                 branch_lv1_count: 0,
                 branch_lv2_count: 0,
                 branch_length3_count: 0,
+                branch_length4_count: 0,
                 branch_length5_count: 0,
                 branches_max: 0,
                 life_max: 0,
                 d_pressed: false,
+                moss_added: false,
+                moss_removed: false,
             },
             forbidden: HashMap::with_capacity(100),
             cost_multiplier: 1.0,
@@ -505,11 +520,16 @@ impl Globals {
         self.gifts
             .entry(gift_point)
             .and_modify(|g| g.gift = None);
-        if self.gift_children(gift_point).len() == 0 {
+        if !self.gifts.get(&gift_point).is_none() && self.gift_children(gift_point).len() == 0 {
             self.forbidden
                 .entry(gift_point)
                 .and_modify(|b| *b ^= true)
                 .or_insert(true);
+            if *self.forbidden.get(&gift_point).unwrap() {
+                self.stats.moss_added = true;
+            } else {
+                self.stats.moss_removed = true;
+            }
         }
     }
 
@@ -648,6 +668,9 @@ impl EventHandler for Globals {
 
                                                 if self.branch_nth_parent_branch_cell(full_gift_cell.parent, 2).is_some() {
                                                     self.stats.branch_length3_count += 1;
+                                                }
+                                                if self.branch_nth_parent_branch_cell(full_gift_cell.parent, 3).is_some() {
+                                                    self.stats.branch_length4_count += 1;
                                                 }
                                                 if self.branch_nth_parent_branch_cell(full_gift_cell.parent, 4).is_some() {
                                                     self.stats.branch_length5_count += 1;

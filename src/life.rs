@@ -20,10 +20,13 @@ pub struct Stats {
     pub branch_lv1_count: usize,
     pub branch_lv2_count: usize, // count of branches level 2 or higher
     pub branch_length3_count: usize,
+    pub branch_length4_count: usize,
     pub branch_length5_count: usize,
     pub branches_max: usize,
     pub life_max: usize,
     pub d_pressed: bool,
+    pub moss_added: bool,
+    pub moss_removed: bool,
 }
 
 macro_rules !get {
