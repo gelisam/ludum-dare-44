@@ -301,6 +301,13 @@ impl Globals {
                 self.prune_gift(gift_point);
             }
             self.branches.remove(&branch_point);
+
+            if let Some(branch_cell) = self.branches.remove(&branch_point) {
+                match branch_cell.branch_upgrade {
+                    0 => self.stats.branch_lv1_count -= 1,
+                    _ => self.stats.branch_lv2_count -= 1,
+                };
+            }
         }
     }
 
@@ -436,6 +443,7 @@ impl EventHandler for Globals {
                                                 // place a new branch
                                                 self.assets.branch_place_sound.play().unwrap_or(());
                                                 self.bounty_amount -= cost;
+                                                self.stats.branch_lv1_count += 1;
                                                 let branch_cell = cell::BranchCell::new(Some(full_gift_point));
                                                 let gift_cell = cell::GiftCell::new(branch_point);
                                                 self.branches.insert(branch_point, branch_cell);
@@ -470,6 +478,7 @@ impl EventHandler for Globals {
                                                         if *bounty_amount_ >= cost {
                                                             *bounty_amount_ -= cost;
                                                             branch_cell.branch_upgrade = 1;
+                                                            self.stats.branch_lv2_count += 1;
                                                         } else {
                                                             println!("not enough Bounty");
                                                         }
