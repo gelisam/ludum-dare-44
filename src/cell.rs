@@ -115,6 +115,7 @@ impl Gift {
         }
     }
 
+    #[allow(dead_code)]
     pub fn plural(self) -> &'static str {
         match self {
             Gift::Leaves   => "leaves",
