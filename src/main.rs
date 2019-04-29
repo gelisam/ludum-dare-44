@@ -109,10 +109,14 @@ fn any_bounty_lv3( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stat
 }
 
 
-
 struct Alert {
     pub message: &'static str,
-    pub duration: Duration,
+    pub until_time: Duration,
+}
+
+pub enum AlertMessage {
+    NotEnoughBounty,
+    BranchesTooStrained,
 }
 
 
@@ -143,6 +147,7 @@ struct Globals {
     assets: Assets,
     achievements: Vec<Achievement>,
     alerts: Vec<Alert>,
+    alert_current: Option<usize>,
     start_time: Duration,
     turn_time: Duration,
     turn_duration: Duration,
@@ -253,9 +258,14 @@ impl Globals {
             alerts: vec!(
                 Alert {
                     message: "NOTE: Not enough Life for this action - build Bounty for faster Life",
-                    duration: Duration::from_millis(0),
+                    until_time: Duration::from_millis(0),
+                },
+                Alert {
+                    message: "NOTE: The branch or supporting ones must be thicker - click to make thicker",
+                    until_time: Duration::from_millis(0),
                 },
             ),
+            alert_current: None,
             start_time: get_current_time(ctx),
             turn_time: get_current_time(ctx),
             turn_duration: Duration::from_millis(2000),
@@ -435,6 +445,16 @@ impl Globals {
                 .or_insert(true);
         }
     }
+
+    fn display_alert(&mut self, ctx: &mut Context, alert_message: AlertMessage )
+    {
+        let i: usize = match alert_message {
+            AlertMessage::NotEnoughBounty => 0,
+            AlertMessage::BranchesTooStrained => 1,
+        };
+        self.alert_current = Some(i);
+        self.alerts[i].until_time = get_current_time(ctx) + Duration::from_millis(2000);
+    }
 }
 
 impl EventHandler for Globals {
@@ -506,13 +526,15 @@ impl EventHandler for Globals {
         }
     }
 
-    fn mouse_button_down_event(&mut self, _ctx: &mut Context, button: MouseButton, x: i32, y: i32) {
+    fn mouse_button_down_event(&mut self, ctx: &mut Context, button: MouseButton, x: i32, y: i32) {
         let point = Point2::new(x as f32, y as f32);
         if let Some(in_bounds_point) = hex::HexPoint::from_point(point).is_in_bounds() {
             match button {
                 MouseButton::Left => {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
+                            let mut alert_option: Option<AlertMessage> = None;
+
                             match self.branches.get(&branch_point) {
                                 None => {
                                     let gift_neighbours = branch_point.gift_neighbours();
@@ -548,10 +570,12 @@ impl EventHandler for Globals {
                                                     self.remove_gift(full_gift_point);
                                                 }
                                             } else {
-                                                println!("not enough Bounty");
+                                                alert_option = Some(AlertMessage::NotEnoughBounty);
+                                                //println!("not enough Bounty");
                                             }
                                         } else {
-                                            println!("branches are too thin to hold more branches!");
+                                            alert_option = Some(AlertMessage::BranchesTooStrained);
+                                            //println!("branches are too thin to hold more branches!");
                                         }
                                     } else if empty_neighbours.len() == 2 {
                                         println!("new branches must be attached to the tree");
@@ -575,7 +599,8 @@ impl EventHandler for Globals {
                                                             branch_cell.branch_upgrade = 1;
                                                             self.stats.branch_lv2_count += 1;
                                                         } else {
-                                                            println!("not enough Bounty");
+                                                            alert_option = Some(AlertMessage::NotEnoughBounty);
+                                                            //println!("not enough Bounty");
                                                         }
                                                     },
                                                     1 => {
@@ -585,7 +610,8 @@ impl EventHandler for Globals {
                                                             *bounty_amount_ -= cost;
                                                             branch_cell.branch_upgrade = 2;
                                                         } else {
-                                                            println!("not enough Bounty");
+                                                            alert_option = Some(AlertMessage::NotEnoughBounty);
+                                                            //println!("not enough Bounty");
                                                         }
                                                     },
                                                     2 => {
@@ -595,7 +621,8 @@ impl EventHandler for Globals {
                                                             *bounty_amount_ -= cost;
                                                             branch_cell.branch_upgrade = 3;
                                                         } else {
-                                                            println!("not enough Bounty");
+                                                            alert_option = Some(AlertMessage::NotEnoughBounty);
+                                                            //println!("not enough Bounty");
                                                         }
                                                     },
                                                     _ => {
@@ -603,13 +630,18 @@ impl EventHandler for Globals {
                                                     },
                                                 }
                                             } else {
-                                                println!("branches are too thin to hold more branches!");
+                                                alert_option = Some(AlertMessage::BranchesTooStrained);
+                                                //println!("branches are too thin to hold more branches!");
                                             }
                                         } else {
-                                            println!("you have to grow the parent branch first!");
+                                            alert_option = Some(AlertMessage::BranchesTooStrained);
+                                            //println!("you have to grow the parent branch first!");
                                         }
                                     }
                                 },
+                            }
+                            if let Some(alert_message) = alert_option {
+                                self.display_alert(ctx,alert_message);
                             }
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
@@ -705,16 +737,30 @@ impl EventHandler for Globals {
             //}
         }
 
-        for achievement in self.achievements.iter() {
-            if !achievement.achieved {
-                set_color(ctx, Color::from_rgb(255, 255, 255))?;
-                let center = Point2::new(
-                    WINDOW_WIDTH as f32 / 2.0,
-                    WINDOW_HEIGHT as f32 - 20.0,
-                );
-                let text = Text::new(ctx,achievement.message, &self.assets.font)?;
-                text::draw_centered_text(ctx, &text, center, 0.0)?;
-                break;
+        if let Some(alert_current) = self.alert_current {
+            set_color(ctx, Color::from_rgb(255, 0, 0))?;
+            let center = Point2::new(
+                WINDOW_WIDTH as f32 / 2.0,
+                WINDOW_HEIGHT as f32 - 20.0,
+            );
+            let text = Text::new(ctx,self.alerts[alert_current].message, &self.assets.font)?;
+            text::draw_centered_text(ctx, &text, center, 0.0)?;
+            if self.alerts[alert_current].until_time < get_current_time(ctx) {
+                self.alert_current = None
+            }
+        }
+        else {
+            for achievement in self.achievements.iter() {
+                if !achievement.achieved {
+                    set_color(ctx, Color::from_rgb(255, 255, 255))?;
+                    let center = Point2::new(
+                        WINDOW_WIDTH as f32 / 2.0,
+                        WINDOW_HEIGHT as f32 - 20.0,
+                    );
+                    let text = Text::new(ctx,achievement.message, &self.assets.font)?;
+                    text::draw_centered_text(ctx, &text, center, 0.0)?;
+                    break;
+                }
             }
         }
 
