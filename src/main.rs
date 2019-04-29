@@ -48,31 +48,62 @@ struct Achievement {
     pub functor: CellCheckFn,
 }
 
-fn any_branches( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+fn any_branches( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, _stats: &Stats,) -> bool
 {
     branches.len()>1
 }
 
-fn any_flowers( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+fn two_leaves( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.leaf_count >= 2
+}
+
+fn no_foliage( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    (stats.leaf_count == 0) & (stats.flower_count == 0)
+}
+
+fn any_foliage( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    (stats.leaf_count > 0) | (stats.flower_count>0)
+}
+
+fn any_flowers( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
     stats.flower_count>0
 }
 
-fn any_beehives( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+fn any_beehives( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
     stats.beehive_count>0
 }
 
-fn any_berries( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+fn any_branch_lv2( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
     false
-    //stats.berry_count>0
+    //stats.birdnest_count>0
 }
 
-fn any_birds( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+fn any_berries( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.berry_count>0
+}
+
+fn any_nuts( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.nut_count>0
+}
+
+fn any_birds( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
     stats.birdnest_count>0
 }
+
+fn any_bounty_lv3( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.bounty_max>=3
+}
+
 
 
 struct Alert {
@@ -151,17 +182,37 @@ impl Globals {
             achievements: vec!(
                 Achievement {
                     achieved: false,
-                    message: "TIP: Click around the tree trunk to add a branch - Leaves grow on ends of branches",
+                    message: "TIP: Click around the tree trunk to add a branch",
                     functor: any_branches,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Flowers grow on ends of branches with two leaves nearby - These build Bounty",
+                    message: "TIP: Leaves and Flowers grow on ends of branches - try getting two leaves",
+                    functor: two_leaves,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "TIP: Right-click leaves to prune and replace with moss - try deleting all foliage",
+                    functor: no_foliage,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "TIP: Right-click moss to allow growth again - try deleting a moss",
+                    functor: any_foliage,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "TIP: Flowers reqiure two leaves nearby - they die if no leaves",
                     functor: any_flowers,
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Beehives appear when two flowers are nearby - More Bounty than flowers",
+                    message: "TIP: Click a branch to grow it thicker and allow a bigger tree",
+                    functor: any_branch_lv2,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "TIP: Beehives appear when two flowers are nearby - more Bounty than flowers",
                     functor: any_beehives,
                 },
                 Achievement {
@@ -171,11 +222,19 @@ impl Globals {
                 },
                 Achievement {
                     achieved: false,
+                    message: "TIP: Nuts grow only on the ends of thick branches near flowers and leaves",
+                    functor: any_nuts,
+                },
+                Achievement {
+                    achieved: false,
                     message: "TIP: Birds appear when two berries are nearby - Large multiplier to Bounty",
                     functor: any_birds,
                 },
-                //    message: "TIP: Click a branch to grow it thicker and allow a bigger tree",
-                //String("TIP: Nuts grow only on the ends of thick branches near flowers and leaves"),
+                Achievement {
+                    achieved: false,
+                    message: "TIP: Leaves, flowers and other life build Bounty - try getting to Bounty 5",
+                    functor: any_bounty_lv3,
+                },
             ),
             alerts: vec!(
                 Alert {
@@ -202,10 +261,14 @@ impl Globals {
                 leaf_count: 0,
                 flower_count: 0,
                 beehive_count: 0,
+                berry_count: 0,
+                nut_count: 0,
                 birdnest_count: 0,
                 squirrel_count: 0,
+                moss_count: 0,
                 branch_lv1_count: 0,
                 branch_lv2_count: 0,
+                bounty_max: 0,
             },
             forbidden: HashMap::with_capacity(100),
             cost_multiplier: 1.0,
@@ -244,6 +307,7 @@ impl Globals {
     }
 
     fn branch_nth_parent_branch_cell(&self, branch_point: hex::BranchPoint, n: u8) -> Option<cell::BranchCell> {
+        println!("branch_nth_parent_branch_cell: {0} {1} {2}", branch_point.hex_point.q, branch_point.hex_point.r, n);
         if n == 0 {
             self.branches.get(&branch_point).map(|b| *b)
         } else {
@@ -314,6 +378,8 @@ impl Globals {
                     Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
                     Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
                     Some(cell::Gift::Beehive)  => self.stats.beehive_count  -= 1,
+                    Some(cell::Gift::Berries)  => self.stats.berry_count    -= 1,
+                    Some(cell::Gift::Nuts)     => self.stats.nut_count      -= 1,
                     Some(cell::Gift::Birdnest) => self.stats.birdnest_count -= 1,
                     Some(cell::Gift::Squirrel) => self.stats.squirrel_count -= 1,
                     _ => {},
@@ -331,6 +397,8 @@ impl Globals {
                 Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
                 Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
                 Some(cell::Gift::Beehive)  => self.stats.beehive_count  -= 1,
+                Some(cell::Gift::Berries)  => self.stats.berry_count    -= 1,
+                Some(cell::Gift::Nuts)     => self.stats.nut_count      -= 1,
                 Some(cell::Gift::Birdnest) => self.stats.birdnest_count -= 1,
                 Some(cell::Gift::Squirrel) => self.stats.squirrel_count -= 1,
                 _ => {},
@@ -371,9 +439,23 @@ impl EventHandler for Globals {
             );
         }
 
+        self.stats.bounty_max = self.stats.bounty_max.max(self.bounty_amount.floor() as usize);
+
+        // calculate the moss count
+        // Need to skip non-tips. Check that children is [] when we get those!
+        self.stats.moss_count = 0;
+        for (&gift_point, &b) in self.forbidden.iter() {
+            if b && self.gift_children(gift_point).len() == 0 {
+                self.stats.moss_count += 1;
+            }
+        }
+
         for mut achievement in self.achievements.iter_mut() {
-            if !achievement.achieved & (achievement.functor)(&self.branches,&self.stats) {
-                achievement.achieved = true;
+            if !achievement.achieved {
+                if (achievement.functor)(&self.branches,&self.stats) {
+                    achievement.achieved = true;
+                }
+                break // don't mark an achievment when its hint was never displayed yet
             }
         }
 

@@ -9,13 +9,17 @@ use hex;
 pub const BASE: f32 = 0.20;
 
 pub struct Stats {
-    pub leaf_count: u8,
-    pub flower_count: u8,
-    pub beehive_count: u8,
-    pub birdnest_count: u8,
-    pub squirrel_count: u8,
-    pub branch_lv1_count: u8,
-    pub branch_lv2_count: u8, // count of branches level 2 or higher
+    pub leaf_count: usize,
+    pub flower_count: usize,
+    pub beehive_count: usize,
+    pub berry_count: usize,
+    pub nut_count: usize,
+    pub birdnest_count: usize,
+    pub squirrel_count: usize,
+    pub moss_count: usize,
+    pub branch_lv1_count: usize,
+    pub branch_lv2_count: usize, // count of branches level 2 or higher
+    pub bounty_max: usize,
 }
 
 macro_rules !get {
@@ -67,6 +71,8 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
                 Some(Leaves)   => stats.leaf_count     -= 1,
                 Some(Flowers)  => stats.flower_count   -= 1,
                 Some(Beehive)  => stats.beehive_count  -= 1,
+                Some(Berries)  => stats.berry_count    -= 1,
+                Some(Nuts)     => stats.nut_count      -= 1,
                 Some(Birdnest) => stats.birdnest_count -= 1,
                 Some(Squirrel) => stats.squirrel_count -= 1,
                 _ => {},
@@ -167,6 +173,8 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
                 Some(Leaves)   => stats.leaf_count     += 1,
                 Some(Flowers)  => stats.flower_count   += 1,
                 Some(Beehive)  => stats.beehive_count  += 1,
+                Some(Berries)  => stats.berry_count    += 1,
+                Some(Nuts)     => stats.nut_count      += 1,
                 Some(Birdnest) => stats.birdnest_count += 1,
                 Some(Squirrel) => stats.squirrel_count += 1,
                 _ => {},

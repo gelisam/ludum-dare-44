@@ -71,6 +71,7 @@ impl Assets {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum IntOrInfinite {
     Infinite,
@@ -138,6 +139,7 @@ impl BranchCell {
         }
     }
 
+    #[allow(dead_code)]
     fn branch_strain_maximum(&self) -> IntOrInfinite {
         match self.branch_upgrade {
             0 => IntOrInfinite::Finite(5),
