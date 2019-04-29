@@ -348,7 +348,7 @@ impl Globals {
             guitar_channel: channel::Channel::new(ctx, "/guitar.ogg")?,
             clarinet_channel: channel::Channel::new(ctx, "/birds.ogg")?,
             high_pithed_clarinet_channel: channel::Channel::new(ctx, "/high-pitched clarinet.ogg")?,
-            dreamy_bells_channel: channel::Channel::new(ctx, "/glock-squirrel.ogg")?,
+            dreamy_bells_channel: channel::Channel::new(ctx, "/midi-glock-squirrel.ogg")?,
             bounty,
             life,
             bounty_amount: 0.0,
