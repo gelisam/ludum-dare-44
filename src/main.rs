@@ -53,6 +53,11 @@ fn any_branches( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats:
     (stats.branch_lv1_count>0) | (stats.branch_lv2_count>0)
 }
 
+fn fewer_branches( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    (stats.branch_lv1_count+stats.branch_lv2_count) < stats.branches_max
+}
+
 fn two_leaves( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
     stats.leaf_count >= 2
@@ -181,9 +186,19 @@ impl Globals {
             achievements: vec!(
                 Achievement {
                     achieved: false,
-                    message: "TIP: Click around the tree trunk to add a branch",
+                    message: "TIP: Click near the tree trunk to add a branch - click between two cells",
                     functor: any_branches,
                 },
+                Achievement {
+                    achieved: false,
+                    message: "TIP: Right-click a branch to prune - right-click between two cells",
+                    functor: fewer_branches,
+                },
+                //Achievement {
+                //    achieved: false,
+                //    message: "TIP: Try making a longer branch",
+                //    functor: any_branch_length2,
+                //},
                 Achievement {
                     achieved: false,
                     message: "TIP: Leaves and Flowers grow on ends of branches - try getting two leaves",
@@ -191,7 +206,7 @@ impl Globals {
                 },
                 Achievement {
                     achieved: false,
-                    message: "TIP: Right-click leaves to prune and replace with moss - try deleting all foliage",
+                    message: "TIP: Right-click leaves to replace with moss - try deleting all foliage",
                     functor: no_foliage,
                 },
                 Achievement {
@@ -267,6 +282,7 @@ impl Globals {
                 moss_count: 0,
                 branch_lv1_count: 0,
                 branch_lv2_count: 0,
+                branches_max: 0,
                 bounty_max: 0,
             },
             forbidden: HashMap::with_capacity(100),
@@ -362,7 +378,6 @@ impl Globals {
             for gift_point in self.branch_children(branch_point) {
                 self.prune_gift(gift_point);
             }
-            self.branches.remove(&branch_point);
 
             if let Some(branch_cell) = self.branches.remove(&branch_point) {
                 match branch_cell.branch_upgrade {
@@ -445,6 +460,8 @@ impl EventHandler for Globals {
         }
 
         self.stats.bounty_max = self.stats.bounty_max.max(self.bounty_amount.floor() as usize);
+        self.stats.branches_max = self.stats.branches_max.max(self.stats.branch_lv1_count + self.stats.branch_lv2_count);
+
 
         // calculate the moss count
         // Need to skip non-tips. Check that children is [] when we get those!
