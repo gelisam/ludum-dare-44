@@ -65,8 +65,7 @@ fn any_beehives( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: 
 
 fn any_berries( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
-    false
-    //stats.berry_count>0
+    stats.berry_count>0
 }
 
 fn any_birds( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
@@ -202,6 +201,7 @@ impl Globals {
                 leaf_count: 0,
                 flower_count: 0,
                 beehive_count: 0,
+                berry_count: 0,
                 birdnest_count: 0,
                 squirrel_count: 0,
                 branch_lv1_count: 0,
@@ -314,6 +314,7 @@ impl Globals {
                     Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
                     Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
                     Some(cell::Gift::Beehive)  => self.stats.beehive_count  -= 1,
+                    Some(cell::Gift::Berries)  => self.stats.berry_count    -= 1,
                     Some(cell::Gift::Birdnest) => self.stats.birdnest_count -= 1,
                     Some(cell::Gift::Squirrel) => self.stats.squirrel_count -= 1,
                     _ => {},
@@ -331,6 +332,7 @@ impl Globals {
                 Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
                 Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
                 Some(cell::Gift::Beehive)  => self.stats.beehive_count  -= 1,
+                Some(cell::Gift::Berries)  => self.stats.berry_count    -= 1,
                 Some(cell::Gift::Birdnest) => self.stats.birdnest_count -= 1,
                 Some(cell::Gift::Squirrel) => self.stats.squirrel_count -= 1,
                 _ => {},
