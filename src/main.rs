@@ -34,7 +34,9 @@ struct Assets {
     font: Font,
     hex: hex::Assets,
     branch_place_sound: audio::Source,
+    branch_upgrade_sound: audio::Source,
     branch_break_sounds: Vec<audio::Source>,
+    gift_release_sound: audio::Source,
     moss: Image,
 }
 
@@ -141,12 +143,14 @@ impl Assets {
             font,
             hex: hex::load_assets(ctx)?,
             branch_place_sound: audio::Source::new(ctx, "/branch_place.ogg")?,
+            branch_upgrade_sound: audio::Source::new(ctx, "/branch_upgrade.ogg")?,
             branch_break_sounds: vec!(
                 audio::Source::new(ctx, "/branch_break.ogg")?,
                 audio::Source::new(ctx, "/branch_break2.ogg")?,
                 audio::Source::new(ctx, "/branch_break3.ogg")?,
                 audio::Source::new(ctx, "/branch_break4.ogg")?,
             ),
+            gift_release_sound: audio::Source::new(ctx, "/branch_item_remove.ogg")?,
             moss: Image::new(ctx, "/moss.png")?,
         })
     }
@@ -616,9 +620,10 @@ impl EventHandler for Globals {
                                             if branch_cell.branch_upgrade+1 < grandparent_cell.branch_upgrade {
                                                 match branch_cell.branch_upgrade {
                                                     0 => {
-                                                        // upgrade a branch to level 1
                                                         let cost = self.cost_multiplier * life::BASE * 25.0;
                                                         if *bounty_amount_ >= cost {
+                                                            // upgrade a branch to level 1
+                                                            self.assets.branch_upgrade_sound.play().unwrap_or(());
                                                             *bounty_amount_ -= cost;
                                                             branch_cell.branch_upgrade = 1;
                                                             self.stats.branch_lv2_count += 1;
@@ -628,9 +633,10 @@ impl EventHandler for Globals {
                                                         }
                                                     },
                                                     1 => {
-                                                        // upgrade a branch to level 2
                                                         let cost = self.cost_multiplier * life::BASE * 125.0;
                                                         if *bounty_amount_ >= cost {
+                                                            // upgrade a branch to level 2
+                                                            self.assets.branch_upgrade_sound.play().unwrap_or(());
                                                             *bounty_amount_ -= cost;
                                                             branch_cell.branch_upgrade = 2;
                                                         } else {
@@ -639,9 +645,10 @@ impl EventHandler for Globals {
                                                         }
                                                     },
                                                     2 => {
-                                                        // upgrade a branch to level 3
                                                         let cost = self.cost_multiplier * life::BASE * 625.0;
                                                         if *bounty_amount_ >= cost {
+                                                            // upgrade a branch to level 3
+                                                            self.assets.branch_upgrade_sound.play().unwrap_or(());
                                                             *bounty_amount_ -= cost;
                                                             branch_cell.branch_upgrade = 3;
                                                         } else {
@@ -696,6 +703,7 @@ impl EventHandler for Globals {
                             }
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
+                            self.assets.gift_release_sound.play().unwrap_or(());
                             self.remove_gift(gift_point);
                         },
                     }
