@@ -113,6 +113,7 @@ struct Globals {
     gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
     stats: Stats,
     forbidden: HashMap<hex::GiftPoint, bool>,
+    cost_multiplier: f32, // for debugging
 }
 
 impl Globals {
@@ -184,6 +185,7 @@ impl Globals {
                 squirrel_count: 0,
             },
             forbidden: HashMap::with_capacity(100),
+            cost_multiplier: 1.0,
         };
         globals.reset(ctx);
         Ok(globals)
@@ -371,6 +373,7 @@ impl EventHandler for Globals {
 
     fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
+            Keycode::D     => self.cost_multiplier = 0.0,
             Keycode::Escape => ctx.quit().unwrap(),
             _               => (),
         }
@@ -378,6 +381,7 @@ impl EventHandler for Globals {
 
     fn key_up_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
+            Keycode::D     => self.cost_multiplier = 1.0,
             Keycode::R     => self.reset(ctx),
             _              => (),
         }
@@ -414,7 +418,7 @@ impl EventHandler for Globals {
                                             self.remove_gift(full_gift_point);
                                         }
 
-                                        let cost = life::BASE * 5.0;
+                                        let cost = self.cost_multiplier * life::BASE * 5.0;
                                         if self.bounty_amount >= cost {
                                             // place a new branch
                                             self.assets.branch_place_sound.play().unwrap_or(());
@@ -448,7 +452,7 @@ impl EventHandler for Globals {
                                                     match branch_cell.branch_upgrade {
                                                         0 => {
                                                             // upgrade a branch to level 1
-                                                            let cost = life::BASE * 25.0;
+                                                            let cost = self.cost_multiplier * life::BASE * 25.0;
                                                             if *bounty_amount_ >= cost {
                                                                 *bounty_amount_ -= cost;
                                                                 branch_cell.branch_upgrade = 1;
@@ -458,7 +462,7 @@ impl EventHandler for Globals {
                                                         },
                                                         1 => {
                                                             // upgrade a branch to level 2
-                                                            let cost = life::BASE * 125.0;
+                                                            let cost = self.cost_multiplier * life::BASE * 125.0;
                                                             if *bounty_amount_ >= cost {
                                                                 *bounty_amount_ -= cost;
                                                                 branch_cell.branch_upgrade = 2;
@@ -468,7 +472,7 @@ impl EventHandler for Globals {
                                                         },
                                                         2 => {
                                                             // upgrade a branch to level 3
-                                                            let cost = life::BASE * 625.0;
+                                                            let cost = self.cost_multiplier * life::BASE * 625.0;
                                                             if *bounty_amount_ >= cost {
                                                                 *bounty_amount_ -= cost;
                                                                 branch_cell.branch_upgrade = 3;
