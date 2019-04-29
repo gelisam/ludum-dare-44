@@ -305,7 +305,7 @@ impl Globals {
                 },
                 // AlertMessage::BranchTooStrained
                 Alert {
-                    message: "NOTE: The previous branch must be thicker - click to make thicker",
+                    message: "NOTE: Too many thin branches in a row - click to make thicker",
                     until_time: Duration::from_millis(0),
                 },
                 // AlertMessage::CantUpgrade
