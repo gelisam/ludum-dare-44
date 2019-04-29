@@ -201,6 +201,8 @@ impl Globals {
         let mut root_cell = cell::BranchCell::new(None);
         root_cell.branch_upgrade = 3;
         self.branches.insert(root_point, root_cell);
+
+        self.forbidden.clear();
         self.forbidden.insert(root_gift_point, true);
 
         self.gifts.clear();
@@ -307,7 +309,7 @@ impl Globals {
     }
 
     fn remove_gift(&mut self, gift_point: hex::GiftPoint) {
-        if let Some(gift_cell) = self.gifts.remove(&gift_point) {
+        if let Some(gift_cell) = self.gifts.get(&gift_point) {
             match gift_cell.gift {
                 Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
                 Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
@@ -344,7 +346,7 @@ impl EventHandler for Globals {
             // let basic_amount = 0.1f32; // get this amount even if no life
             // self.bounty_amount = (self.bounty_amount+self.life_amount+basic_amount).min(30.0);
             self.life_amount = life::life_production(&self.gifts);
-            self.bounty_amount = (self.bounty_amount + self.life_amount).min(36.0);
+            self.bounty_amount = (self.bounty_amount + self.life_amount).min(MAX_BOUNTY);
             self.turn_time = self.turn_time + self.turn_duration;
 
             life::life_cycle(

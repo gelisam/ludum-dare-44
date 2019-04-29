@@ -17,6 +17,16 @@ pub struct Sidebar {
     life_amount: f32,
 }
 
+pub fn amount_to_dots(amount: f32) -> f32 {
+    if amount < THRESHOLD1 {
+        amount
+    } else if amount < THRESHOLD2 {
+        THRESHOLD1 + (amount - THRESHOLD1) / 2.0
+    } else {
+        THRESHOLD1 + (THRESHOLD2 - THRESHOLD1) / 2.0 + (amount - THRESHOLD2) / 4.0
+    }
+}
+
 impl Sidebar {
     pub fn new(ctx: &mut Context, font: &Font, title: &'static str, color: Color, x: f32) -> GameResult<Sidebar> {
         Ok(Sidebar {
@@ -54,8 +64,8 @@ impl Sidebar {
             WINDOW_HEIGHT as f32 - 100.0,
         );
 
-        let num_bounty_dots = self.bounty_amount.floor() as usize;
-        let num_life_dots = ((self.life_amount + self.bounty_amount) as usize) - num_bounty_dots;
+        let num_bounty_dots = amount_to_dots(self.bounty_amount.floor()) as usize;
+        let num_life_dots = (amount_to_dots(self.life_amount + self.bounty_amount) as usize) - num_bounty_dots;
         let num_dots_max = 34;
 
         let mut meter_cur = meter_bottom.clone();
