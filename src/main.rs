@@ -50,7 +50,7 @@ struct Achievement {
 
 fn any_branches( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
-    branches.len()>1
+    stats.branch_lv1_count>1
 }
 
 fn any_flowers( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
