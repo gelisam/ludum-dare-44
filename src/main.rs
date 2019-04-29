@@ -923,7 +923,7 @@ pub fn main() {
     globals.guitar_channel.source.play().unwrap_or(());
     globals.clarinet_channel.source.play().unwrap_or(());
     globals.high_pithed_clarinet_channel.source.play().unwrap_or(());
-    globals.guitar_channel.source.play().unwrap_or(());
+    globals.dreamy_bells_channel.source.play().unwrap_or(());
 
     run(ctx, globals).unwrap();
 }
