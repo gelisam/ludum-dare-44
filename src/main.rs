@@ -120,6 +120,7 @@ struct Globals {
     bounty_amount: f32,
     life_amount: f32,
     hover: Option<hex::InBoundsPoint>,
+    root_point: hex::BranchPoint,
     branches: HashMap<hex::BranchPoint, cell::BranchCell>,
     gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
     stats: Stats,
@@ -194,6 +195,7 @@ impl Globals {
             bounty_amount: 0.0,
             life_amount: 0.0,
             hover: None,
+            root_point: hex::BranchPoint::new(hex::HexPoint::new(0, 1)),
             branches: HashMap::with_capacity(100),
             gifts: HashMap::with_capacity(100),
             stats: Stats{
@@ -219,62 +221,54 @@ impl Globals {
         self.life_amount = 0.0;
 
         self.branches.clear();
-        let root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
+        self.root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
         let root_gift_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
         let mut root_cell = cell::BranchCell::new(None);
         root_cell.branch_upgrade = 3;
-        self.branches.insert(root_point, root_cell);
+        self.branches.insert(self.root_point, root_cell);
 
         self.forbidden.clear();
         self.forbidden.insert(root_gift_point, true);
 
         self.gifts.clear();
         let origin_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
-        let origin_cell = cell::GiftCell::new(root_point);
+        let origin_cell = cell::GiftCell::new(self.root_point);
         self.gifts.insert(origin_point, origin_cell);
     }
 
-    fn branch_parent_parent(&self, branch_point: hex::BranchPoint) -> Option<hex::BranchPoint> {
+    fn branch_parent_branch(&self, branch_point: hex::BranchPoint) -> Option<hex::BranchPoint> {
         let branch_cell = self.branches.get(&branch_point)?;
         let gift_point = branch_cell.parent?;
         let gift_cell = self.gifts.get(&gift_point)?;
         Some(gift_cell.parent)
     }
 
-    fn gift_parent_parent(&self, gift_point: hex::GiftPoint) -> Option<hex::GiftPoint> {
+    fn branch_nth_parent_branch_cell(&self, branch_point: hex::BranchPoint, n: u8) -> Option<cell::BranchCell> {
+        if n == 0 {
+            self.branches.get(&branch_point).map(|b| *b)
+        } else {
+            let parent_point = self.branch_parent_branch(branch_point)?;
+            self.branch_nth_parent_branch_cell(parent_point, n-1)
+        }
+    }
+
+    fn branch_nth_parent_branch_cell_or_root(&self, branch_point: hex::BranchPoint, n: u8) -> cell::BranchCell {
+        match self.branch_nth_parent_branch_cell(branch_point, n) {
+            Some(branch_cell) => branch_cell,
+            None => {
+                *self.branches.get(&self.root_point).unwrap()
+            },
+        }
+    }
+
+    #[allow(dead_code)]
+    fn gift_parent_gift(&self, gift_point: hex::GiftPoint) -> Option<hex::GiftPoint> {
         let gift_cell = self.gifts.get(&gift_point)?;
         let branch_point = gift_cell.parent;
         let branch_cell = self.branches.get(&branch_point)?;
         branch_cell.parent
     }
 
-    fn branch_gparent(&self, branch_cell: cell::BranchCell) -> Option<cell::BranchCell> {
-        let gift_point = branch_cell.parent?;
-        let gift_cell = self.gifts.get(&gift_point)?;
-        let parent_branch_cell = self.branches.get(&gift_cell.parent)?;
-        Some(*parent_branch_cell)
-    }
-
-    fn gift_parent(&self, gift_point: hex::GiftPoint) -> Option<cell::BranchCell> {
-        let gift_cell = self.gifts.get(&gift_point)?;
-        let branch_point = gift_cell.parent;
-        let branch_cell = self.branches.get(&branch_point)?;
-        Some(*branch_cell)
-    }
-
-    fn dist2_rule(&self, gift_point: hex::GiftPoint, value: usize) -> bool {
-        let branch_parent = self.gift_parent(gift_point).unwrap();
-        if branch_parent.branch_upgrade <= value {
-            // println!("Zero upgrade parent!");
-            // Always not null because of root and its upgrade level being max
-            let gp = self.branch_gparent(branch_parent).unwrap();
-            if gp.branch_upgrade <= value {
-                // println!("{:?}", gp);
-                return false
-            }
-        }
-        return true
-    }
     fn branch_children(&self, branch_point: hex::BranchPoint) -> Vec<hex::GiftPoint> {
         branch_point.gift_neighbours()
             .iter()
@@ -431,26 +425,28 @@ impl EventHandler for Globals {
                                     if empty_neighbours.len() == 1 && full_neighbours.len() == 1 {
                                         let empty_neighbour = empty_neighbours[0];
                                         let full_gift_point = full_neighbours[0];
-                                        if !self.dist2_rule(full_gift_point, 0) {
-                                            println!("branches are too thin to hold more branches!");
-                                            return
-                                        }
-                                        if !self.gifts.get(&full_gift_point).unwrap().gift.is_none() {
-                                            self.remove_gift(full_gift_point);
-                                        }
+                                        let full_gift_cell = *self.gifts.get(&full_gift_point).unwrap();
+                                        let grandparent_cell = self.branch_nth_parent_branch_cell_or_root(branch_point, 1);
 
+                                        if grandparent_cell.branch_upgrade > 0 {
                                         let cost = self.cost_multiplier * life::BASE * 5.0;
-                                        if self.bounty_amount >= cost {
-                                            // place a new branch
-                                            self.assets.branch_place_sound.play().unwrap_or(());
-                                            self.bounty_amount -= cost;
-                                            let branch_cell = cell::BranchCell::new(Some(full_gift_point));
-                                            let gift_cell = cell::GiftCell::new(branch_point);
-                                            self.branches.insert(branch_point, branch_cell);
-                                            self.gifts.insert(empty_neighbour, gift_cell);
-                                            self.forbidden.insert(full_gift_point, true);
+                                            if self.bounty_amount >= cost {
+                                                // place a new branch
+                                                self.assets.branch_place_sound.play().unwrap_or(());
+                                                self.bounty_amount -= cost;
+                                                let branch_cell = cell::BranchCell::new(Some(full_gift_point));
+                                                let gift_cell = cell::GiftCell::new(branch_point);
+                                                self.branches.insert(branch_point, branch_cell);
+                                                self.gifts.insert(empty_neighbour, gift_cell);
+                                                self.forbidden.insert(full_gift_point, true);
+                                                if full_gift_cell.gift.is_some() {
+                                                    self.remove_gift(full_gift_point);
+                                                }
+                                            } else {
+                                                println!("not enough Bounty");
+                                            }
                                         } else {
-                                            println!("not enough Bounty");
+                                            println!("branches are too thin to hold more branches!");
                                         }
                                     } else if empty_neighbours.len() == 2 {
                                         println!("new branches must be attached to the tree");
@@ -459,56 +455,52 @@ impl EventHandler for Globals {
                                     }
                                 },
                                 Some(_) => {
-                                    if let Some(parent_point) = self.branch_parent_parent(branch_point) {
-                                        if let Some(&parent_cell) = self.branches.get(&parent_point) {
-                                            if let Some(branch_cell) = self.branches.get(&branch_point) {
-                                                if !self.dist2_rule(branch_cell.parent.unwrap(), (branch_cell.branch_upgrade + 1).min(3)) {
-                                                    println!("branches are too thin to hold more branches! Try upgrading some earlier branches.");
-                                                    return
+                                    let parent_cell = self.branch_nth_parent_branch_cell_or_root(branch_point, 1);
+                                    let grandparent_cell = self.branch_nth_parent_branch_cell_or_root(branch_point, 1);
+                                    if let Some(branch_cell) = self.branches.get_mut(&branch_point) {
+                                        let bounty_amount_ = &mut self.bounty_amount;
+                                        if branch_cell.branch_upgrade < parent_cell.branch_upgrade {
+                                            if branch_cell.branch_upgrade < grandparent_cell.branch_upgrade {
+                                                match branch_cell.branch_upgrade {
+                                                    0 => {
+                                                        // upgrade a branch to level 1
+                                                        let cost = self.cost_multiplier * life::BASE * 25.0;
+                                                        if *bounty_amount_ >= cost {
+                                                            *bounty_amount_ -= cost;
+                                                            branch_cell.branch_upgrade = 1;
+                                                        } else {
+                                                            println!("not enough Bounty");
+                                                        }
+                                                    },
+                                                    1 => {
+                                                        // upgrade a branch to level 2
+                                                        let cost = self.cost_multiplier * life::BASE * 125.0;
+                                                        if *bounty_amount_ >= cost {
+                                                            *bounty_amount_ -= cost;
+                                                            branch_cell.branch_upgrade = 2;
+                                                        } else {
+                                                            println!("not enough Bounty");
+                                                        }
+                                                    },
+                                                    2 => {
+                                                        // upgrade a branch to level 3
+                                                        let cost = self.cost_multiplier * life::BASE * 625.0;
+                                                        if *bounty_amount_ >= cost {
+                                                            *bounty_amount_ -= cost;
+                                                            branch_cell.branch_upgrade = 3;
+                                                        } else {
+                                                            println!("not enough Bounty");
+                                                        }
+                                                    },
+                                                    _ => {
+                                                        println!("this branch has already reached its maximum growth");
+                                                    },
                                                 }
+                                            } else {
+                                                println!("branches are too thin to hold more branches!");
                                             }
-                                            if let Some(branch_cell) = self.branches.get_mut(&branch_point) {
-                                                let bounty_amount_ = &mut self.bounty_amount;
-                                                if branch_cell.branch_upgrade < parent_cell.branch_upgrade {
-                                                    match branch_cell.branch_upgrade {
-                                                        0 => {
-                                                            // upgrade a branch to level 1
-                                                            let cost = self.cost_multiplier * life::BASE * 25.0;
-                                                            if *bounty_amount_ >= cost {
-                                                                *bounty_amount_ -= cost;
-                                                                branch_cell.branch_upgrade = 1;
-                                                            } else {
-                                                                println!("not enough Bounty");
-                                                            }
-                                                        },
-                                                        1 => {
-                                                            // upgrade a branch to level 2
-                                                            let cost = self.cost_multiplier * life::BASE * 125.0;
-                                                            if *bounty_amount_ >= cost {
-                                                                *bounty_amount_ -= cost;
-                                                                branch_cell.branch_upgrade = 2;
-                                                            } else {
-                                                                println!("not enough Bounty");
-                                                            }
-                                                        },
-                                                        2 => {
-                                                            // upgrade a branch to level 3
-                                                            let cost = self.cost_multiplier * life::BASE * 625.0;
-                                                            if *bounty_amount_ >= cost {
-                                                                *bounty_amount_ -= cost;
-                                                                branch_cell.branch_upgrade = 3;
-                                                            } else {
-                                                                println!("not enough Bounty");
-                                                            }
-                                                        },
-                                                        _ => {
-                                                            println!("this branch has already reached its maximum growth");
-                                                        },
-                                                    }
-                                                } else {
-                                                    println!("you have to grow the parent branch first!");
-                                                }
-                                            }
+                                        } else {
+                                            println!("you have to grow the parent branch first!");
                                         }
                                     }
                                 },
