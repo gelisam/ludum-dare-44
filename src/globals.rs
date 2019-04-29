@@ -13,6 +13,9 @@ pub const WINDOW_HEIGHT: u32 = 600;
 pub const PI:     f32 = 3.141592653589793;
 pub const SQRT_3: f32 = 1.7320508075688772;
 
+pub const MAX_BOUNTY: f32 = 99.0;
+pub const THRESHOLD1: f32 = 36.0 / 4.0;
+pub const THRESHOLD2: f32 = 3.0 * 36.0 / 4.0;
 
 pub fn get_current_time(ctx: &Context) -> Duration {
     timer::get_time_since_start(ctx)

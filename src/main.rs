@@ -336,7 +336,7 @@ impl EventHandler for Globals {
             // let basic_amount = 0.1f32; // get this amount even if no life
             // self.bounty_amount = (self.bounty_amount+self.life_amount+basic_amount).min(30.0);
             self.life_amount = life::life_production(&self.gifts);
-            self.bounty_amount = (self.bounty_amount + self.life_amount).min(36.0);
+            self.bounty_amount = (self.bounty_amount + self.life_amount).min(MAX_BOUNTY);
             self.turn_time = self.turn_time + self.turn_duration;
 
             life::life_cycle(
