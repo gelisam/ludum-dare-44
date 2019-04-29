@@ -14,6 +14,8 @@ pub struct Stats {
     pub beehive_count: u8,
     pub birdnest_count: u8,
     pub squirrel_count: u8,
+    pub branch_lv1_count: u8,
+    pub branch_lv2_count: u8, // count of branches level 2 or higher
 }
 
 macro_rules !get {

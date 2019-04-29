@@ -63,6 +63,17 @@ fn any_beehives( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: 
     stats.beehive_count>0
 }
 
+fn any_berries( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    false
+    //stats.berry_count>0
+}
+
+fn any_birds( branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.birdnest_count>0
+}
+
 
 struct Alert {
     pub message: &'static str,
@@ -152,9 +163,17 @@ impl Globals {
                     message: "TIP: Beehives appear when two flowers are nearby - More Bounty than flowers",
                     functor: any_beehives,
                 },
+                Achievement {
+                    achieved: false,
+                    message: "TIP: Berries grow when a beehive and two leaves are nearby - More Bounty then Beehive",
+                    functor: any_berries,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "TIP: Birds appear when two berries are nearby - Large multiplier to Bounty",
+                    functor: any_birds,
+                },
                 //    message: "TIP: Click a branch to grow it thicker and allow a bigger tree",
-                //String("TIP: Berries grow when a beehive and two leaves are nearby - More Bounty then Beehive"),
-                //String("TIP: Birds appear when two berries are nearby - Large multiplier to Bounty"),
                 //String("TIP: Nuts grow only on the ends of thick branches near flowers and leaves"),
             ),
             alerts: vec!(
@@ -183,6 +202,8 @@ impl Globals {
                 beehive_count: 0,
                 birdnest_count: 0,
                 squirrel_count: 0,
+                branch_lv1_count: 0,
+                branch_lv2_count: 0,
             },
             forbidden: HashMap::with_capacity(100),
             cost_multiplier: 1.0,
