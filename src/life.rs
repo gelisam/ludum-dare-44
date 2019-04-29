@@ -22,7 +22,7 @@ pub struct Stats {
     pub branch_length3_count: usize,
     pub branch_length5_count: usize,
     pub branches_max: usize,
-    pub bounty_max: usize,
+    pub life_max: usize,
     pub d_pressed: bool,
 }
 

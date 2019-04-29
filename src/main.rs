@@ -120,9 +120,9 @@ fn any_birds( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &S
     stats.birdnest_count>0
 }
 
-fn any_bounty_lv5( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+fn any_bounty_lv7( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
-    stats.bounty_max>=50
+    stats.life_max>=6
 }
 
 fn any_d_presses( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
@@ -273,8 +273,8 @@ impl Globals {
                 },
                 Achievement {
                     achieved: false,
-                    message: "Leaves, flowers and other life build Bounty - try getting to Bounty 5",
-                    functor: any_bounty_lv5,
+                    message: "Leaves, flowers and other life build Bounty - try getting to Bounty 7",
+                    functor: any_bounty_lv7,
                 },
                 Achievement {
                     achieved: false,
@@ -305,7 +305,7 @@ impl Globals {
                 },
                 // AlertMessage::BranchTooStrained
                 Alert {
-                    message: "NOTE: The previous branch must be thicker - click to make thicker",
+                    message: "NOTE: Too many thin branches in a row - click to make thicker",
                     until_time: Duration::from_millis(0),
                 },
                 // AlertMessage::CantUpgrade
@@ -359,7 +359,7 @@ impl Globals {
                 branch_length3_count: 0,
                 branch_length5_count: 0,
                 branches_max: 0,
-                bounty_max: 0,
+                life_max: 0,
                 d_pressed: false,
             },
             forbidden: HashMap::with_capacity(100),
@@ -549,7 +549,7 @@ impl EventHandler for Globals {
             );
         }
 
-        self.stats.bounty_max = self.stats.bounty_max.max(self.bounty_amount.floor() as usize);
+        self.stats.life_max = self.stats.life_max.max(self.life_amount.floor() as usize);
         self.stats.branches_max = self.stats.branches_max.max(self.stats.branch_lv1_count + self.stats.branch_lv2_count);
 
 
