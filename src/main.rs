@@ -646,7 +646,9 @@ impl EventHandler for Globals {
                                     if let Some(branch_cell) = self.branches.get_mut(&branch_point) {
                                         let bounty_amount_ = &mut self.bounty_amount;
                                         if branch_cell.branch_upgrade < parent_cell.branch_upgrade {
-                                            if branch_cell.branch_upgrade+1 < grandparent_cell.branch_upgrade {
+                                            if (branch_cell.branch_upgrade+1 < grandparent_cell.branch_upgrade) |
+                                               (grandparent_cell.branch_upgrade >= 3)
+                                            {
                                                 match branch_cell.branch_upgrade {
                                                     0 => {
                                                         let cost = self.cost_multiplier * life::BASE * 25.0;
