@@ -31,7 +31,7 @@ struct Assets {
 //    bg: bg::Assets,
 //    cell: cell::Assets,
 //    dot: Mesh,
-//    font: Font,
+    font: Font,
 //    hex: hex::Assets,
 //    branch_place_sound: audio::Source,
 //    branch_upgrade_sound: audio::Source,
@@ -154,13 +154,13 @@ pub enum AlertMessage {
 
 impl Assets {
     fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
-//        let font = Font::default_font()?;
+        let font = Font::default();
 
         Ok(Assets {
 //            bg: bg::load_assets(ctx)?,
 //            cell: cell::load_assets(ctx)?,
 //            dot: Mesh::new_circle(ctx, DrawMode::Fill, Point2::new(0.0, 0.0), 10.0, 3.0)?,
-//            font,
+            font,
 //            hex: hex::load_assets(ctx)?,
 //            branch_place_sound: audio::Source::new(ctx, "/branch_place.ogg")?,
 //            branch_upgrade_sound: audio::Source::new(ctx, "/branch_upgrade.ogg")?,
