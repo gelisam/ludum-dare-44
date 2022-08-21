@@ -1,17 +1,17 @@
-//extern crate core;
-//extern crate ggez;
-//extern crate rand;
-//extern crate counter;
-//
-//use core::time::Duration;
-//use ggez::{GameResult, Context};
-//use ggez::audio;
-//use ggez::event::*;
-//use ggez::graphics::*;
-//use ggez::timer;
-//use rand::seq::SliceRandom;
-//use std::collections::HashMap;
-//
+extern crate core;
+extern crate ggez;
+extern crate rand;
+extern crate counter;
+
+use core::time::Duration;
+use ggez::{GameResult, Context};
+use ggez::audio;
+use ggez::event::*;
+use ggez::graphics::*;
+use ggez::timer;
+use rand::seq::SliceRandom;
+use std::collections::HashMap;
+
 //mod bg;
 //mod cell;
 //mod center;
@@ -26,8 +26,8 @@
 //use globals::*;
 //use life::Stats;
 //
-//#[derive(Debug)]
-//struct Assets {
+#[derive(Debug)]
+struct Assets {
 //    bg: bg::Assets,
 //    cell: cell::Assets,
 //    dot: Mesh,
@@ -38,17 +38,17 @@
 //    branch_break_sounds: Vec<audio::Source>,
 //    gift_release_sound: audio::Source,
 //    moss: Image,
-//}
-//
+}
+
 //type CellCheckFn = fn( &HashMap<hex::BranchPoint, cell::BranchCell>, &Stats,) -> bool;
 //
-////#[derive(Debug)]
-//struct Achievement {
-//    pub achieved: bool,
-//    pub message: &'static str,
-//    //pub text: Text,
+//#[derive(Debug)]
+struct Achievement {
+    pub achieved: bool,
+    pub message: &'static str,
+    //pub text: Text,
 //    pub functor: CellCheckFn,
-//}
+}
 //
 //fn any_branches( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 //{
@@ -136,27 +136,27 @@
 //{
 //    stats.d_pressed
 //}
-//
-//
-//struct Alert {
-//    pub message: &'static str,
-//    pub until_time: Duration,
-//}
-//
-//pub enum AlertMessage {
-//    NotEnoughBounty,
-//    BranchTooStrained,
-//    CantUpgrade,
-//    ClickForBranch,
-//    ClickForMoss,
-//}
-//
-//
-//impl Assets {
-//    fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
+
+
+struct Alert {
+    pub message: &'static str,
+    pub until_time: Duration,
+}
+
+pub enum AlertMessage {
+    NotEnoughBounty,
+    BranchTooStrained,
+    CantUpgrade,
+    ClickForBranch,
+    ClickForMoss,
+}
+
+
+impl Assets {
+    fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
 //        let font = Font::default_font()?;
-//
-//        Ok(Assets {
+
+        Ok(Assets {
 //            bg: bg::load_assets(ctx)?,
 //            cell: cell::load_assets(ctx)?,
 //            dot: Mesh::new_circle(ctx, DrawMode::Fill, Point2::new(0.0, 0.0), 10.0, 3.0)?,
@@ -172,39 +172,39 @@
 //            ),
 //            gift_release_sound: audio::Source::new(ctx, "/branch_item_remove.ogg")?,
 //            moss: Image::new(ctx, "/moss.png")?,
-//        })
-//    }
-//}
-//
-////#[derive(Debug)]
-//struct Globals {
-//    assets: Assets,
-//    achievements: Vec<Achievement>,
-//    alerts: Vec<Alert>,
-//    alert_current: Option<usize>,
-//    start_time: Duration,
-//    turn_time: Duration,
-//    turn_duration: Duration,
-//    guitar_channel: channel::Channel,
-//    clarinet_channel: channel::Channel,
-//    high_pithed_clarinet_channel: channel::Channel,
-//    dreamy_bells_channel: channel::Channel,
-//    bounty: sidebar::Sidebar,
-//    life: sidebar::Sidebar,
-//    bounty_amount: f32,
-//    life_amount: f32,
-//    hover: Option<hex::InBoundsPoint>,
-//    root_point: hex::BranchPoint,
-//    branches: HashMap<hex::BranchPoint, cell::BranchCell>,
-//    gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
-//    stats: Stats,
-//    forbidden: HashMap<hex::GiftPoint, bool>,
-//    cost_multiplier: f32, // for debugging
-//}
-//
-//impl Globals {
-//    fn new(ctx: &mut Context) -> GameResult<Globals> {
-//        let assets = Assets::load_assets(ctx)?;
+        })
+    }
+}
+
+//#[derive(Debug)]
+struct Globals {
+    assets: Assets,
+    //achievements: Vec<Achievement>,
+    //alerts: Vec<Alert>,
+    //alert_current: Option<usize>,
+    //start_time: Duration,
+    //turn_time: Duration,
+    //turn_duration: Duration,
+    //guitar_channel: channel::Channel,
+    //clarinet_channel: channel::Channel,
+    //high_pithed_clarinet_channel: channel::Channel,
+    //dreamy_bells_channel: channel::Channel,
+    //bounty: sidebar::Sidebar,
+    //life: sidebar::Sidebar,
+    //bounty_amount: f32,
+    //life_amount: f32,
+    //hover: Option<hex::InBoundsPoint>,
+    //root_point: hex::BranchPoint,
+    //branches: HashMap<hex::BranchPoint, cell::BranchCell>,
+    //gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
+    //stats: Stats,
+    //forbidden: HashMap<hex::GiftPoint, bool>,
+    //cost_multiplier: f32, // for debugging
+}
+
+impl Globals {
+    fn new(ctx: &mut Context) -> GameResult<Globals> {
+        let assets = Assets::load_assets(ctx)?;
 //        let bounty = sidebar::Sidebar::new(
 //            ctx,
 //            &assets.font,
@@ -220,8 +220,8 @@
 //            WINDOW_WIDTH as f32 - sidebar::SIDEBAR_WIDTH
 //        )?;
 //
-//        let mut globals = Globals {
-//            assets,
+        let mut globals = Globals {
+            assets,
 //            achievements: vec!(
 //                Achievement {
 //                    achieved: false,
@@ -379,12 +379,12 @@
 //            },
 //            forbidden: HashMap::with_capacity(100),
 //            cost_multiplier: 1.0,
-//        };
+        };
 //        globals.reset(ctx);
-//        Ok(globals)
-//    }
-//
-//    fn reset(&mut self, ctx: &mut Context) {
+        Ok(globals)
+    }
+
+    fn reset(&mut self, ctx: &mut Context) {
 //        self.start_time = get_current_time(ctx);
 //        self.turn_time = get_current_time(ctx);
 //        self.bounty_amount = 5.0;
@@ -404,8 +404,8 @@
 //        let origin_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
 //        let origin_cell = cell::GiftCell::new(self.root_point);
 //        self.gifts.insert(origin_point, origin_cell);
-//    }
-//
+    }
+
 //    fn branch_parent_branch(&self, branch_point: hex::BranchPoint) -> Option<hex::BranchPoint> {
 //        let branch_cell = self.branches.get(&branch_point)?;
 //        let gift_point = branch_cell.parent?;
@@ -545,10 +545,10 @@
 //        self.alert_current = Some(i);
 //        self.alerts[i].until_time = get_current_time(ctx) + Duration::from_millis(2000);
 //    }
-//}
-//
-//impl EventHandler for Globals {
-//    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+}
+
+impl EventHandler for Globals {
+    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
 //        self.guitar_channel.update(ctx);
 //        self.clarinet_channel.update(ctx);
 //        self.high_pithed_clarinet_channel.update(ctx);
@@ -597,8 +597,8 @@
 //        self.dreamy_bells_channel.enable(ctx, self.stats.squirrel_count > 0);
 //
 //        ggez::timer::sleep(Duration::from_millis(50));
-//        Ok(())
-//    }
+        Ok(())
+    }
 //
 //    fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
 //        match keycode {
@@ -802,7 +802,7 @@
 //    }
 //
 //
-//    fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+    fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
 //        // must use white for drawing images, otherwise they get tinted
 //        set_color(ctx, Color::from_rgb(255, 255, 255))?;
 //
@@ -894,12 +894,12 @@
 //        //    self.start_time = get_current_time(ctx);
 //        //    println!("FPS: {}", ggez::timer::get_fps(ctx));
 //        //}
-//        present(ctx);
-//        timer::yield_now();
-//
-//        Ok(())
-//    }
-//}
+        present(ctx);
+        timer::yield_now();
+
+        Ok(())
+    }
+}
 
 pub fn main() {
     //let ctx = &mut Context::load_from_conf(
