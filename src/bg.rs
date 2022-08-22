@@ -1,5 +1,6 @@
 use ggez::{GameResult, Context};
-use ggez::graphics::{Drawable, Image, Point2};
+use ggez::graphics::{Drawable, DrawParam, Image};
+use mint::Point2;
 
 
 #[derive(Debug)]
@@ -10,11 +11,11 @@ pub struct Assets {
 pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     Ok(
         Assets {
-            bg: Image::new(ctx, "/bg.jpg")?,
+            bg: Image::new(ctx, "/bg.png")?,
         }
     )
 }
 
 pub fn draw_bg(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
-    assets.bg.draw(ctx, Point2::new(0.0, 0.0), 0.0)
+    assets.bg.draw(ctx, DrawParam::default())
 }

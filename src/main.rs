@@ -13,7 +13,7 @@ use ggez::timer;
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 
-//mod bg;
+mod bg;
 //mod cell;
 //mod center;
 //mod channel;
@@ -31,7 +31,7 @@ use mint::Point2;
 
 #[derive(Debug)]
 struct Assets {
-//    bg: bg::Assets,
+    bg: bg::Assets,
 //    cell: cell::Assets,
     dot: Mesh,
     font: Font,
@@ -160,7 +160,7 @@ impl Assets {
         let font = Font::default();
 
         Ok(Assets {
-//            bg: bg::load_assets(ctx)?,
+            bg: bg::load_assets(ctx)?,
 //            cell: cell::load_assets(ctx)?,
             dot: Mesh::new_circle(ctx, DrawMode::fill(), Point2 {x: 0.0, y: 0.0}, 10.0, 3.0, Color::WHITE)?,
             font,
@@ -808,8 +808,8 @@ impl EventHandler for Globals {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
 //        // must use white for drawing images, otherwise they get tinted
 //        set_color(ctx, Color::from_rgb(255, 255, 255))?;
-//
-//        bg::draw_bg(ctx, &self.assets.bg)?;
+
+        bg::draw_bg(ctx, &self.assets.bg)?;
 //        hex::draw_hex_grid(ctx, &self.assets.hex)?;
 //        self.bounty.draw(ctx)?;
 //        self.life.draw(ctx)?;
