@@ -5,7 +5,7 @@ extern crate counter;
 extern crate mint;
 
 use core::time::Duration;
-use ggez::{GameResult, Context};
+use ggez::{GameResult, Context, ContextBuilder};
 use ggez::audio;
 use ggez::event::*;
 use ggez::graphics::*;
@@ -905,28 +905,29 @@ impl EventHandler for Globals {
 }
 
 pub fn main() {
-    //let ctx = &mut Context::load_from_conf(
-    //    GAME_NAME,
-    //    "Michaelson Britt, Samuel Gélineau, Dylan Khor, Zhentao Li, Kyla Squires, and Farren Wang",
-    //    ggez::conf::Conf {
-    //        window_mode: ggez::conf::WindowMode {
-    //            width:  WINDOW_WIDTH,
-    //            height: WINDOW_HEIGHT,
-    //            .. Default::default()
-    //        },
-    //        window_setup: ggez::conf::WindowSetup {
-    //            title: GAME_NAME.to_owned(),
-    //            .. Default::default()
-    //        },
-    //        .. Default::default()
-    //    },
-    //).unwrap();
+    let (mut ctx, event_loop) = ContextBuilder::new(
+        GAME_NAME,
+        "Michaelson Britt, Samuel Gélineau, Dylan Khor, Zhentao Li, Kyla Squires, and Farren Wang",
+    ).default_conf(
+        ggez::conf::Conf {
+            window_mode: ggez::conf::WindowMode {
+                width:  WINDOW_WIDTH,
+                height: WINDOW_HEIGHT,
+                .. Default::default()
+            },
+            window_setup: ggez::conf::WindowSetup {
+                title: GAME_NAME.to_owned(),
+                .. Default::default()
+            },
+            .. Default::default()
+        },
+    ).build().unwrap();
 
-    //let globals = &mut Globals::new(ctx).unwrap();
+    let mut globals = Globals::new(&mut ctx).unwrap();
     //globals.guitar_channel.source.play().unwrap_or(());
     //globals.clarinet_channel.source.play().unwrap_or(());
     //globals.high_pithed_clarinet_channel.source.play().unwrap_or(());
     //globals.dreamy_bells_channel.source.play().unwrap_or(());
 
-    //run(ctx, globals).unwrap();
+    ggez::event::run(ctx, event_loop, globals);
 }

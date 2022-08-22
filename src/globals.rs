@@ -5,8 +5,8 @@ use ggez::timer;
 
 pub const GAME_NAME: &str = "ludum-dare-44";
 
-pub const WINDOW_WIDTH:  u32 = 800;
-pub const WINDOW_HEIGHT: u32 = 600;
+pub const WINDOW_WIDTH:  f32 = 800.0;
+pub const WINDOW_HEIGHT: f32 = 600.0;
 
 
 #[allow(dead_code)]
