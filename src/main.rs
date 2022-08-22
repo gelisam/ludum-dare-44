@@ -183,8 +183,8 @@ impl Assets {
 struct Globals {
     assets: Assets,
     //achievements: Vec<Achievement>,
-    //alerts: Vec<Alert>,
-    //alert_current: Option<usize>,
+    alerts: Vec<Alert>,
+    alert_current: Option<usize>,
     //start_time: Duration,
     //turn_time: Duration,
     //turn_duration: Duration,
@@ -312,34 +312,34 @@ impl Globals {
 //                    functor: any_birds,
 //                },
 //            ),
-//            alerts: vec!(
-//                // AlertMessage::NotEnoughBounty
-//                Alert {
-//                    message: "NOTE: Not enough Life for this action - build Bounty to gain Life faster",
-//                    until_time: Duration::from_millis(0),
-//                },
-//                // AlertMessage::BranchTooStrained
-//                Alert {
-//                    message: "NOTE: Too many thin branches in a row - click to make thicker",
-//                    until_time: Duration::from_millis(0),
-//                },
-//                // AlertMessage::CantUpgrade
-//                Alert {
-//                    message: "NOTE: Can't make a branch thicker unless all supporting branches are at least as thick",
-//                    until_time: Duration::from_millis(0),
-//                },
-//                // AlertMessage::ClickForBranch
-//                Alert {
-//                    message: "NOTE: Click between two cells from a branch to create another branch",
-//                    until_time: Duration::from_millis(0),
-//                },
-//                // AlertMessage::ClickForMoss
-//                Alert {
-//                    message: "NOTE: Right-click foliage to replace with moss - right-click again to remove",
-//                    until_time: Duration::from_millis(0),
-//                },
-//            ),
-//            alert_current: None,
+            alerts: vec!(
+                // AlertMessage::NotEnoughBounty
+                Alert {
+                    message: "NOTE: Not enough Life for this action - build Bounty to gain Life faster",
+                    until_time: Duration::from_millis(0),
+                },
+                // AlertMessage::BranchTooStrained
+                Alert {
+                    message: "NOTE: Too many thin branches in a row - click to make thicker",
+                    until_time: Duration::from_millis(0),
+                },
+                // AlertMessage::CantUpgrade
+                Alert {
+                    message: "NOTE: Can't make a branch thicker unless all supporting branches are at least as thick",
+                    until_time: Duration::from_millis(0),
+                },
+                // AlertMessage::ClickForBranch
+                Alert {
+                    message: "NOTE: Click between two cells from a branch to create another branch",
+                    until_time: Duration::from_millis(0),
+                },
+                // AlertMessage::ClickForMoss
+                Alert {
+                    message: "NOTE: Right-click foliage to replace with moss - right-click again to remove",
+                    until_time: Duration::from_millis(0),
+                },
+            ),
+            alert_current: None,
 //            start_time: get_current_time(ctx),
 //            turn_time: get_current_time(ctx),
 //            turn_duration: Duration::from_millis(2000),
