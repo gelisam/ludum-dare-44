@@ -2,6 +2,7 @@ extern crate core;
 extern crate ggez;
 extern crate rand;
 extern crate counter;
+extern crate mint;
 
 use core::time::Duration;
 use ggez::{GameResult, Context};
@@ -25,12 +26,14 @@ use std::collections::HashMap;
 //
 //use globals::*;
 //use life::Stats;
-//
+use mint::Point2;
+
+
 #[derive(Debug)]
 struct Assets {
 //    bg: bg::Assets,
 //    cell: cell::Assets,
-//    dot: Mesh,
+    dot: Mesh,
     font: Font,
 //    hex: hex::Assets,
 //    branch_place_sound: audio::Source,
@@ -159,7 +162,7 @@ impl Assets {
         Ok(Assets {
 //            bg: bg::load_assets(ctx)?,
 //            cell: cell::load_assets(ctx)?,
-//            dot: Mesh::new_circle(ctx, DrawMode::Fill, Point2::new(0.0, 0.0), 10.0, 3.0)?,
+            dot: Mesh::new_circle(ctx, DrawMode::fill(), Point2 {x: 0.0, y: 0.0}, 10.0, 3.0, Color::WHITE)?,
             font,
 //            hex: hex::load_assets(ctx)?,
 //            branch_place_sound: audio::Source::new(ctx, "/branch_place.ogg")?,
