@@ -17,14 +17,14 @@ use std::collections::HashMap;
 //mod cell;
 //mod center;
 //mod channel;
-//mod globals;
+mod globals;
 //mod hex;
 //mod sidebar;
 //mod text;
 //mod vector;
 //mod life;
-//
-//use globals::*;
+
+use globals::*;
 //use life::Stats;
 use mint::Point2;
 
@@ -185,17 +185,17 @@ struct Globals {
     //achievements: Vec<Achievement>,
     alerts: Vec<Alert>,
     alert_current: Option<usize>,
-    //start_time: Duration,
-    //turn_time: Duration,
-    //turn_duration: Duration,
+    start_time: Duration,
+    turn_time: Duration,
+    turn_duration: Duration,
     //guitar_channel: channel::Channel,
     //clarinet_channel: channel::Channel,
     //high_pithed_clarinet_channel: channel::Channel,
     //dreamy_bells_channel: channel::Channel,
     //bounty: sidebar::Sidebar,
     //life: sidebar::Sidebar,
-    //bounty_amount: f32,
-    //life_amount: f32,
+    bounty_amount: f32,
+    life_amount: f32,
     //hover: Option<hex::InBoundsPoint>,
     //root_point: hex::BranchPoint,
     //branches: HashMap<hex::BranchPoint, cell::BranchCell>,
@@ -340,9 +340,9 @@ impl Globals {
                 },
             ),
             alert_current: None,
-//            start_time: get_current_time(ctx),
-//            turn_time: get_current_time(ctx),
-//            turn_duration: Duration::from_millis(2000),
+            start_time: get_current_time(ctx),
+            turn_time: get_current_time(ctx),
+            turn_duration: Duration::from_millis(2000),
 //            // Pick one set and comment out the other.
 //            /*guitar_channel: channel::Channel::new(ctx, "/guitar.ogg")?,
 //            clarinet_channel: channel::Channel::new(ctx, "/clarinet.ogg")?,
@@ -354,8 +354,8 @@ impl Globals {
 //            dreamy_bells_channel: channel::Channel::new(ctx, "/midi-glock-squirrel.ogg")?,
 //            bounty,
 //            life,
-//            bounty_amount: 0.0,
-//            life_amount: 0.0,
+            bounty_amount: 0.0,
+            life_amount: 0.0,
 //            hover: None,
 //            root_point: hex::BranchPoint::new(hex::HexPoint::new(0, 1)),
 //            branches: HashMap::with_capacity(100),
@@ -388,10 +388,10 @@ impl Globals {
     }
 
     fn reset(&mut self, ctx: &mut Context) {
-//        self.start_time = get_current_time(ctx);
-//        self.turn_time = get_current_time(ctx);
-//        self.bounty_amount = 5.0;
-//        self.life_amount = 0.0;
+        self.start_time = get_current_time(ctx);
+        self.turn_time = get_current_time(ctx);
+        self.bounty_amount = 5.0;
+        self.life_amount = 0.0;
 //
 //        self.branches.clear();
 //        self.root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
@@ -535,19 +535,19 @@ impl Globals {
 //            }
 //        }
 //    }
-//
-//    fn display_alert(&mut self, ctx: &mut Context, alert_message: AlertMessage )
-//    {
-//        let i: usize = match alert_message {
-//            AlertMessage::NotEnoughBounty => 0,
-//            AlertMessage::BranchTooStrained => 1,
-//            AlertMessage::CantUpgrade => 2,
-//            AlertMessage::ClickForBranch => 3,
-//            AlertMessage::ClickForMoss => 4,
-//        };
-//        self.alert_current = Some(i);
-//        self.alerts[i].until_time = get_current_time(ctx) + Duration::from_millis(2000);
-//    }
+
+    fn display_alert(&mut self, ctx: &mut Context, alert_message: AlertMessage )
+    {
+        let i: usize = match alert_message {
+            AlertMessage::NotEnoughBounty => 0,
+            AlertMessage::BranchTooStrained => 1,
+            AlertMessage::CantUpgrade => 2,
+            AlertMessage::ClickForBranch => 3,
+            AlertMessage::ClickForMoss => 4,
+        };
+        self.alert_current = Some(i);
+        self.alerts[i].until_time = get_current_time(ctx) + Duration::from_millis(2000);
+    }
 }
 
 impl EventHandler for Globals {
@@ -558,20 +558,20 @@ impl EventHandler for Globals {
 //        self.dreamy_bells_channel.update(ctx);
 //        self.bounty.update(ctx, self.bounty_amount, 0.0f32);
 //        self.life.update(ctx, 0.0f32, self.life_amount+1.0);
-//
-//        let now = get_current_time(ctx);
-//        while (now - self.turn_time) > self.turn_duration { // while loop in case of large discrepancy
-//            // let basic_amount = 0.1f32; // get this amount even if no life
-//            // self.bounty_amount = (self.bounty_amount+self.life_amount+basic_amount).min(30.0);
+
+        let now = get_current_time(ctx);
+        while (now - self.turn_time) > self.turn_duration { // while loop in case of large discrepancy
+            // let basic_amount = 0.1f32; // get this amount even if no life
+            // self.bounty_amount = (self.bounty_amount+self.life_amount+basic_amount).min(30.0);
 //            self.life_amount = life::life_production(&self.gifts);
 //            self.bounty_amount = (self.bounty_amount + self.life_amount).min(MAX_BOUNTY);
-//            self.turn_time = self.turn_time + self.turn_duration;
-//
+            self.turn_time = self.turn_time + self.turn_duration;
+
 //            life::life_cycle(
 //                &mut self.gifts, &self.branches, &self.forbidden, &mut self.stats
 //            );
-//        }
-//
+        }
+
 //        self.stats.life_max = self.stats.life_max.max(self.life_amount.floor() as usize);
 //        self.stats.branches_max = self.stats.branches_max.max(self.stats.branch_lv1_count + self.stats.branch_lv2_count);
 //
@@ -598,8 +598,8 @@ impl EventHandler for Globals {
 //        self.clarinet_channel.enable(ctx, self.stats.birdnest_count > 0);
 //        self.high_pithed_clarinet_channel.enable(ctx, self.stats.beehive_count > 0);
 //        self.dreamy_bells_channel.enable(ctx, self.stats.squirrel_count > 0);
-//
-//        ggez::timer::sleep(Duration::from_millis(50));
+
+        ggez::timer::sleep(Duration::from_millis(50));
         Ok(())
     }
 //
@@ -893,10 +893,10 @@ impl EventHandler for Globals {
 //        }
 //
 //
-//        //if get_current_time(ctx) - self.start_time > Duration::from_millis(1000) {
-//        //    self.start_time = get_current_time(ctx);
-//        //    println!("FPS: {}", ggez::timer::get_fps(ctx));
-//        //}
+        //if get_current_time(ctx) - self.start_time > Duration::from_millis(1000) {
+        //    self.start_time = get_current_time(ctx);
+        //    println!("FPS: {}", ggez::timer::get_fps(ctx));
+        //}
         present(ctx);
         timer::yield_now();
 

@@ -18,7 +18,7 @@ pub const THRESHOLD1: f32 = 36.0 / 2.0;
 //pub const THRESHOLD2: f32 = 3.0 * 36.0 / 4.0;
 
 pub fn get_current_time(ctx: &Context) -> Duration {
-    timer::get_time_since_start(ctx)
+    timer::time_since_start(ctx)
 }
 
 pub fn duration_to_f32(duration: Duration) -> f32 {
