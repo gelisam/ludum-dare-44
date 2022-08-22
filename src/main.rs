@@ -36,11 +36,11 @@ struct Assets {
     dot: Mesh,
     font: Font,
 //    hex: hex::Assets,
-//    branch_place_sound: audio::Source,
-//    branch_upgrade_sound: audio::Source,
-//    branch_break_sounds: Vec<audio::Source>,
-//    gift_release_sound: audio::Source,
-//    moss: Image,
+    branch_place_sound: audio::Source,
+    branch_upgrade_sound: audio::Source,
+    branch_break_sounds: Vec<audio::Source>,
+    gift_release_sound: audio::Source,
+    moss: Image,
 }
 
 //type CellCheckFn = fn( &HashMap<hex::BranchPoint, cell::BranchCell>, &Stats,) -> bool;
@@ -165,16 +165,16 @@ impl Assets {
             dot: Mesh::new_circle(ctx, DrawMode::fill(), Point2 {x: 0.0, y: 0.0}, 10.0, 3.0, Color::WHITE)?,
             font,
 //            hex: hex::load_assets(ctx)?,
-//            branch_place_sound: audio::Source::new(ctx, "/branch_place.ogg")?,
-//            branch_upgrade_sound: audio::Source::new(ctx, "/branch_upgrade.ogg")?,
-//            branch_break_sounds: vec!(
-//                audio::Source::new(ctx, "/branch_break.ogg")?,
-//                audio::Source::new(ctx, "/branch_break2.ogg")?,
-//                audio::Source::new(ctx, "/branch_break3.ogg")?,
-//                audio::Source::new(ctx, "/branch_break4.ogg")?,
-//            ),
-//            gift_release_sound: audio::Source::new(ctx, "/branch_item_remove.ogg")?,
-//            moss: Image::new(ctx, "/moss.png")?,
+            branch_place_sound: audio::Source::new(ctx, "/branch_place.ogg")?,
+            branch_upgrade_sound: audio::Source::new(ctx, "/branch_upgrade.ogg")?,
+            branch_break_sounds: vec!(
+                audio::Source::new(ctx, "/branch_break.ogg")?,
+                audio::Source::new(ctx, "/branch_break2.ogg")?,
+                audio::Source::new(ctx, "/branch_break3.ogg")?,
+                audio::Source::new(ctx, "/branch_break4.ogg")?,
+            ),
+            gift_release_sound: audio::Source::new(ctx, "/branch_item_remove.ogg")?,
+            moss: Image::new(ctx, "/moss.png")?,
         })
     }
 }
