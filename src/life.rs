@@ -1,6 +1,7 @@
 extern crate counter;
 
 use std::collections::HashMap;
+
 use cell::Gift::*;
 use counter::Counter;
 use cell;

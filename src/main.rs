@@ -7,6 +7,7 @@ extern crate mint;
 use core::time::Duration;
 use ggez::{GameResult, Context, ContextBuilder};
 use ggez::audio;
+use ggez::audio::SoundSource;
 use ggez::event::*;
 use ggez::graphics::*;
 use ggez::timer;
@@ -16,7 +17,7 @@ use std::collections::HashMap;
 mod bg;
 //mod cell;
 //mod center;
-//mod channel;
+mod channel;
 mod globals;
 //mod hex;
 //mod sidebar;
@@ -188,10 +189,10 @@ struct Globals {
     start_time: Duration,
     turn_time: Duration,
     turn_duration: Duration,
-    //guitar_channel: channel::Channel,
-    //clarinet_channel: channel::Channel,
-    //high_pithed_clarinet_channel: channel::Channel,
-    //dreamy_bells_channel: channel::Channel,
+    guitar_channel: channel::Channel,
+    clarinet_channel: channel::Channel,
+    high_pithed_clarinet_channel: channel::Channel,
+    dreamy_bells_channel: channel::Channel,
     //bounty: sidebar::Sidebar,
     //life: sidebar::Sidebar,
     bounty_amount: f32,
@@ -343,15 +344,15 @@ impl Globals {
             start_time: get_current_time(ctx),
             turn_time: get_current_time(ctx),
             turn_duration: Duration::from_millis(2000),
-//            // Pick one set and comment out the other.
-//            /*guitar_channel: channel::Channel::new(ctx, "/guitar.ogg")?,
-//            clarinet_channel: channel::Channel::new(ctx, "/clarinet.ogg")?,
-//            high_pithed_clarinet_channel: channel::Channel::new(ctx, "/high-pitched clarinet.ogg")?,
-//            dreamy_bells_channel: channel::Channel::new(ctx, "/dreamy-bells.ogg")?,*/
-//            guitar_channel: channel::Channel::new(ctx, "/guitar.ogg")?,
-//            clarinet_channel: channel::Channel::new(ctx, "/birds.ogg")?,
-//            high_pithed_clarinet_channel: channel::Channel::new(ctx, "/high-pitched clarinet.ogg")?,
-//            dreamy_bells_channel: channel::Channel::new(ctx, "/midi-glock-squirrel.ogg")?,
+            // Pick one set and comment out the other.
+            /*guitar_channel: channel::Channel::new(ctx, "/guitar.ogg")?,
+            clarinet_channel: channel::Channel::new(ctx, "/clarinet.ogg")?,
+            high_pithed_clarinet_channel: channel::Channel::new(ctx, "/high-pitched clarinet.ogg")?,
+            dreamy_bells_channel: channel::Channel::new(ctx, "/dreamy-bells.ogg")?,*/
+            guitar_channel: channel::Channel::new(ctx, "/guitar.ogg")?,
+            clarinet_channel: channel::Channel::new(ctx, "/birds.ogg")?,
+            high_pithed_clarinet_channel: channel::Channel::new(ctx, "/high-pitched clarinet.ogg")?,
+            dreamy_bells_channel: channel::Channel::new(ctx, "/midi-glock-squirrel.ogg")?,
 //            bounty,
 //            life,
             bounty_amount: 0.0,
@@ -552,10 +553,10 @@ impl Globals {
 
 impl EventHandler for Globals {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-//        self.guitar_channel.update(ctx);
-//        self.clarinet_channel.update(ctx);
-//        self.high_pithed_clarinet_channel.update(ctx);
-//        self.dreamy_bells_channel.update(ctx);
+        self.guitar_channel.update(ctx);
+        self.clarinet_channel.update(ctx);
+        self.high_pithed_clarinet_channel.update(ctx);
+        self.dreamy_bells_channel.update(ctx);
 //        self.bounty.update(ctx, self.bounty_amount, 0.0f32);
 //        self.life.update(ctx, 0.0f32, self.life_amount+1.0);
 
@@ -593,7 +594,7 @@ impl EventHandler for Globals {
 //                break // don't mark an achievment when its hint was never displayed yet
 //            }
 //        }
-//
+
 //        self.guitar_channel.enable(ctx, self.stats.leaf_count > 0);
 //        self.clarinet_channel.enable(ctx, self.stats.birdnest_count > 0);
 //        self.high_pithed_clarinet_channel.enable(ctx, self.stats.beehive_count > 0);
@@ -924,10 +925,10 @@ pub fn main() {
     ).build().unwrap();
 
     let mut globals = Globals::new(&mut ctx).unwrap();
-    //globals.guitar_channel.source.play().unwrap_or(());
-    //globals.clarinet_channel.source.play().unwrap_or(());
-    //globals.high_pithed_clarinet_channel.source.play().unwrap_or(());
-    //globals.dreamy_bells_channel.source.play().unwrap_or(());
+    globals.guitar_channel.source.play(&mut ctx).unwrap_or(());
+    globals.clarinet_channel.source.play(&mut ctx).unwrap_or(());
+    globals.high_pithed_clarinet_channel.source.play(&mut ctx).unwrap_or(());
+    globals.dreamy_bells_channel.source.play(&mut ctx).unwrap_or(());
 
     ggez::event::run(ctx, event_loop, globals);
 }
