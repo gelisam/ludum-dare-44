@@ -202,7 +202,7 @@ struct Globals {
     //gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
     //stats: Stats,
     //forbidden: HashMap<hex::GiftPoint, bool>,
-    //cost_multiplier: f32, // for debugging
+    cost_multiplier: f32, // for debugging
 }
 
 impl Globals {
@@ -381,7 +381,7 @@ impl Globals {
 //                moss_removed: false,
 //            },
 //            forbidden: HashMap::with_capacity(100),
-//            cost_multiplier: 1.0,
+            cost_multiplier: 1.0,
         };
 //        globals.reset(ctx);
         Ok(globals)
@@ -602,35 +602,35 @@ impl EventHandler for Globals {
         ggez::timer::sleep(Duration::from_millis(50));
         Ok(())
     }
-//
-//    fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
-//        match keycode {
-//            Keycode::D     => {
-//                self.cost_multiplier = 0.0;
+
+    fn key_down_event(&mut self, ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods, _repeat: bool) {
+        match keycode {
+            KeyCode::D     => {
+                self.cost_multiplier = 0.0;
 //                self.stats.d_pressed = true;
-//            },
-//            Keycode::Escape => ctx.quit().unwrap(),
-//            _               => (),
-//        }
-//    }
-//
-//    fn key_up_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
-//        match keycode {
-//            Keycode::D     => {
-//                self.cost_multiplier = 1.0;
+            },
+            KeyCode::Escape => quit(ctx),
+            _               => (),
+        }
+    }
+
+    fn key_up_event(&mut self, ctx: &mut Context, keycode: KeyCode, _keymod: KeyMods) {
+        match keycode {
+            KeyCode::D     => {
+                self.cost_multiplier = 1.0;
 //                self.stats.d_pressed = false;
-//            },
-//            Keycode::R     => self.reset(ctx),
-//            _              => (),
-//        }
-//    }
-//
-//    fn mouse_button_down_event(&mut self, ctx: &mut Context, button: MouseButton, x: i32, y: i32) {
-//        let point = Point2::new(x as f32, y as f32);
-//        let mut alert_option: Option<AlertMessage> = None;
+            },
+            KeyCode::R     => self.reset(ctx),
+            _              => (),
+        }
+    }
+
+    fn mouse_button_down_event(&mut self, ctx: &mut Context, button: MouseButton, x: f32, y: f32) {
+        let point = Point2 {x: x, y: y };
+        let mut alert_option: Option<AlertMessage> = None;
 //        if let Some(in_bounds_point) = hex::HexPoint::from_point(point).is_in_bounds() {
-//            match button {
-//                MouseButton::Left => {
+            match button {
+                MouseButton::Left => {
 //                    match in_bounds_point {
 //                        hex::InBoundsPoint::BranchPoint(branch_point) => {
 //
@@ -776,8 +776,8 @@ impl EventHandler for Globals {
 //                            }
 //                        },
 //                    }
-//                },
-//                MouseButton::Right => {
+                },
+                MouseButton::Right => {
 //                    match in_bounds_point {
 //                        hex::InBoundsPoint::BranchPoint(branch_point) => {
 //                            if self.branches.get(&branch_point).is_some() {
@@ -790,19 +790,19 @@ impl EventHandler for Globals {
 //                            self.remove_gift(gift_point);
 //                        },
 //                    }
-//                }
-//                _ => {}
-//            }
+                }
+                _ => {}
+            }
 //        }
-//        if let Some(alert_message) = alert_option {
-//            self.display_alert(ctx,alert_message);
-//        }
-//    }
-//
-//    fn mouse_motion_event(&mut self, _ctx: &mut Context, _state: MouseState, x: i32, y: i32, _xrel: i32, _yrel: i32) {
+        if let Some(alert_message) = alert_option {
+            self.display_alert(ctx,alert_message);
+        }
+    }
+
+    fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, _xrel: f32, _yrel: f32) {
 //        let hex_point = hex::HexPoint::from_point(Point2::new(x as f32, y as f32));
 //        self.hover = hex_point.is_in_bounds()
-//    }
+    }
 //
 //
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
@@ -855,7 +855,7 @@ impl EventHandler for Globals {
 //            //}
 //        }
 //
-//        if let Some(alert_current) = self.alert_current {
+        if let Some(alert_current) = self.alert_current {
 //            set_color(ctx, Color::from_rgb(255, 0, 0))?;
 //            let center = Point2::new(
 //                WINDOW_WIDTH as f32 / 2.0,
@@ -863,10 +863,10 @@ impl EventHandler for Globals {
 //            );
 //            let text = Text::new(ctx,self.alerts[alert_current].message, &self.assets.font)?;
 //            text::draw_centered_text(ctx, &text, center, 0.0)?;
-//            if self.alerts[alert_current].until_time < get_current_time(ctx) {
-//                self.alert_current = None
-//            }
-//        }
+            if self.alerts[alert_current].until_time < get_current_time(ctx) {
+                self.alert_current = None
+            }
+        }
 //        else {
 //            for achievement in self.achievements.iter() {
 //                if !achievement.achieved {
