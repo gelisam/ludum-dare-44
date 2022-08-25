@@ -16,7 +16,7 @@ use std::collections::HashMap;
 
 mod bg;
 //mod cell;
-//mod center;
+mod center;
 mod channel;
 mod globals;
 //mod hex;
