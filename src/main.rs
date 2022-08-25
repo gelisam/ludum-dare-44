@@ -21,7 +21,7 @@ mod channel;
 mod globals;
 //mod hex;
 //mod sidebar;
-//mod text;
+mod text;
 mod vector;
 //mod life;
 
