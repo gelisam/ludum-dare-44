@@ -1,8 +1,8 @@
-extern crate nalgebra;
 
 use core::ops::{Add,AddAssign,Mul,MulAssign};
 use ggez::{GameResult, Context};
-use ggez::graphics::{self, Color, Drawable, DrawMode, Point2, Mesh, Vector2};
+use ggez::graphics::{Color, Drawable, DrawMode, DrawParam, Mesh};
+use glam::f32::Vec2;
 
 use globals::*;
 
@@ -29,28 +29,32 @@ fn load_polygon_asset(ctx: &mut Context, mode: DrawMode) -> GameResult<Mesh> {
         ctx,
         mode,
         &[
-            Point2::new(0.5 * VISIBLE_HEX_RADIUS, VISIBLE_HEX_HEIGHT / 2.0),
-            Point2::new(VISIBLE_HEX_WIDTH / 2.0, 0.0),
-            Point2::new(0.5 * VISIBLE_HEX_RADIUS, -VISIBLE_HEX_HEIGHT / 2.0),
-            Point2::new(-0.5 * VISIBLE_HEX_RADIUS, -VISIBLE_HEX_HEIGHT / 2.0),
-            Point2::new(-VISIBLE_HEX_WIDTH / 2.0, 0.0),
-            Point2::new(-0.5 * VISIBLE_HEX_RADIUS, VISIBLE_HEX_HEIGHT / 2.0),
+            Vec2::new(0.5 * VISIBLE_HEX_RADIUS, VISIBLE_HEX_HEIGHT / 2.0),
+            Vec2::new(VISIBLE_HEX_WIDTH / 2.0, 0.0),
+            Vec2::new(0.5 * VISIBLE_HEX_RADIUS, -VISIBLE_HEX_HEIGHT / 2.0),
+            Vec2::new(-0.5 * VISIBLE_HEX_RADIUS, -VISIBLE_HEX_HEIGHT / 2.0),
+            Vec2::new(-VISIBLE_HEX_WIDTH / 2.0, 0.0),
+            Vec2::new(-0.5 * VISIBLE_HEX_RADIUS, VISIBLE_HEX_HEIGHT / 2.0),
         ],
+        Color::from_rgb(163, 186, 188)
     )
 }
 
 pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
     Ok(Assets {
-        hex: load_polygon_asset(ctx, DrawMode::Line(1.0))?,
+        hex: load_polygon_asset(ctx, DrawMode::stroke(1.0))?,
     })
 }
 
 pub fn draw_hex_grid(ctx: &mut Context, assets: &Assets) -> GameResult<()> {
-    graphics::set_color(ctx, Color::from_rgb(163, 186, 188))?;
     for q in -10..=10 {
         for r in -20..=0 {
             if let Some(InBoundsPoint::GiftPoint(gift_point)) = HexPoint::new(q, r).is_in_bounds() {
-                assets.hex.draw(ctx, gift_point.to_point(), 0.0)?;
+                assets.hex.draw(
+                    ctx,
+                    DrawParam::default()
+                        .dest(gift_point.to_point())
+                )?;
             }
         }
     }
@@ -195,7 +199,7 @@ impl HexPoint {
             .collect()
     }
 
-    pub fn from_point(point: Point2) -> HexPoint {
+    pub fn from_point(point: Vec2) -> HexPoint {
         let q = (point.x - ORIGIN_X) * 4.0 / 3.0 / HEX_WIDTH;
         let r = (point.y - ORIGIN_Y) / HEX_HEIGHT - q / 2.0;
         HexPoint {
@@ -204,8 +208,8 @@ impl HexPoint {
         }
     }
 
-    pub fn to_point(self) -> Point2 {
-        Point2::new(
+    pub fn to_point(self) -> Vec2 {
+        Vec2::new(
             ORIGIN_X + self.q as f32 * HEX_WIDTH * 3.0 / 4.0,
             ORIGIN_Y + (self.r as f32 + self.q as f32 / 2.0) * HEX_HEIGHT,
         )
@@ -234,8 +238,8 @@ impl HexVector {
     }
 
     #[allow(dead_code)]
-    pub fn to_vector(self) -> Vector2 {
-        Vector2::new(
+    pub fn to_vector(self) -> Vec2 {
+        Vec2::new(
             (self.q as f32 + self.r as f32 / 2.0) * HEX_WIDTH,
             self.r as f32 * HEX_HEIGHT * 3.0 / 4.0,
         )
@@ -253,7 +257,7 @@ impl BranchPoint {
         BranchPoint {hex_point}
     }
 
-    pub fn to_point(self) -> Point2 {
+    pub fn to_point(self) -> Vec2 {
         self.hex_point.to_point()
     }
 
@@ -285,7 +289,7 @@ impl GiftPoint {
         GiftPoint {hex_point}
     }
 
-    pub fn to_point(self) -> Point2 {
+    pub fn to_point(self) -> Vec2 {
         self.hex_point.to_point()
     }
 
@@ -315,7 +319,7 @@ impl GiftPoint {
 }
 
 impl InBoundsPoint {
-    pub fn to_point(self) -> Point2 {
+    pub fn to_point(self) -> Vec2 {
         match self {
             InBoundsPoint::BranchPoint(branch_point) => branch_point.to_point(),
             InBoundsPoint::GiftPoint(gift_point)     => gift_point.to_point(),

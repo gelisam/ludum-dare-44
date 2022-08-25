@@ -19,7 +19,7 @@ mod bg;
 mod center;
 mod channel;
 mod globals;
-//mod hex;
+mod hex;
 mod sidebar;
 mod text;
 mod vector;
@@ -36,7 +36,7 @@ struct Assets {
 //    cell: cell::Assets,
     dot: Mesh,
     font: Font,
-//    hex: hex::Assets,
+    hex: hex::Assets,
     branch_place_sound: audio::Source,
     branch_upgrade_sound: audio::Source,
     branch_break_sounds: Vec<audio::Source>,
@@ -165,7 +165,7 @@ impl Assets {
 //            cell: cell::load_assets(ctx)?,
             dot: Mesh::new_circle(ctx, DrawMode::fill(), Vec2::new(0.0, 0.0), 10.0, 3.0, Color::WHITE)?,
             font,
-//            hex: hex::load_assets(ctx)?,
+            hex: hex::load_assets(ctx)?,
             branch_place_sound: audio::Source::new(ctx, "/branch_place.ogg")?,
             branch_upgrade_sound: audio::Source::new(ctx, "/branch_upgrade.ogg")?,
             branch_break_sounds: vec!(
@@ -197,12 +197,12 @@ struct Globals {
     life: sidebar::Sidebar,
     bounty_amount: f32,
     life_amount: f32,
-    //hover: Option<hex::InBoundsPoint>,
-    //root_point: hex::BranchPoint,
+    hover: Option<hex::InBoundsPoint>,
+    root_point: hex::BranchPoint,
     //branches: HashMap<hex::BranchPoint, cell::BranchCell>,
     //gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
     //stats: Stats,
-    //forbidden: HashMap<hex::GiftPoint, bool>,
+    forbidden: HashMap<hex::GiftPoint, bool>,
     cost_multiplier: f32, // for debugging
 }
 
@@ -357,8 +357,8 @@ impl Globals {
             life,
             bounty_amount: 0.0,
             life_amount: 0.0,
-//            hover: None,
-//            root_point: hex::BranchPoint::new(hex::HexPoint::new(0, 1)),
+            hover: None,
+            root_point: hex::BranchPoint::new(hex::HexPoint::new(0, 1)),
 //            branches: HashMap::with_capacity(100),
 //            gifts: HashMap::with_capacity(100),
 //            stats: Stats{
@@ -381,7 +381,7 @@ impl Globals {
 //                moss_added: false,
 //                moss_removed: false,
 //            },
-//            forbidden: HashMap::with_capacity(100),
+            forbidden: HashMap::with_capacity(100),
             cost_multiplier: 1.0,
         };
 //        globals.reset(ctx);
@@ -395,14 +395,14 @@ impl Globals {
         self.life_amount = 0.0;
 //
 //        self.branches.clear();
-//        self.root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
-//        let root_gift_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
+        self.root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
+        let root_gift_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
 //        let mut root_cell = cell::BranchCell::new(None);
 //        root_cell.branch_upgrade = 3;
 //        self.branches.insert(self.root_point, root_cell);
 //
-//        self.forbidden.clear();
-//        self.forbidden.insert(root_gift_point, true);
+        self.forbidden.clear();
+        self.forbidden.insert(root_gift_point, true);
 //
 //        self.gifts.clear();
 //        let origin_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
@@ -629,11 +629,11 @@ impl EventHandler for Globals {
     fn mouse_button_down_event(&mut self, ctx: &mut Context, button: MouseButton, x: f32, y: f32) {
         let point = Vec2::new(x, y);
         let mut alert_option: Option<AlertMessage> = None;
-//        if let Some(in_bounds_point) = hex::HexPoint::from_point(point).is_in_bounds() {
+        if let Some(in_bounds_point) = hex::HexPoint::from_point(point).is_in_bounds() {
             match button {
                 MouseButton::Left => {
-//                    match in_bounds_point {
-//                        hex::InBoundsPoint::BranchPoint(branch_point) => {
+                    match in_bounds_point {
+                        hex::InBoundsPoint::BranchPoint(branch_point) => {
 //
 //                            match self.branches.get(&branch_point) {
 //                                None => {
@@ -756,8 +756,8 @@ impl EventHandler for Globals {
 //                                    }
 //                                },
 //                            }
-//                        },
-//                        hex::InBoundsPoint::GiftPoint(gift_point) => {
+                        },
+                        hex::InBoundsPoint::GiftPoint(gift_point) => {
 //                            match self.gifts.get(&gift_point) {
 //                                None => {
 //                                    alert_option = Some(AlertMessage::ClickForBranch);
@@ -775,34 +775,34 @@ impl EventHandler for Globals {
 //                                    }
 //                                },
 //                            }
-//                        },
-//                    }
+                        },
+                    }
                 },
                 MouseButton::Right => {
-//                    match in_bounds_point {
-//                        hex::InBoundsPoint::BranchPoint(branch_point) => {
+                    match in_bounds_point {
+                        hex::InBoundsPoint::BranchPoint(branch_point) => {
 //                            if self.branches.get(&branch_point).is_some() {
 //                                self.assets.branch_break_sounds.choose(&mut rand::thread_rng()).unwrap().play().unwrap_or(());
 //                                self.prune_branch(branch_point);
 //                            }
-//                        },
-//                        hex::InBoundsPoint::GiftPoint(gift_point) => {
+                        },
+                        hex::InBoundsPoint::GiftPoint(gift_point) => {
 //                            self.assets.gift_release_sound.play().unwrap_or(());
 //                            self.remove_gift(gift_point);
-//                        },
-//                    }
+                        },
+                    }
                 }
                 _ => {}
             }
-//        }
+        }
         if let Some(alert_message) = alert_option {
             self.display_alert(ctx,alert_message);
         }
     }
 
     fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, _xrel: f32, _yrel: f32) {
-//        let hex_point = hex::HexPoint::from_point(Vec2::new(x as f32, y as f32));
-//        self.hover = hex_point.is_in_bounds()
+        let hex_point = hex::HexPoint::from_point(Vec2::new(x as f32, y as f32));
+        self.hover = hex_point.is_in_bounds()
     }
 //
 //
@@ -833,29 +833,33 @@ impl EventHandler for Globals {
 //                //self.assets.dot.draw(ctx, gift_point.to_point(), 0.0)?;
 //            }
 //        }
-//        if let Some(in_bounds_point) = self.hover {
-//            set_color(ctx, Color::from_rgb(255, 128, 128))?;
-//            self.assets.dot.draw(ctx, in_bounds_point.to_point(), 0.0)?;
-//
-//            // neighbour-debugging code; uncomment me, it's fun!
-//            //set_color(ctx, Color::from_rgb(128, 128, 255))?;
-//            //match in_bounds_point {
-//            //    hex::InBoundsPoint::BranchPoint(branch_point) => {
-//            //        for n in branch_point.gift_neighbours() {
-//            //            self.assets.dot.draw(ctx, n.to_point(), 0.0)?;
-//            //        }
-//            //    },
-//            //    hex::InBoundsPoint::GiftPoint(gift_point) => {
-//            //        for n in gift_point.branch_neighbours() {
-//            //            self.assets.dot.draw(ctx, n.to_point(), 0.0)?;
-//            //        }
-//            //        for n in gift_point.gift_neighbours() {
-//            //            self.assets.dot.draw(ctx, n.to_point(), 0.0)?;
-//            //        }
-//            //    },
-//            //}
-//        }
-//
+        if let Some(in_bounds_point) = self.hover {
+            self.assets.dot.draw(
+                ctx,
+                DrawParam::default()
+                    .dest(in_bounds_point.to_point())
+                    .color(Color::from_rgb(255, 128, 128))
+            )?;
+
+            // neighbour-debugging code; uncomment me, it's fun!
+            //set_color(ctx, Color::from_rgb(128, 128, 255))?;
+            //match in_bounds_point {
+            //    hex::InBoundsPoint::BranchPoint(branch_point) => {
+            //        for n in branch_point.gift_neighbours() {
+            //            self.assets.dot.draw(ctx, n.to_point(), 0.0)?;
+            //        }
+            //    },
+            //    hex::InBoundsPoint::GiftPoint(gift_point) => {
+            //        for n in gift_point.branch_neighbours() {
+            //            self.assets.dot.draw(ctx, n.to_point(), 0.0)?;
+            //        }
+            //        for n in gift_point.gift_neighbours() {
+            //            self.assets.dot.draw(ctx, n.to_point(), 0.0)?;
+            //        }
+            //    },
+            //}
+        }
+
         if let Some(alert_current) = self.alert_current {
             let center = Vec2::new(
                 WINDOW_WIDTH as f32 / 2.0,
