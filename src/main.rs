@@ -519,9 +519,9 @@ impl Globals {
                 .and_modify(|b| *b ^= true)
                 .or_insert(true);
             if *self.forbidden.get(&gift_point).unwrap() {
-//                self.stats.moss_added = true;
+                self.stats.moss_added = true;
             } else {
-//                self.stats.moss_removed = true;
+                self.stats.moss_removed = true;
             }
         }
     }
