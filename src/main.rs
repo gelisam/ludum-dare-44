@@ -901,7 +901,7 @@ impl EventHandler for Globals {
         //    self.start_time = get_current_time(ctx);
         //    println!("FPS: {}", ggez::timer::get_fps(ctx));
         //}
-        present(ctx);
+        present(ctx)?;
         timer::yield_now();
 
         Ok(())
