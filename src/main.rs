@@ -23,10 +23,10 @@ mod hex;
 mod sidebar;
 mod text;
 mod vector;
-//mod life;
+mod life;
 
 use globals::*;
-//use life::Stats;
+use life::Stats;
 use glam::f32::Vec2;
 
 
@@ -44,102 +44,102 @@ struct Assets {
     moss: Image,
 }
 
-//type CellCheckFn = fn( &HashMap<hex::BranchPoint, cell::BranchCell>, &Stats,) -> bool;
-//
+type CellCheckFn = fn( &HashMap<hex::BranchPoint, cell::BranchCell>, &Stats,) -> bool;
+
 //#[derive(Debug)]
 struct Achievement {
     pub achieved: bool,
     pub message: &'static str,
     //pub text: Text,
-//    pub functor: CellCheckFn,
+    pub functor: CellCheckFn,
 }
-//
-//fn any_branches( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    (stats.branch_lv1_count>0) | (stats.branch_lv2_count>0)
-//}
-//
-//fn fewer_branches( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    (stats.branch_lv1_count+stats.branch_lv2_count) < stats.branches_max
-//}
-//
-//fn any_branch_length3( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.branch_length3_count > 0
-//}
-//
-//fn any_branch_length4( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.branch_length4_count > 0
-//}
-//
-//fn two_leaves( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.leaf_count >= 2
-//}
-//
-//fn no_foliage( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.moss_added
-//    //(stats.leaf_count == 0) & (stats.flower_count == 0)
-//}
-//
-//fn any_foliage( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.moss_removed
-//    //(stats.leaf_count > 0) | (stats.flower_count>0)
-//}
-//
-//fn any_flowers( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.flower_count>0
-//}
-//
-//fn any_beehives( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.beehive_count>0
-//}
-//
-//fn any_branch_lv2( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.branch_lv2_count>0
-//}
-//
-//fn any_berries( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.berry_count>0
-//}
-//
-//fn any_nuts( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.nut_count>0
-//}
-//
-//fn any_squirrels( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.squirrel_count>0
-//}
-//
-//fn any_birds( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.birdnest_count>0
-//}
-//
-//fn any_bounty_lv7( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.life_max>=6
-//}
-//
-//fn any_bounty_lv4( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.life_max>=3
-//}
-//
-//fn any_d_presses( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-//{
-//    stats.d_pressed
-//}
+
+fn any_branches( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    (stats.branch_lv1_count>0) | (stats.branch_lv2_count>0)
+}
+
+fn fewer_branches( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    (stats.branch_lv1_count+stats.branch_lv2_count) < stats.branches_max
+}
+
+fn any_branch_length3( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.branch_length3_count > 0
+}
+
+fn any_branch_length4( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.branch_length4_count > 0
+}
+
+fn two_leaves( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.leaf_count >= 2
+}
+
+fn no_foliage( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.moss_added
+    //(stats.leaf_count == 0) & (stats.flower_count == 0)
+}
+
+fn any_foliage( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.moss_removed
+    //(stats.leaf_count > 0) | (stats.flower_count>0)
+}
+
+fn any_flowers( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.flower_count>0
+}
+
+fn any_beehives( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.beehive_count>0
+}
+
+fn any_branch_lv2( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.branch_lv2_count>0
+}
+
+fn any_berries( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.berry_count>0
+}
+
+fn any_nuts( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.nut_count>0
+}
+
+fn any_squirrels( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.squirrel_count>0
+}
+
+fn any_birds( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.birdnest_count>0
+}
+
+fn any_bounty_lv7( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.life_max>=6
+}
+
+fn any_bounty_lv4( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.life_max>=3
+}
+
+fn any_d_presses( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
+{
+    stats.d_pressed
+}
 
 
 struct Alert {
@@ -183,7 +183,7 @@ impl Assets {
 //#[derive(Debug)]
 struct Globals {
     assets: Assets,
-    //achievements: Vec<Achievement>,
+    achievements: Vec<Achievement>,
     alerts: Vec<Alert>,
     alert_current: Option<usize>,
     start_time: Duration,
@@ -201,7 +201,7 @@ struct Globals {
     root_point: hex::BranchPoint,
     branches: HashMap<hex::BranchPoint, cell::BranchCell>,
     gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
-    //stats: Stats,
+    stats: Stats,
     forbidden: HashMap<hex::GiftPoint, bool>,
     cost_multiplier: f32, // for debugging
 }
@@ -226,93 +226,93 @@ impl Globals {
 
         let mut globals = Globals {
             assets,
-//            achievements: vec!(
-//                Achievement {
-//                    achieved: false,
-//                    message: "Click near the tree trunk to add a branch - click between two cells",
-//                    functor: any_branches,
-//                },
-//                Achievement {
-//                    achieved: false,
-//                    message: "Right-click a branch to prune - right-click between two cells",
-//                    functor: fewer_branches,
-//                },
-//                /*Achievement {
-//                    achieved: false,
-//                    message: "Try making a longer branch",
-//                    functor: any_branch_length3,
-//                },*/
-//                Achievement {
-//                    achieved: false,
-//                    message: "Leaves and flowers grow on ends of branches - try getting two leaves",
-//                    functor: two_leaves,
-//                },
-//                Achievement {
-//                    achieved: false,
-//                    message: "Right-click on foliage to replace with moss - try deleting some foliage",
-//                    functor: no_foliage,
-//                },
-//                Achievement {
-//                    achieved: false,
-//                    message: "Right-click moss to allow growth again - try deleting a moss",
-//                    functor: any_foliage,
-//                },
-//                Achievement {
-//                    achieved: false,
-//                    message: "Flowers reqiure two leaves nearby - they die if no leaves",
-//                    functor: any_flowers,
-//                },
-//                Achievement {
-//                    achieved: false,
-//                    message: "Click a branch to grow it thicker and allow a bigger tree",
-//                    functor: any_branch_lv2,
-//                },
-//                Achievement {
-//                    achieved: false,
-//                    message: "Try building a very long branch",
-//                    functor: any_branch_length4,
-//                },
-//                Achievement {
-//                    achieved: false,
-//                    message: "Beehives appear when two flowers are nearby - more Bounty than flowers",
-//                    functor: any_beehives,
-//                },
-//                Achievement {
-//                    achieved: false,
-//                    message: "Leaves, flowers and other life build Bounty - try getting to Bounty 4",
-//                    functor: any_bounty_lv4,
-//                },
-//                Achievement {
-//                    achieved: false,
-//                    message: "Rarer life provide more Bounty. Berries grow when a beehive and two leaves are near.",
-//                    functor: any_berries,
-//                },
-//                /*Achievement {
-//                    achieved: false,
-//                    message: "Leaves, flowers and other life build Bounty - try getting to Bounty 4",
-//                    functor: any_bounty_lv4,
-//                },*/
-//                Achievement {
-//                    achieved: false,
-//                    message: "Congrats! Here's a cheat code: hold 'D' to create branches for free :)",
-//                    functor: any_d_presses,
-//                },
-//                Achievement {
-//                    achieved: false,
-//                    message: "Nuts grow only on the ends of thick branches near flowers and leaves",
-//                    functor: any_nuts,
-//                },
-//                Achievement {
-//                    achieved: false,
-//                    message: "Squirrel appear when two nuts are nearby",
-//                    functor: any_squirrels,
-//                },
-//                Achievement {
-//                    achieved: false,
-//                    message: "Birds appear when two berries are nearby",
-//                    functor: any_birds,
-//                },
-//            ),
+            achievements: vec!(
+                Achievement {
+                    achieved: false,
+                    message: "Click near the tree trunk to add a branch - click between two cells",
+                    functor: any_branches,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "Right-click a branch to prune - right-click between two cells",
+                    functor: fewer_branches,
+                },
+                /*Achievement {
+                    achieved: false,
+                    message: "Try making a longer branch",
+                    functor: any_branch_length3,
+                },*/
+                Achievement {
+                    achieved: false,
+                    message: "Leaves and flowers grow on ends of branches - try getting two leaves",
+                    functor: two_leaves,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "Right-click on foliage to replace with moss - try deleting some foliage",
+                    functor: no_foliage,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "Right-click moss to allow growth again - try deleting a moss",
+                    functor: any_foliage,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "Flowers reqiure two leaves nearby - they die if no leaves",
+                    functor: any_flowers,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "Click a branch to grow it thicker and allow a bigger tree",
+                    functor: any_branch_lv2,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "Try building a very long branch",
+                    functor: any_branch_length4,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "Beehives appear when two flowers are nearby - more Bounty than flowers",
+                    functor: any_beehives,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "Leaves, flowers and other life build Bounty - try getting to Bounty 4",
+                    functor: any_bounty_lv4,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "Rarer life provide more Bounty. Berries grow when a beehive and two leaves are near.",
+                    functor: any_berries,
+                },
+                /*Achievement {
+                    achieved: false,
+                    message: "Leaves, flowers and other life build Bounty - try getting to Bounty 4",
+                    functor: any_bounty_lv4,
+                },*/
+                Achievement {
+                    achieved: false,
+                    message: "Congrats! Here's a cheat code: hold 'D' to create branches for free :)",
+                    functor: any_d_presses,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "Nuts grow only on the ends of thick branches near flowers and leaves",
+                    functor: any_nuts,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "Squirrel appear when two nuts are nearby",
+                    functor: any_squirrels,
+                },
+                Achievement {
+                    achieved: false,
+                    message: "Birds appear when two berries are nearby",
+                    functor: any_birds,
+                },
+            ),
             alerts: vec!(
                 // AlertMessage::NotEnoughBounty
                 Alert {
@@ -361,26 +361,26 @@ impl Globals {
             root_point: hex::BranchPoint::new(hex::HexPoint::new(0, 1)),
             branches: HashMap::with_capacity(100),
             gifts: HashMap::with_capacity(100),
-//            stats: Stats{
-//                leaf_count: 0,
-//                flower_count: 0,
-//                beehive_count: 0,
-//                berry_count: 0,
-//                nut_count: 0,
-//                birdnest_count: 0,
-//                squirrel_count: 0,
-//                moss_count: 0,
-//                branch_lv1_count: 0,
-//                branch_lv2_count: 0,
-//                branch_length3_count: 0,
-//                branch_length4_count: 0,
-//                branch_length5_count: 0,
-//                branches_max: 0,
-//                life_max: 0,
-//                d_pressed: false,
-//                moss_added: false,
-//                moss_removed: false,
-//            },
+            stats: Stats{
+                leaf_count: 0,
+                flower_count: 0,
+                beehive_count: 0,
+                berry_count: 0,
+                nut_count: 0,
+                birdnest_count: 0,
+                squirrel_count: 0,
+                moss_count: 0,
+                branch_lv1_count: 0,
+                branch_lv2_count: 0,
+                branch_length3_count: 0,
+                branch_length4_count: 0,
+                branch_length5_count: 0,
+                branches_max: 0,
+                life_max: 0,
+                d_pressed: false,
+                moss_added: false,
+                moss_removed: false,
+            },
             forbidden: HashMap::with_capacity(100),
             cost_multiplier: 1.0,
         };
@@ -476,10 +476,10 @@ impl Globals {
             }
 
             if let Some(branch_cell) = self.branches.remove(&branch_point) {
-//                match branch_cell.branch_upgrade {
-//                    0 => self.stats.branch_lv1_count -= 1,
-//                    _ => self.stats.branch_lv2_count -= 1,
-//                };
+                match branch_cell.branch_upgrade {
+                    0 => self.stats.branch_lv1_count -= 1,
+                    _ => self.stats.branch_lv2_count -= 1,
+                };
             }
         }
     }
@@ -490,16 +490,16 @@ impl Globals {
                 self.prune_branch(branch_point);
             }
             if let Some(gift_cell) = self.gifts.remove(&gift_point) {
-//                match gift_cell.gift {
-//                    Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
-//                    Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
-//                    Some(cell::Gift::Beehive)  => self.stats.beehive_count  -= 1,
-//                    Some(cell::Gift::Berries)  => self.stats.berry_count    -= 1,
-//                    Some(cell::Gift::Nuts)     => self.stats.nut_count      -= 1,
-//                    Some(cell::Gift::Birdnest) => self.stats.birdnest_count -= 1,
-//                    Some(cell::Gift::Squirrel) => self.stats.squirrel_count -= 1,
-//                    _ => {},
-//                };
+                match gift_cell.gift {
+                    Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
+                    Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
+                    Some(cell::Gift::Beehive)  => self.stats.beehive_count  -= 1,
+                    Some(cell::Gift::Berries)  => self.stats.berry_count    -= 1,
+                    Some(cell::Gift::Nuts)     => self.stats.nut_count      -= 1,
+                    Some(cell::Gift::Birdnest) => self.stats.birdnest_count -= 1,
+                    Some(cell::Gift::Squirrel) => self.stats.squirrel_count -= 1,
+                    _ => {},
+                };
             }
         }
         if let Some(_) = self.forbidden.get(&gift_point) {
@@ -509,16 +509,16 @@ impl Globals {
 
     fn remove_gift(&mut self, gift_point: hex::GiftPoint) {
         if let Some(gift_cell) = self.gifts.get(&gift_point) {
-//            match gift_cell.gift {
-//                Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
-//                Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
-//                Some(cell::Gift::Beehive)  => self.stats.beehive_count  -= 1,
-//                Some(cell::Gift::Berries)  => self.stats.berry_count    -= 1,
-//                Some(cell::Gift::Nuts)     => self.stats.nut_count      -= 1,
-//                Some(cell::Gift::Birdnest) => self.stats.birdnest_count -= 1,
-//                Some(cell::Gift::Squirrel) => self.stats.squirrel_count -= 1,
-//                _ => {},
-//            };
+            match gift_cell.gift {
+                Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
+                Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
+                Some(cell::Gift::Beehive)  => self.stats.beehive_count  -= 1,
+                Some(cell::Gift::Berries)  => self.stats.berry_count    -= 1,
+                Some(cell::Gift::Nuts)     => self.stats.nut_count      -= 1,
+                Some(cell::Gift::Birdnest) => self.stats.birdnest_count -= 1,
+                Some(cell::Gift::Squirrel) => self.stats.squirrel_count -= 1,
+                _ => {},
+            };
         }
 
         self.gifts
@@ -564,41 +564,41 @@ impl EventHandler for Globals {
         while (now - self.turn_time) > self.turn_duration { // while loop in case of large discrepancy
             // let basic_amount = 0.1f32; // get this amount even if no life
             // self.bounty_amount = (self.bounty_amount+self.life_amount+basic_amount).min(30.0);
-//            self.life_amount = life::life_production(&self.gifts);
-//            self.bounty_amount = (self.bounty_amount + self.life_amount).min(MAX_BOUNTY);
+            self.life_amount = life::life_production(&self.gifts);
+            self.bounty_amount = (self.bounty_amount + self.life_amount).min(MAX_BOUNTY);
             self.turn_time = self.turn_time + self.turn_duration;
 
-//            life::life_cycle(
-//                &mut self.gifts, &self.branches, &self.forbidden, &mut self.stats
-//            );
+            life::life_cycle(
+                &mut self.gifts, &self.branches, &self.forbidden, &mut self.stats
+            );
         }
 
-//        self.stats.life_max = self.stats.life_max.max(self.life_amount.floor() as usize);
-//        self.stats.branches_max = self.stats.branches_max.max(self.stats.branch_lv1_count + self.stats.branch_lv2_count);
-//
-//
-//        // calculate the moss count
-//        // Need to skip non-tips. Check that children is [] when we get those!
-//        self.stats.moss_count = 0;
-//        for (&gift_point, &b) in self.forbidden.iter() {
-//            if b && self.gift_children(gift_point).len() == 0 {
-//                self.stats.moss_count += 1;
-//            }
-//        }
-//
-//        for mut achievement in self.achievements.iter_mut() {
-//            if !achievement.achieved {
-//                if (achievement.functor)(&self.branches,&self.stats) {
-//                    achievement.achieved = true;
-//                }
-//                break // don't mark an achievment when its hint was never displayed yet
-//            }
-//        }
+        self.stats.life_max = self.stats.life_max.max(self.life_amount.floor() as usize);
+        self.stats.branches_max = self.stats.branches_max.max(self.stats.branch_lv1_count + self.stats.branch_lv2_count);
 
-//        self.guitar_channel.enable(ctx, self.stats.leaf_count > 0);
-//        self.clarinet_channel.enable(ctx, self.stats.birdnest_count > 0);
-//        self.high_pithed_clarinet_channel.enable(ctx, self.stats.beehive_count > 0);
-//        self.dreamy_bells_channel.enable(ctx, self.stats.squirrel_count > 0);
+
+        // calculate the moss count
+        // Need to skip non-tips. Check that children is [] when we get those!
+        self.stats.moss_count = 0;
+        for (&gift_point, &b) in self.forbidden.iter() {
+            if b && self.gift_children(gift_point).len() == 0 {
+                self.stats.moss_count += 1;
+            }
+        }
+
+        for mut achievement in self.achievements.iter_mut() {
+            if !achievement.achieved {
+                if (achievement.functor)(&self.branches,&self.stats) {
+                    achievement.achieved = true;
+                }
+                break // don't mark an achievment when its hint was never displayed yet
+            }
+        }
+
+        self.guitar_channel.enable(ctx, self.stats.leaf_count > 0);
+        self.clarinet_channel.enable(ctx, self.stats.birdnest_count > 0);
+        self.high_pithed_clarinet_channel.enable(ctx, self.stats.beehive_count > 0);
+        self.dreamy_bells_channel.enable(ctx, self.stats.squirrel_count > 0);
 
         ggez::timer::sleep(Duration::from_millis(50));
         Ok(())
@@ -608,7 +608,7 @@ impl EventHandler for Globals {
         match keycode {
             KeyCode::D     => {
                 self.cost_multiplier = 0.0;
-//                self.stats.d_pressed = true;
+                self.stats.d_pressed = true;
             },
             KeyCode::Escape => quit(ctx),
             _               => (),
@@ -619,7 +619,7 @@ impl EventHandler for Globals {
         match keycode {
             KeyCode::D     => {
                 self.cost_multiplier = 1.0;
-//                self.stats.d_pressed = false;
+                self.stats.d_pressed = false;
             },
             KeyCode::R     => self.reset(ctx),
             _              => (),
@@ -655,34 +655,34 @@ impl EventHandler for Globals {
                                         let grandparent_cell = self.branch_nth_parent_branch_cell_or_root(full_gift_cell.parent, 2);
 
                                         if grandparent_cell.branch_upgrade > 0 {
-//                                            let cost = self.cost_multiplier * life::BASE * 5.0;
-//                                            if self.bounty_amount >= cost {
-//                                                // place a new branch
-//                                                self.assets.branch_place_sound.play(ctx).unwrap_or(());
-//                                                self.bounty_amount -= cost;
-//                                                self.stats.branch_lv1_count += 1;
-//                                                let branch_cell = cell::BranchCell::new(Some(full_gift_point));
-//                                                let gift_cell = cell::GiftCell::new(branch_point);
-//                                                self.branches.insert(branch_point, branch_cell);
-//                                                self.gifts.insert(empty_neighbour, gift_cell);
-//                                                self.forbidden.insert(full_gift_point, true);
-//                                                if full_gift_cell.gift.is_some() {
-//                                                    self.remove_gift(full_gift_point);
-//                                                }
-//
-//                                                if self.branch_nth_parent_branch_cell(full_gift_cell.parent, 2).is_some() {
-//                                                    self.stats.branch_length3_count += 1;
-//                                                }
-//                                                if self.branch_nth_parent_branch_cell(full_gift_cell.parent, 3).is_some() {
-//                                                    self.stats.branch_length4_count += 1;
-//                                                }
-//                                                if self.branch_nth_parent_branch_cell(full_gift_cell.parent, 4).is_some() {
-//                                                    self.stats.branch_length5_count += 1;
-//                                                }
-//                                            } else {
-//                                                alert_option = Some(AlertMessage::NotEnoughBounty);
-//                                                //println!("not enough Bounty");
-//                                            }
+                                            let cost = self.cost_multiplier * life::BASE * 5.0;
+                                            if self.bounty_amount >= cost {
+                                                // place a new branch
+                                                self.assets.branch_place_sound.play(ctx).unwrap_or(());
+                                                self.bounty_amount -= cost;
+                                                self.stats.branch_lv1_count += 1;
+                                                let branch_cell = cell::BranchCell::new(Some(full_gift_point));
+                                                let gift_cell = cell::GiftCell::new(branch_point);
+                                                self.branches.insert(branch_point, branch_cell);
+                                                self.gifts.insert(empty_neighbour, gift_cell);
+                                                self.forbidden.insert(full_gift_point, true);
+                                                if full_gift_cell.gift.is_some() {
+                                                    self.remove_gift(full_gift_point);
+                                                }
+
+                                                if self.branch_nth_parent_branch_cell(full_gift_cell.parent, 2).is_some() {
+                                                    self.stats.branch_length3_count += 1;
+                                                }
+                                                if self.branch_nth_parent_branch_cell(full_gift_cell.parent, 3).is_some() {
+                                                    self.stats.branch_length4_count += 1;
+                                                }
+                                                if self.branch_nth_parent_branch_cell(full_gift_cell.parent, 4).is_some() {
+                                                    self.stats.branch_length5_count += 1;
+                                                }
+                                            } else {
+                                                alert_option = Some(AlertMessage::NotEnoughBounty);
+                                                //println!("not enough Bounty");
+                                            }
                                         } else {
                                             alert_option = Some(AlertMessage::BranchTooStrained);
                                             //println!("branches are too thin to hold more branches!");
@@ -705,41 +705,41 @@ impl EventHandler for Globals {
                                             {
                                                 match branch_cell.branch_upgrade {
                                                     0 => {
-//                                                        let cost = self.cost_multiplier * life::BASE * 25.0;
-//                                                        if *bounty_amount_ >= cost {
-//                                                            // upgrade a branch to level 1
-//                                                            self.assets.branch_upgrade_sound.play(ctx).unwrap_or(());
-//                                                            *bounty_amount_ -= cost;
-//                                                            branch_cell.branch_upgrade = 1;
-//                                                            self.stats.branch_lv2_count += 1;
-//                                                        } else {
-//                                                            alert_option = Some(AlertMessage::NotEnoughBounty);
-//                                                            //println!("not enough Bounty");
-//                                                        }
+                                                        let cost = self.cost_multiplier * life::BASE * 25.0;
+                                                        if *bounty_amount_ >= cost {
+                                                            // upgrade a branch to level 1
+                                                            self.assets.branch_upgrade_sound.play(ctx).unwrap_or(());
+                                                            *bounty_amount_ -= cost;
+                                                            branch_cell.branch_upgrade = 1;
+                                                            self.stats.branch_lv2_count += 1;
+                                                        } else {
+                                                            alert_option = Some(AlertMessage::NotEnoughBounty);
+                                                            //println!("not enough Bounty");
+                                                        }
                                                     },
                                                     1 => {
-//                                                        let cost = self.cost_multiplier * life::BASE * 125.0;
-//                                                        if *bounty_amount_ >= cost {
-//                                                            // upgrade a branch to level 2
-//                                                            self.assets.branch_upgrade_sound.play(ctx).unwrap_or(());
-//                                                            *bounty_amount_ -= cost;
-//                                                            branch_cell.branch_upgrade = 2;
-//                                                        } else {
-//                                                            alert_option = Some(AlertMessage::NotEnoughBounty);
-//                                                            //println!("not enough Bounty");
-//                                                        }
+                                                        let cost = self.cost_multiplier * life::BASE * 125.0;
+                                                        if *bounty_amount_ >= cost {
+                                                            // upgrade a branch to level 2
+                                                            self.assets.branch_upgrade_sound.play(ctx).unwrap_or(());
+                                                            *bounty_amount_ -= cost;
+                                                            branch_cell.branch_upgrade = 2;
+                                                        } else {
+                                                            alert_option = Some(AlertMessage::NotEnoughBounty);
+                                                            //println!("not enough Bounty");
+                                                        }
                                                     },
                                                     2 => {
-//                                                        let cost = self.cost_multiplier * life::BASE * 625.0;
-//                                                        if *bounty_amount_ >= cost {
-//                                                            // upgrade a branch to level 3
-//                                                            self.assets.branch_upgrade_sound.play(ctx).unwrap_or(());
-//                                                            *bounty_amount_ -= cost;
-//                                                            branch_cell.branch_upgrade = 3;
-//                                                        } else {
-//                                                            alert_option = Some(AlertMessage::NotEnoughBounty);
-//                                                            //println!("not enough Bounty");
-//                                                        }
+                                                        let cost = self.cost_multiplier * life::BASE * 625.0;
+                                                        if *bounty_amount_ >= cost {
+                                                            // upgrade a branch to level 3
+                                                            self.assets.branch_upgrade_sound.play(ctx).unwrap_or(());
+                                                            *bounty_amount_ -= cost;
+                                                            branch_cell.branch_upgrade = 3;
+                                                        } else {
+                                                            alert_option = Some(AlertMessage::NotEnoughBounty);
+                                                            //println!("not enough Bounty");
+                                                        }
                                                     },
                                                     _ => {
                                                         println!("this branch has already reached its maximum growth");
@@ -758,37 +758,37 @@ impl EventHandler for Globals {
                             }
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
-//                            match self.gifts.get(&gift_point) {
-//                                None => {
-//                                    alert_option = Some(AlertMessage::ClickForBranch);
-//                                    //println!("you cannot place a branch on a cell, only in-between two cells");
-//                                },
-//                                Some(gift_cell) => {
-//                                    match gift_cell.gift {
-//                                        None => {
-//                                            alert_option = Some(AlertMessage::ClickForMoss);
-//                                            //println!("you cannot place leaves, you have to let them grow");
-//                                        },
-//                                        Some(gift) => {
-//                                            println!("right-click to release the {:}", gift.singular());
-//                                        },
-//                                    }
-//                                },
-//                            }
+                            match self.gifts.get(&gift_point) {
+                                None => {
+                                    alert_option = Some(AlertMessage::ClickForBranch);
+                                    //println!("you cannot place a branch on a cell, only in-between two cells");
+                                },
+                                Some(gift_cell) => {
+                                    match gift_cell.gift {
+                                        None => {
+                                            alert_option = Some(AlertMessage::ClickForMoss);
+                                            //println!("you cannot place leaves, you have to let them grow");
+                                        },
+                                        Some(gift) => {
+                                            println!("right-click to release the {:}", gift.singular());
+                                        },
+                                    }
+                                },
+                            }
                         },
                     }
                 },
                 MouseButton::Right => {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
-//                            if self.branches.get(&branch_point).is_some() {
-//                                self.assets.branch_break_sounds.choose(&mut rand::thread_rng()).unwrap().play(ctx).unwrap_or(());
-//                                self.prune_branch(branch_point);
-//                            }
+                            if self.branches.get(&branch_point).is_some() {
+                                self.assets.branch_break_sounds.choose_mut(&mut rand::thread_rng()).unwrap().play(ctx).unwrap_or(());
+                                self.prune_branch(branch_point);
+                            }
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
-//                            self.assets.gift_release_sound.play(ctx).unwrap_or(());
-//                            self.remove_gift(gift_point);
+                            self.assets.gift_release_sound.play(ctx).unwrap_or(());
+                            self.remove_gift(gift_point);
                         },
                     }
                 }
@@ -804,35 +804,51 @@ impl EventHandler for Globals {
         let hex_point = hex::HexPoint::from_point(Vec2::new(x as f32, y as f32));
         self.hover = hex_point.is_in_bounds()
     }
-//
-//
+
+
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
 //        // must use white for drawing images, otherwise they get tinted
 //        set_color(ctx, Color::from_rgb(255, 255, 255))?;
 
         bg::draw_bg(ctx, &self.assets.bg)?;
-//        hex::draw_hex_grid(ctx, &self.assets.hex)?;
+        hex::draw_hex_grid(ctx, &self.assets.hex)?;
         self.bounty.draw(ctx)?;
         self.life.draw(ctx)?;
-//
-//        set_color(ctx, Color::from_rgb(0, 0, 0))?; // fix white artifacts around the branches
-//        for (&branch_point, branch_cell) in self.branches.iter() {
-//            branch_cell.draw(ctx, &self.assets.cell, branch_point)?;
-//        }
-//        set_color(ctx, Color::from_rgb(255, 255, 255))?;
-//        for (&gift_point, gift_cell) in self.gifts.iter() {
-//            gift_cell.draw(ctx, &self.assets.cell, gift_point)?;
-//        }
-//        set_color(ctx, Color::from_rgb(128, 255, 128))?;
-//        // Need to skip non-tips. Check that children is [] when we get those!
-//        for (&gift_point, &b) in self.forbidden.iter() {
-//            //println!("{:?}", self.gift_children(gift_point).len());
-//            if b && self.gift_children(gift_point).len() == 0 {
-//                let image = &self.assets.moss;
-//                center::draw_centered_image(ctx, image, gift_point.to_point(), 0.0)?;
-//                //self.assets.dot.draw(ctx, gift_point.to_point(), 0.0)?;
-//            }
-//        }
+
+        for (&branch_point, branch_cell) in self.branches.iter() {
+            branch_cell.draw(
+                ctx,
+                &self.assets.cell,
+                branch_point,
+                DrawParam::default()
+                    .color(Color::from_rgb(0, 0, 0)) // fix white artifacts around the branches
+            )?;
+        }
+        for (&gift_point, gift_cell) in self.gifts.iter() {
+            gift_cell.draw(
+                ctx,
+                &self.assets.cell,
+                gift_point,
+                DrawParam::default()
+                    .color(Color::from_rgb(255, 255, 255))
+            )?;
+        }
+        // Need to skip non-tips. Check that children is [] when we get those!
+        for (&gift_point, &b) in self.forbidden.iter() {
+            //println!("{:?}", self.gift_children(gift_point).len());
+            if b && self.gift_children(gift_point).len() == 0 {
+                let image = &self.assets.moss;
+                center::draw_centered_image(
+                    ctx,
+                    image,
+                    gift_point.to_point(),
+                    0.0,
+                    DrawParam::default()
+                        .color(Color::from_rgb(128, 255, 128))
+                )?;
+                //self.assets.dot.draw(ctx, gift_point.to_point(), 0.0)?;
+            }
+        }
         if let Some(in_bounds_point) = self.hover {
             self.assets.dot.draw(
                 ctx,
@@ -875,32 +891,50 @@ impl EventHandler for Globals {
                 self.alert_current = None
             }
         }
-//        else {
-//            for achievement in self.achievements.iter() {
-//                if !achievement.achieved {
-//                    let center = Vec2::new(
-//                        WINDOW_WIDTH as f32 / 2.0,
-//                        WINDOW_HEIGHT as f32 - 20.0,
-//                    );
-//
-//                    {
-//                        set_color(ctx, Color::from_rgb(247, 148, 30))?;
-//                        let text = Text::new(ctx, "CHALLENGE", &self.assets.font)?;
-//                        text::draw_centered_text(ctx, &text, center + Vec2::new(-200.0, -15.0), 0.0)?;
-//                    }
-//
-//                    {
-//                        set_color(ctx, Color::from_rgb(255, 255, 255))?;
-//                        let text = Text::new(ctx,achievement.message, &self.assets.font)?;
-//                        text::draw_centered_text(ctx, &text, center + Vec2::new(0.0, 5.0), 0.0)?;
-//                    }
-//
-//                    break;
-//                }
-//            }
-//        }
-//
-//
+        else {
+            for achievement in self.achievements.iter() {
+                if !achievement.achieved {
+                    let center = Vec2::new(
+                        WINDOW_WIDTH as f32 / 2.0,
+                        WINDOW_HEIGHT as f32 - 20.0,
+                    );
+
+                    {
+                        let text = Text::new(
+                            TextFragment::new("CHALLENGE")
+                                .font(self.assets.font)
+                        );
+                        text::draw_centered_text(
+                            ctx,
+                            &text,
+                            center + Vec2::new(-200.0, -15.0),
+                            0.0,
+                            DrawParam::default()
+                                .color(Color::from_rgb(247, 148, 30))
+                        )?;
+                    }
+
+                    {
+                        let text = Text::new(
+                            TextFragment::new(achievement.message)
+                                .font(self.assets.font)
+                        );
+                        text::draw_centered_text(
+                            ctx,
+                            &text,
+                            center + Vec2::new(0.0, 5.0),
+                            0.0,
+                            DrawParam::default()
+                                .color(Color::from_rgb(255, 255, 255))
+                        )?;
+                    }
+
+                    break;
+                }
+            }
+        }
+
+
         //if get_current_time(ctx) - self.start_time > Duration::from_millis(1000) {
         //    self.start_time = get_current_time(ctx);
         //    println!("FPS: {}", ggez::timer::get_fps(ctx));
