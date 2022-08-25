@@ -1,6 +1,7 @@
 
 use ggez::{GameResult, Context};
 use ggez::graphics::*;
+use glam::f32::Vec2;
 
 use globals::*;
 use text;
@@ -31,7 +32,10 @@ pub fn amount_to_dots(amount: f32) -> f32 {
 impl Sidebar {
     pub fn new(ctx: &mut Context, font: &Font, title: &'static str, color: Color, x: f32) -> GameResult<Sidebar> {
         Ok(Sidebar {
-            title: Text::new(ctx, title, font)?,
+            title: Text::new(
+                TextFragment::new(title)
+                    .font(*font)
+            ),
             color,
             x,
             bounty_amount: 0.0f32,
@@ -45,22 +49,32 @@ impl Sidebar {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        set_color(ctx, self.color)?;
-        rectangle(ctx, DrawMode::Fill, Rect::new(self.x, 0.0, SIDEBAR_WIDTH, WINDOW_HEIGHT as f32))?;
+        Mesh::new_rectangle(
+            ctx,
+            DrawMode::fill(),
+            Rect::new(self.x, 0.0, SIDEBAR_WIDTH, WINDOW_HEIGHT as f32),
+            self.color
+        )?.draw(ctx, DrawParam::default())?;
 
-        set_color(ctx, Color::from_rgb(0, 0, 0))?;
-        let center = Point2::new(
+        let center = Vec2::new(
             self.x + SIDEBAR_WIDTH / 2.0,
             WINDOW_HEIGHT as f32 - 50.0,
         );
-        text::draw_centered_text(ctx, &self.title, center, 0.0)?;
+        text::draw_centered_text(
+            ctx,
+            &self.title,
+            center,
+            0.0,
+            DrawParam::default()
+                .color(Color::from_rgb(0, 0, 0))
+        )?;
 
         let meter_bounty_color = Color::from_rgb(15, 117, 188);
         let meter_life_color = Color::from_rgb(247, 148, 30);
         let meter_offset_x = 36.0f32;
         let meter_spacing_y = 14.0f32;
         let meter_radius = 9.0f32;
-        let meter_bottom = Point2::new(
+        let meter_bottom = Vec2::new(
             self.x + meter_offset_x,
             WINDOW_HEIGHT as f32 - 100.0,
         );
@@ -74,27 +88,27 @@ impl Sidebar {
 
         let mut meter_cur = meter_bottom.clone();
 
-        set_color(ctx, meter_life_color)?;
         for _ in 0..num_life_dots.min(num_dots_max) {
-            ggez::graphics::circle(
-                ctx, 
-                ggez::graphics::DrawMode::Fill, 
-                meter_cur, 
-                meter_radius, 
-                2.0
-            )?;
+            Mesh::new_circle(
+                ctx,
+                ggez::graphics::DrawMode::fill(),
+                meter_cur,
+                meter_radius,
+                2.0,
+                meter_life_color
+            )?.draw(ctx, DrawParam::default())?;
             meter_cur.y = meter_cur.y - meter_spacing_y;
         }
 
-        set_color(ctx, meter_bounty_color)?;
         for _ in num_life_dots..num_bounty_dots.min(num_dots_max) {
-            ggez::graphics::circle(
-                ctx, 
-                ggez::graphics::DrawMode::Fill, 
-                meter_cur, 
-                meter_radius, 
-                2.0
-            )?;
+            Mesh::new_circle(
+                ctx,
+                ggez::graphics::DrawMode::fill(),
+                meter_cur,
+                meter_radius,
+                2.0,
+                meter_bounty_color
+            )?.draw(ctx, DrawParam::default())?;
             meter_cur.y = meter_cur.y - meter_spacing_y;
         }
         Ok(())

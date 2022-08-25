@@ -20,7 +20,7 @@ mod center;
 mod channel;
 mod globals;
 //mod hex;
-//mod sidebar;
+mod sidebar;
 mod text;
 mod vector;
 //mod life;
@@ -193,8 +193,8 @@ struct Globals {
     clarinet_channel: channel::Channel,
     high_pithed_clarinet_channel: channel::Channel,
     dreamy_bells_channel: channel::Channel,
-    //bounty: sidebar::Sidebar,
-    //life: sidebar::Sidebar,
+    bounty: sidebar::Sidebar,
+    life: sidebar::Sidebar,
     bounty_amount: f32,
     life_amount: f32,
     //hover: Option<hex::InBoundsPoint>,
@@ -209,21 +209,21 @@ struct Globals {
 impl Globals {
     fn new(ctx: &mut Context) -> GameResult<Globals> {
         let assets = Assets::load_assets(ctx)?;
-//        let bounty = sidebar::Sidebar::new(
-//            ctx,
-//            &assets.font,
-//            "Life", //"Bounty", // Design decision that Bounty should be called Life in UI
-//            Color::from_rgb(181, 208, 212),
-//            0.0
-//        )?;
-//        let life = sidebar::Sidebar::new(
-//            ctx,
-//            &assets.font,
-//            "Bounty", //"Life", // Design decision that Life should be called Bounty in UI
-//            Color::from_rgb(242, 240, 186),
-//            WINDOW_WIDTH as f32 - sidebar::SIDEBAR_WIDTH
-//        )?;
-//
+        let bounty = sidebar::Sidebar::new(
+            ctx,
+            &assets.font,
+            "Life", //"Bounty", // Design decision that Bounty should be called Life in UI
+            Color::from_rgb(181, 208, 212),
+            0.0
+        )?;
+        let life = sidebar::Sidebar::new(
+            ctx,
+            &assets.font,
+            "Bounty", //"Life", // Design decision that Life should be called Bounty in UI
+            Color::from_rgb(242, 240, 186),
+            WINDOW_WIDTH as f32 - sidebar::SIDEBAR_WIDTH
+        )?;
+
         let mut globals = Globals {
             assets,
 //            achievements: vec!(
@@ -353,8 +353,8 @@ impl Globals {
             clarinet_channel: channel::Channel::new(ctx, "/birds.ogg")?,
             high_pithed_clarinet_channel: channel::Channel::new(ctx, "/high-pitched clarinet.ogg")?,
             dreamy_bells_channel: channel::Channel::new(ctx, "/midi-glock-squirrel.ogg")?,
-//            bounty,
-//            life,
+            bounty,
+            life,
             bounty_amount: 0.0,
             life_amount: 0.0,
 //            hover: None,
@@ -557,8 +557,8 @@ impl EventHandler for Globals {
         self.clarinet_channel.update(ctx);
         self.high_pithed_clarinet_channel.update(ctx);
         self.dreamy_bells_channel.update(ctx);
-//        self.bounty.update(ctx, self.bounty_amount, 0.0f32);
-//        self.life.update(ctx, 0.0f32, self.life_amount+1.0);
+        self.bounty.update(ctx, self.bounty_amount, 0.0f32);
+        self.life.update(ctx, 0.0f32, self.life_amount+1.0);
 
         let now = get_current_time(ctx);
         while (now - self.turn_time) > self.turn_duration { // while loop in case of large discrepancy
@@ -812,8 +812,8 @@ impl EventHandler for Globals {
 
         bg::draw_bg(ctx, &self.assets.bg)?;
 //        hex::draw_hex_grid(ctx, &self.assets.hex)?;
-//        self.bounty.draw(ctx)?;
-//        self.life.draw(ctx)?;
+        self.bounty.draw(ctx)?;
+        self.life.draw(ctx)?;
 //
 //        set_color(ctx, Color::from_rgb(0, 0, 0))?; // fix white artifacts around the branches
 //        for (&branch_point, branch_cell) in self.branches.iter() {
@@ -866,7 +866,7 @@ impl EventHandler for Globals {
                     .color(Color::from_rgb(255, 0, 0))
                     .font(self.assets.font)
             );
-            text::draw_centered_text(ctx, &text, center, 0.0)?;
+            text::draw_centered_text(ctx, &text, center, 0.0, DrawParam::default())?;
             if self.alerts[alert_current].until_time < get_current_time(ctx) {
                 self.alert_current = None
             }
