@@ -53,7 +53,7 @@ pub fn life_cycle(gifts: &mut HashMap<hex::GiftPoint, cell::GiftCell>,
                          .filter(|bp| !branches.get(&bp).is_none())
                          .collect()
                     .len() == 1);*/
-        let mut counts = gift_point.gift_neighbours()
+        let counts = gift_point.gift_neighbours()
             .iter()
             .map(|adj_point| match gifts_old.get(&adj_point){
                 Some(gp) => gp.gift,

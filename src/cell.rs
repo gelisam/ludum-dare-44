@@ -16,7 +16,6 @@ pub struct Assets {
     beehive_images: Vec<Image>,
     birdnest_images: Vec<Image>,
     squirrel_images: Vec<Image>,
-    moss_images: Vec<Image>,
 }
 
 pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
@@ -50,9 +49,6 @@ pub fn load_assets(ctx: &mut Context) -> GameResult<Assets> {
         ),
         squirrel_images: vec!(
             Image::new(ctx, "/squirrel.png")?,
-        ),
-        moss_images: vec!(
-            Image::new(ctx, "/moss.png")?,
         ),
     })
 }

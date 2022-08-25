@@ -64,6 +64,7 @@ fn fewer_branches( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stat
     (stats.branch_lv1_count+stats.branch_lv2_count) < stats.branches_max
 }
 
+#[allow(dead_code)]
 fn any_branch_length3( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
     stats.branch_length3_count > 0
@@ -124,11 +125,6 @@ fn any_squirrels( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats
 fn any_birds( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
 {
     stats.birdnest_count>0
-}
-
-fn any_bounty_lv7( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
-{
-    stats.life_max>=6
 }
 
 fn any_bounty_lv4( _branches: &HashMap<hex::BranchPoint, cell::BranchCell>, stats: &Stats,) -> bool
@@ -210,14 +206,12 @@ impl Globals {
     fn new(ctx: &mut Context) -> GameResult<Globals> {
         let assets = Assets::load_assets(ctx)?;
         let bounty = sidebar::Sidebar::new(
-            ctx,
             &assets.font,
             "Life", //"Bounty", // Design decision that Bounty should be called Life in UI
             Color::from_rgb(181, 208, 212),
             0.0
         )?;
         let life = sidebar::Sidebar::new(
-            ctx,
             &assets.font,
             "Bounty", //"Life", // Design decision that Life should be called Bounty in UI
             Color::from_rgb(242, 240, 186),
@@ -287,11 +281,6 @@ impl Globals {
                     message: "Rarer life provide more Bounty. Berries grow when a beehive and two leaves are near.",
                     functor: any_berries,
                 },
-                /*Achievement {
-                    achieved: false,
-                    message: "Leaves, flowers and other life build Bounty - try getting to Bounty 4",
-                    functor: any_bounty_lv4,
-                },*/
                 Achievement {
                     achieved: false,
                     message: "Congrats! Here's a cheat code: hold 'D' to create branches for free :)",

@@ -30,7 +30,7 @@ pub fn amount_to_dots(amount: f32) -> f32 {
 }
 
 impl Sidebar {
-    pub fn new(ctx: &mut Context, font: &Font, title: &'static str, color: Color, x: f32) -> GameResult<Sidebar> {
+    pub fn new(font: &Font, title: &'static str, color: Color, x: f32) -> GameResult<Sidebar> {
         Ok(Sidebar {
             title: Text::new(
                 TextFragment::new(title)
