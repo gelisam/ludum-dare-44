@@ -15,7 +15,7 @@ use rand::seq::SliceRandom;
 use std::collections::HashMap;
 
 mod bg;
-//mod cell;
+mod cell;
 mod center;
 mod channel;
 mod globals;
@@ -33,7 +33,7 @@ use glam::f32::Vec2;
 #[derive(Debug)]
 struct Assets {
     bg: bg::Assets,
-//    cell: cell::Assets,
+    cell: cell::Assets,
     dot: Mesh,
     font: Font,
     hex: hex::Assets,
@@ -162,7 +162,7 @@ impl Assets {
 
         Ok(Assets {
             bg: bg::load_assets(ctx)?,
-//            cell: cell::load_assets(ctx)?,
+            cell: cell::load_assets(ctx)?,
             dot: Mesh::new_circle(ctx, DrawMode::fill(), Vec2::new(0.0, 0.0), 10.0, 3.0, Color::WHITE)?,
             font,
             hex: hex::load_assets(ctx)?,
@@ -199,8 +199,8 @@ struct Globals {
     life_amount: f32,
     hover: Option<hex::InBoundsPoint>,
     root_point: hex::BranchPoint,
-    //branches: HashMap<hex::BranchPoint, cell::BranchCell>,
-    //gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
+    branches: HashMap<hex::BranchPoint, cell::BranchCell>,
+    gifts: HashMap<hex::GiftPoint, cell::GiftCell>,
     //stats: Stats,
     forbidden: HashMap<hex::GiftPoint, bool>,
     cost_multiplier: f32, // for debugging
@@ -359,8 +359,8 @@ impl Globals {
             life_amount: 0.0,
             hover: None,
             root_point: hex::BranchPoint::new(hex::HexPoint::new(0, 1)),
-//            branches: HashMap::with_capacity(100),
-//            gifts: HashMap::with_capacity(100),
+            branches: HashMap::with_capacity(100),
+            gifts: HashMap::with_capacity(100),
 //            stats: Stats{
 //                leaf_count: 0,
 //                flower_count: 0,
@@ -384,7 +384,7 @@ impl Globals {
             forbidden: HashMap::with_capacity(100),
             cost_multiplier: 1.0,
         };
-//        globals.reset(ctx);
+        globals.reset(ctx);
         Ok(globals)
     }
 
@@ -393,103 +393,103 @@ impl Globals {
         self.turn_time = get_current_time(ctx);
         self.bounty_amount = 5.0;
         self.life_amount = 0.0;
-//
-//        self.branches.clear();
+
+        self.branches.clear();
         self.root_point = hex::BranchPoint::new(hex::HexPoint::new(0, 1));
         let root_gift_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
-//        let mut root_cell = cell::BranchCell::new(None);
-//        root_cell.branch_upgrade = 3;
-//        self.branches.insert(self.root_point, root_cell);
-//
+        let mut root_cell = cell::BranchCell::new(None);
+        root_cell.branch_upgrade = 3;
+        self.branches.insert(self.root_point, root_cell);
+
         self.forbidden.clear();
         self.forbidden.insert(root_gift_point, true);
-//
-//        self.gifts.clear();
-//        let origin_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
-//        let origin_cell = cell::GiftCell::new(self.root_point);
-//        self.gifts.insert(origin_point, origin_cell);
+
+        self.gifts.clear();
+        let origin_point = hex::GiftPoint::new(hex::HexPoint::new(0, 0));
+        let origin_cell = cell::GiftCell::new(self.root_point);
+        self.gifts.insert(origin_point, origin_cell);
     }
 
-//    fn branch_parent_branch(&self, branch_point: hex::BranchPoint) -> Option<hex::BranchPoint> {
-//        let branch_cell = self.branches.get(&branch_point)?;
-//        let gift_point = branch_cell.parent?;
-//        let gift_cell = self.gifts.get(&gift_point)?;
-//        Some(gift_cell.parent)
-//    }
-//
-//    fn branch_nth_parent_branch_cell(&self, branch_point: hex::BranchPoint, n: u8) -> Option<cell::BranchCell> {
-//        if n == 0 {
-//            self.branches.get(&branch_point).map(|b| *b)
-//        } else {
-//            let parent_point = self.branch_parent_branch(branch_point)?;
-//            self.branch_nth_parent_branch_cell(parent_point, n-1)
-//        }
-//    }
-//
-//    fn branch_nth_parent_branch_cell_or_root(&self, branch_point: hex::BranchPoint, n: u8) -> cell::BranchCell {
-//        match self.branch_nth_parent_branch_cell(branch_point, n) {
-//            Some(branch_cell) => branch_cell,
-//            None => {
-//                *self.branches.get(&self.root_point).unwrap()
-//            },
-//        }
-//    }
-//
-//    #[allow(dead_code)]
-//    fn gift_parent_gift(&self, gift_point: hex::GiftPoint) -> Option<hex::GiftPoint> {
-//        let gift_cell = self.gifts.get(&gift_point)?;
-//        let branch_point = gift_cell.parent;
-//        let branch_cell = self.branches.get(&branch_point)?;
-//        branch_cell.parent
-//    }
-//
-//    fn branch_children(&self, branch_point: hex::BranchPoint) -> Vec<hex::GiftPoint> {
-//        branch_point.gift_neighbours()
-//            .iter()
-//            .map(|g| *g)
-//            .filter(|g|
-//                match self.gifts.get(g) {
-//                    None => false,
-//                    Some(gift_cell) => gift_cell.parent == branch_point,
-//                }
-//            )
-//            .collect()
-//    }
-//
-//    fn gift_children(&self, gift_point: hex::GiftPoint) -> Vec<hex::BranchPoint> {
-//        gift_point.branch_neighbours()
-//            .iter()
-//            .map(|b| *b)
-//            .filter(|b|
-//                match self.branches.get(b) {
-//                    None => false,
-//                    Some(branch_cell) => branch_cell.parent == Some(gift_point),
-//                }
-//            )
-//            .collect()
-//    }
-//
-//    fn prune_branch(&mut self, branch_point: hex::BranchPoint) {
-//        if let Some(_) = self.branches.get(&branch_point) {
-//            for gift_point in self.branch_children(branch_point) {
-//                self.prune_gift(gift_point);
-//            }
-//
-//            if let Some(branch_cell) = self.branches.remove(&branch_point) {
+    fn branch_parent_branch(&self, branch_point: hex::BranchPoint) -> Option<hex::BranchPoint> {
+        let branch_cell = self.branches.get(&branch_point)?;
+        let gift_point = branch_cell.parent?;
+        let gift_cell = self.gifts.get(&gift_point)?;
+        Some(gift_cell.parent)
+    }
+
+    fn branch_nth_parent_branch_cell(&self, branch_point: hex::BranchPoint, n: u8) -> Option<cell::BranchCell> {
+        if n == 0 {
+            self.branches.get(&branch_point).map(|b| *b)
+        } else {
+            let parent_point = self.branch_parent_branch(branch_point)?;
+            self.branch_nth_parent_branch_cell(parent_point, n-1)
+        }
+    }
+
+    fn branch_nth_parent_branch_cell_or_root(&self, branch_point: hex::BranchPoint, n: u8) -> cell::BranchCell {
+        match self.branch_nth_parent_branch_cell(branch_point, n) {
+            Some(branch_cell) => branch_cell,
+            None => {
+                *self.branches.get(&self.root_point).unwrap()
+            },
+        }
+    }
+
+    #[allow(dead_code)]
+    fn gift_parent_gift(&self, gift_point: hex::GiftPoint) -> Option<hex::GiftPoint> {
+        let gift_cell = self.gifts.get(&gift_point)?;
+        let branch_point = gift_cell.parent;
+        let branch_cell = self.branches.get(&branch_point)?;
+        branch_cell.parent
+    }
+
+    fn branch_children(&self, branch_point: hex::BranchPoint) -> Vec<hex::GiftPoint> {
+        branch_point.gift_neighbours()
+            .iter()
+            .map(|g| *g)
+            .filter(|g|
+                match self.gifts.get(g) {
+                    None => false,
+                    Some(gift_cell) => gift_cell.parent == branch_point,
+                }
+            )
+            .collect()
+    }
+
+    fn gift_children(&self, gift_point: hex::GiftPoint) -> Vec<hex::BranchPoint> {
+        gift_point.branch_neighbours()
+            .iter()
+            .map(|b| *b)
+            .filter(|b|
+                match self.branches.get(b) {
+                    None => false,
+                    Some(branch_cell) => branch_cell.parent == Some(gift_point),
+                }
+            )
+            .collect()
+    }
+
+    fn prune_branch(&mut self, branch_point: hex::BranchPoint) {
+        if let Some(_) = self.branches.get(&branch_point) {
+            for gift_point in self.branch_children(branch_point) {
+                self.prune_gift(gift_point);
+            }
+
+            if let Some(branch_cell) = self.branches.remove(&branch_point) {
 //                match branch_cell.branch_upgrade {
 //                    0 => self.stats.branch_lv1_count -= 1,
 //                    _ => self.stats.branch_lv2_count -= 1,
 //                };
-//            }
-//        }
-//    }
-//
-//    fn prune_gift(&mut self, gift_point: hex::GiftPoint) {
-//        if let Some(_) = self.gifts.get(&gift_point) {
-//            for branch_point in self.gift_children(gift_point) {
-//                self.prune_branch(branch_point);
-//            }
-//            if let Some(gift_cell) = self.gifts.remove(&gift_point) {
+            }
+        }
+    }
+
+    fn prune_gift(&mut self, gift_point: hex::GiftPoint) {
+        if let Some(_) = self.gifts.get(&gift_point) {
+            for branch_point in self.gift_children(gift_point) {
+                self.prune_branch(branch_point);
+            }
+            if let Some(gift_cell) = self.gifts.remove(&gift_point) {
 //                match gift_cell.gift {
 //                    Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
 //                    Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
@@ -500,15 +500,15 @@ impl Globals {
 //                    Some(cell::Gift::Squirrel) => self.stats.squirrel_count -= 1,
 //                    _ => {},
 //                };
-//            }
-//        }
-//        if let Some(_) = self.forbidden.get(&gift_point) {
-//            self.forbidden.remove(&gift_point);
-//        }
-//    }
-//
-//    fn remove_gift(&mut self, gift_point: hex::GiftPoint) {
-//        if let Some(gift_cell) = self.gifts.get(&gift_point) {
+            }
+        }
+        if let Some(_) = self.forbidden.get(&gift_point) {
+            self.forbidden.remove(&gift_point);
+        }
+    }
+
+    fn remove_gift(&mut self, gift_point: hex::GiftPoint) {
+        if let Some(gift_cell) = self.gifts.get(&gift_point) {
 //            match gift_cell.gift {
 //                Some(cell::Gift::Leaves)   => self.stats.leaf_count     -= 1,
 //                Some(cell::Gift::Flowers)  => self.stats.flower_count   -= 1,
@@ -519,23 +519,23 @@ impl Globals {
 //                Some(cell::Gift::Squirrel) => self.stats.squirrel_count -= 1,
 //                _ => {},
 //            };
-//        }
-//
-//        self.gifts
-//            .entry(gift_point)
-//            .and_modify(|g| g.gift = None);
-//        if !self.gifts.get(&gift_point).is_none() && self.gift_children(gift_point).len() == 0 {
-//            self.forbidden
-//                .entry(gift_point)
-//                .and_modify(|b| *b ^= true)
-//                .or_insert(true);
-//            if *self.forbidden.get(&gift_point).unwrap() {
+        }
+
+        self.gifts
+            .entry(gift_point)
+            .and_modify(|g| g.gift = None);
+        if !self.gifts.get(&gift_point).is_none() && self.gift_children(gift_point).len() == 0 {
+            self.forbidden
+                .entry(gift_point)
+                .and_modify(|b| *b ^= true)
+                .or_insert(true);
+            if *self.forbidden.get(&gift_point).unwrap() {
 //                self.stats.moss_added = true;
-//            } else {
+            } else {
 //                self.stats.moss_removed = true;
-//            }
-//        }
-//    }
+            }
+        }
+    }
 
     fn display_alert(&mut self, ctx: &mut Context, alert_message: AlertMessage )
     {
@@ -634,31 +634,31 @@ impl EventHandler for Globals {
                 MouseButton::Left => {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
-//
-//                            match self.branches.get(&branch_point) {
-//                                None => {
-//                                    let gift_neighbours = branch_point.gift_neighbours();
-//                                    let empty_neighbours: Vec<hex::GiftPoint> = gift_neighbours
-//                                        .iter()
-//                                        .map(|g| *g)
-//                                        .filter(|g| self.gifts.get(g).is_none())
-//                                        .collect();
-//                                    let full_neighbours: Vec<hex::GiftPoint> = gift_neighbours
-//                                        .iter()
-//                                        .map(|g| *g)
-//                                        .filter(|g| self.gifts.get(g).is_some())
-//                                        .collect();
-//                                    if empty_neighbours.len() == 1 && full_neighbours.len() == 1 {
-//                                        let empty_neighbour = empty_neighbours[0];
-//                                        let full_gift_point = full_neighbours[0];
-//                                        let full_gift_cell = *self.gifts.get(&full_gift_point).unwrap();
-//                                        let grandparent_cell = self.branch_nth_parent_branch_cell_or_root(full_gift_cell.parent, 2);
-//
-//                                        if grandparent_cell.branch_upgrade > 0 {
+
+                            match self.branches.get(&branch_point) {
+                                None => {
+                                    let gift_neighbours = branch_point.gift_neighbours();
+                                    let empty_neighbours: Vec<hex::GiftPoint> = gift_neighbours
+                                        .iter()
+                                        .map(|g| *g)
+                                        .filter(|g| self.gifts.get(g).is_none())
+                                        .collect();
+                                    let full_neighbours: Vec<hex::GiftPoint> = gift_neighbours
+                                        .iter()
+                                        .map(|g| *g)
+                                        .filter(|g| self.gifts.get(g).is_some())
+                                        .collect();
+                                    if empty_neighbours.len() == 1 && full_neighbours.len() == 1 {
+                                        let empty_neighbour = empty_neighbours[0];
+                                        let full_gift_point = full_neighbours[0];
+                                        let full_gift_cell = *self.gifts.get(&full_gift_point).unwrap();
+                                        let grandparent_cell = self.branch_nth_parent_branch_cell_or_root(full_gift_cell.parent, 2);
+
+                                        if grandparent_cell.branch_upgrade > 0 {
 //                                            let cost = self.cost_multiplier * life::BASE * 5.0;
 //                                            if self.bounty_amount >= cost {
 //                                                // place a new branch
-//                                                self.assets.branch_place_sound.play().unwrap_or(());
+//                                                self.assets.branch_place_sound.play(ctx).unwrap_or(());
 //                                                self.bounty_amount -= cost;
 //                                                self.stats.branch_lv1_count += 1;
 //                                                let branch_cell = cell::BranchCell::new(Some(full_gift_point));
@@ -683,32 +683,32 @@ impl EventHandler for Globals {
 //                                                alert_option = Some(AlertMessage::NotEnoughBounty);
 //                                                //println!("not enough Bounty");
 //                                            }
-//                                        } else {
-//                                            alert_option = Some(AlertMessage::BranchTooStrained);
-//                                            //println!("branches are too thin to hold more branches!");
-//                                        }
-//                                    } else if empty_neighbours.len() == 2 {
-//                                        alert_option = Some(AlertMessage::ClickForBranch);
-//                                        //println!("new branches must be attached to the tree");
-//                                    } else if full_neighbours.len() == 2 {
-//                                        println!("branches cannot form a cycle");
-//                                    }
-//                                },
-//                                Some(_) => {
-//                                    let parent_cell = self.branch_nth_parent_branch_cell_or_root(branch_point, 1);
-//                                    let grandparent_cell = self.branch_nth_parent_branch_cell_or_root(branch_point, 3);
-//                                    if let Some(branch_cell) = self.branches.get_mut(&branch_point) {
-//                                        let bounty_amount_ = &mut self.bounty_amount;
-//                                        if branch_cell.branch_upgrade < parent_cell.branch_upgrade {
-//                                            if (branch_cell.branch_upgrade+1 < grandparent_cell.branch_upgrade) |
-//                                               (grandparent_cell.branch_upgrade >= 3)
-//                                            {
-//                                                match branch_cell.branch_upgrade {
-//                                                    0 => {
+                                        } else {
+                                            alert_option = Some(AlertMessage::BranchTooStrained);
+                                            //println!("branches are too thin to hold more branches!");
+                                        }
+                                    } else if empty_neighbours.len() == 2 {
+                                        alert_option = Some(AlertMessage::ClickForBranch);
+                                        //println!("new branches must be attached to the tree");
+                                    } else if full_neighbours.len() == 2 {
+                                        println!("branches cannot form a cycle");
+                                    }
+                                },
+                                Some(_) => {
+                                    let parent_cell = self.branch_nth_parent_branch_cell_or_root(branch_point, 1);
+                                    let grandparent_cell = self.branch_nth_parent_branch_cell_or_root(branch_point, 3);
+                                    if let Some(branch_cell) = self.branches.get_mut(&branch_point) {
+                                        let bounty_amount_ = &mut self.bounty_amount;
+                                        if branch_cell.branch_upgrade < parent_cell.branch_upgrade {
+                                            if (branch_cell.branch_upgrade+1 < grandparent_cell.branch_upgrade) |
+                                               (grandparent_cell.branch_upgrade >= 3)
+                                            {
+                                                match branch_cell.branch_upgrade {
+                                                    0 => {
 //                                                        let cost = self.cost_multiplier * life::BASE * 25.0;
 //                                                        if *bounty_amount_ >= cost {
 //                                                            // upgrade a branch to level 1
-//                                                            self.assets.branch_upgrade_sound.play().unwrap_or(());
+//                                                            self.assets.branch_upgrade_sound.play(ctx).unwrap_or(());
 //                                                            *bounty_amount_ -= cost;
 //                                                            branch_cell.branch_upgrade = 1;
 //                                                            self.stats.branch_lv2_count += 1;
@@ -716,46 +716,46 @@ impl EventHandler for Globals {
 //                                                            alert_option = Some(AlertMessage::NotEnoughBounty);
 //                                                            //println!("not enough Bounty");
 //                                                        }
-//                                                    },
-//                                                    1 => {
+                                                    },
+                                                    1 => {
 //                                                        let cost = self.cost_multiplier * life::BASE * 125.0;
 //                                                        if *bounty_amount_ >= cost {
 //                                                            // upgrade a branch to level 2
-//                                                            self.assets.branch_upgrade_sound.play().unwrap_or(());
+//                                                            self.assets.branch_upgrade_sound.play(ctx).unwrap_or(());
 //                                                            *bounty_amount_ -= cost;
 //                                                            branch_cell.branch_upgrade = 2;
 //                                                        } else {
 //                                                            alert_option = Some(AlertMessage::NotEnoughBounty);
 //                                                            //println!("not enough Bounty");
 //                                                        }
-//                                                    },
-//                                                    2 => {
+                                                    },
+                                                    2 => {
 //                                                        let cost = self.cost_multiplier * life::BASE * 625.0;
 //                                                        if *bounty_amount_ >= cost {
 //                                                            // upgrade a branch to level 3
-//                                                            self.assets.branch_upgrade_sound.play().unwrap_or(());
+//                                                            self.assets.branch_upgrade_sound.play(ctx).unwrap_or(());
 //                                                            *bounty_amount_ -= cost;
 //                                                            branch_cell.branch_upgrade = 3;
 //                                                        } else {
 //                                                            alert_option = Some(AlertMessage::NotEnoughBounty);
 //                                                            //println!("not enough Bounty");
 //                                                        }
-//                                                    },
-//                                                    _ => {
-//                                                        println!("this branch has already reached its maximum growth");
-//                                                    },
-//                                                }
-//                                            } else {
-//                                                alert_option = Some(AlertMessage::BranchTooStrained);
-//                                                //println!("branches are too thin to hold more branches!");
-//                                            }
-//                                        } else {
-//                                            alert_option = Some(AlertMessage::CantUpgrade);
-//                                            //println!("you have to grow the parent branch first!");
-//                                        }
-//                                    }
-//                                },
-//                            }
+                                                    },
+                                                    _ => {
+                                                        println!("this branch has already reached its maximum growth");
+                                                    },
+                                                }
+                                            } else {
+                                                alert_option = Some(AlertMessage::BranchTooStrained);
+                                                //println!("branches are too thin to hold more branches!");
+                                            }
+                                        } else {
+                                            alert_option = Some(AlertMessage::CantUpgrade);
+                                            //println!("you have to grow the parent branch first!");
+                                        }
+                                    }
+                                },
+                            }
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
 //                            match self.gifts.get(&gift_point) {
@@ -782,12 +782,12 @@ impl EventHandler for Globals {
                     match in_bounds_point {
                         hex::InBoundsPoint::BranchPoint(branch_point) => {
 //                            if self.branches.get(&branch_point).is_some() {
-//                                self.assets.branch_break_sounds.choose(&mut rand::thread_rng()).unwrap().play().unwrap_or(());
+//                                self.assets.branch_break_sounds.choose(&mut rand::thread_rng()).unwrap().play(ctx).unwrap_or(());
 //                                self.prune_branch(branch_point);
 //                            }
                         },
                         hex::InBoundsPoint::GiftPoint(gift_point) => {
-//                            self.assets.gift_release_sound.play().unwrap_or(());
+//                            self.assets.gift_release_sound.play(ctx).unwrap_or(());
 //                            self.remove_gift(gift_point);
                         },
                     }

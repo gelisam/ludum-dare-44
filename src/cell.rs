@@ -1,5 +1,5 @@
 use ggez::{GameResult, Context};
-use ggez::graphics::Image;
+use ggez::graphics::{DrawParam, Image};
 
 use center;
 use globals::PI;
@@ -150,14 +150,20 @@ impl BranchCell {
         }
     }
 
-    pub fn draw(&self, ctx: &mut Context, assets: &Assets, branch_point: BranchPoint) -> GameResult<()> {
+    pub fn draw(
+        &self,
+        ctx: &mut Context,
+        assets: &Assets,
+        branch_point: BranchPoint,
+        draw_param: DrawParam
+    ) -> GameResult<()> {
         let image = &assets.branch_images[self.branch_upgrade];
         let angle = match branch_point.orientation() {
             Orientation::Vert     => 0.0,
             Orientation::Diag     => 60.0 * PI / 180.0,
             Orientation::AntiDiag => 120.0 * PI / 180.0,
         };
-        center::draw_centered_image(ctx, image, branch_point.to_point(), angle)
+        center::draw_centered_image(ctx, image, branch_point.to_point(), angle, draw_param)
     }
 }
 
@@ -170,10 +176,16 @@ impl GiftCell {
         }
     }
 
-    pub fn draw(&self, ctx: &mut Context, assets: &Assets, gift_point: GiftPoint) -> GameResult<()> {
+    pub fn draw(
+        &self,
+        ctx: &mut Context,
+        assets: &Assets,
+        gift_point: GiftPoint,
+        draw_param: DrawParam
+    ) -> GameResult<()> {
         if let Some(gift) = self.gift {
             let image = &assets.gift_images(gift)[self.image_variant];
-            center::draw_centered_image(ctx, image, gift_point.to_point(), 0.0)?;
+            center::draw_centered_image(ctx, image, gift_point.to_point(), 0.0, draw_param)?;
         }
 
         Ok(())
