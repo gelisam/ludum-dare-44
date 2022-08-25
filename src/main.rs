@@ -857,13 +857,16 @@ impl EventHandler for Globals {
 //        }
 //
         if let Some(alert_current) = self.alert_current {
-//            set_color(ctx, Color::from_rgb(255, 0, 0))?;
-//            let center = Vec2::new(
-//                WINDOW_WIDTH as f32 / 2.0,
-//                WINDOW_HEIGHT as f32 - 20.0,
-//            );
-//            let text = Text::new(ctx,self.alerts[alert_current].message, &self.assets.font)?;
-//            text::draw_centered_text(ctx, &text, center, 0.0)?;
+            let center = Vec2::new(
+                WINDOW_WIDTH as f32 / 2.0,
+                WINDOW_HEIGHT as f32 - 20.0,
+            );
+            let text = Text::new(
+                TextFragment::new(self.alerts[alert_current].message)
+                    .color(Color::from_rgb(255, 0, 0))
+                    .font(self.assets.font)
+            );
+            text::draw_centered_text(ctx, &text, center, 0.0)?;
             if self.alerts[alert_current].until_time < get_current_time(ctx) {
                 self.alert_current = None
             }
