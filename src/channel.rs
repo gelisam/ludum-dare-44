@@ -26,7 +26,7 @@ impl Channel {
         Ok(Channel {
             source,
             start_time: get_current_time(ctx),
-            duration: timer::f64_to_duration(0.0),
+            duration: Duration::ZERO,
             initial_volume: 0.0,
             target_volume: 0.0,
             playing: false,
