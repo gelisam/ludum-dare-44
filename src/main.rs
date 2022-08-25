@@ -2,7 +2,7 @@ extern crate core;
 extern crate ggez;
 extern crate rand;
 extern crate counter;
-extern crate mint;
+extern crate glam;
 
 use core::time::Duration;
 use ggez::{GameResult, Context, ContextBuilder};
@@ -22,12 +22,12 @@ mod globals;
 //mod hex;
 //mod sidebar;
 //mod text;
-//mod vector;
+mod vector;
 //mod life;
 
 use globals::*;
 //use life::Stats;
-use mint::Point2;
+use glam::f32::Vec2;
 
 
 #[derive(Debug)]
@@ -163,7 +163,7 @@ impl Assets {
         Ok(Assets {
             bg: bg::load_assets(ctx)?,
 //            cell: cell::load_assets(ctx)?,
-            dot: Mesh::new_circle(ctx, DrawMode::fill(), Point2 {x: 0.0, y: 0.0}, 10.0, 3.0, Color::WHITE)?,
+            dot: Mesh::new_circle(ctx, DrawMode::fill(), Vec2::new(0.0, 0.0), 10.0, 3.0, Color::WHITE)?,
             font,
 //            hex: hex::load_assets(ctx)?,
             branch_place_sound: audio::Source::new(ctx, "/branch_place.ogg")?,
@@ -627,7 +627,7 @@ impl EventHandler for Globals {
     }
 
     fn mouse_button_down_event(&mut self, ctx: &mut Context, button: MouseButton, x: f32, y: f32) {
-        let point = Point2 {x: x, y: y };
+        let point = Vec2::new(x, y);
         let mut alert_option: Option<AlertMessage> = None;
 //        if let Some(in_bounds_point) = hex::HexPoint::from_point(point).is_in_bounds() {
             match button {
@@ -801,7 +801,7 @@ impl EventHandler for Globals {
     }
 
     fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, _xrel: f32, _yrel: f32) {
-//        let hex_point = hex::HexPoint::from_point(Point2::new(x as f32, y as f32));
+//        let hex_point = hex::HexPoint::from_point(Vec2::new(x as f32, y as f32));
 //        self.hover = hex_point.is_in_bounds()
     }
 //
@@ -858,7 +858,7 @@ impl EventHandler for Globals {
 //
         if let Some(alert_current) = self.alert_current {
 //            set_color(ctx, Color::from_rgb(255, 0, 0))?;
-//            let center = Point2::new(
+//            let center = Vec2::new(
 //                WINDOW_WIDTH as f32 / 2.0,
 //                WINDOW_HEIGHT as f32 - 20.0,
 //            );
@@ -871,7 +871,7 @@ impl EventHandler for Globals {
 //        else {
 //            for achievement in self.achievements.iter() {
 //                if !achievement.achieved {
-//                    let center = Point2::new(
+//                    let center = Vec2::new(
 //                        WINDOW_WIDTH as f32 / 2.0,
 //                        WINDOW_HEIGHT as f32 - 20.0,
 //                    );
@@ -879,13 +879,13 @@ impl EventHandler for Globals {
 //                    {
 //                        set_color(ctx, Color::from_rgb(247, 148, 30))?;
 //                        let text = Text::new(ctx, "CHALLENGE", &self.assets.font)?;
-//                        text::draw_centered_text(ctx, &text, center + Vector2::new(-200.0, -15.0), 0.0)?;
+//                        text::draw_centered_text(ctx, &text, center + Vec2::new(-200.0, -15.0), 0.0)?;
 //                    }
 //
 //                    {
 //                        set_color(ctx, Color::from_rgb(255, 255, 255))?;
 //                        let text = Text::new(ctx,achievement.message, &self.assets.font)?;
-//                        text::draw_centered_text(ctx, &text, center + Vector2::new(0.0, 5.0), 0.0)?;
+//                        text::draw_centered_text(ctx, &text, center + Vec2::new(0.0, 5.0), 0.0)?;
 //                    }
 //
 //                    break;

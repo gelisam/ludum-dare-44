@@ -1,6 +1,5 @@
 use ggez::{GameResult, Context};
 use ggez::graphics::{Drawable, DrawParam, Image};
-use mint::Point2;
 
 
 #[derive(Debug)]
