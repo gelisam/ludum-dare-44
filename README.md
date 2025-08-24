@@ -4,7 +4,7 @@ This is [our entry for Ludum Dare edition #44](https://ldjam.com/events/ludum-da
 
 
 
-![title screen](https://static.jam.vg/raw/861/z/21c06.png)
+![title screen](https://raw.githubusercontent.com/gelisam/ludum-dare-44/refs/heads/master/resources/Title_Screen_640x512.png)
 
 
 
